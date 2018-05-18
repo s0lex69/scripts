@@ -6,6 +6,7 @@ hits = {}
 function ptswitch.OnUpdate()
 	if not Menu.IsEnabled(ptswitch.optionEnable) or not Engine.IsInGame() or not Heroes.GetLocal() then return end
 	local myHero = Heroes.GetLocal()
+	if NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVISIBLE) then return end
 	if not Entity.IsAlive(myHero) then return end
 	local primAttribute = Hero.GetPrimaryAttribute(myHero)
 	if primAttribute == 1 then primAttribute = 2 elseif primAttribute == 2 then primAttribute = 1 end
@@ -62,6 +63,7 @@ function ptswitch.OnProjectile(projectile)
 end
 function ptswitch.OnPrepareUnitOrders(orders)
 	if not Menu.IsEnabled(ptswitch.optionEnable) or not Engine.IsInGame() or not Heroes.GetLocal() or not orders then return end
+	if NPC.HasState(Heroes.GetLocal(), Enum.ModifierState.MODIFIER_STATE_INVISIBLE) then return end
 	local myHero = Heroes.GetLocal()
 	local primAttribute = Hero.GetPrimaryAttribute(myHero)
 	if primAttribute == 1 then primAttribute = 2 elseif primAttribute == 2 then primAttribute = 1 end
