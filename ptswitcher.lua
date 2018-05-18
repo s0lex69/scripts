@@ -64,6 +64,7 @@ end
 function ptswitch.OnPrepareUnitOrders(orders)
 	if not Menu.IsEnabled(ptswitch.optionEnable) or not Engine.IsInGame() or not Heroes.GetLocal() or not orders then return end
 	if NPC.HasState(Heroes.GetLocal(), Enum.ModifierState.MODIFIER_STATE_INVISIBLE) then return end
+	if orders.order ~= 5 and orders.order ~= 6 and orders.order ~= 7 and orders.order ~= 8 and orders.order ~= 9 then test = true return end 
 	local myHero = Heroes.GetLocal()
 	local primAttribute = Hero.GetPrimaryAttribute(myHero)
 	if primAttribute == 1 then primAttribute = 2 elseif primAttribute == 2 then primAttribute = 1 end
@@ -78,9 +79,6 @@ function ptswitch.OnPrepareUnitOrders(orders)
 			Ability.CastNoTarget(pt)
 			Ability.CastNoTarget(pt)
 		end
-	else
-
-		test = true	
 	end
 end
 
