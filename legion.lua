@@ -14,7 +14,6 @@ LegionCommander.optionEnableCourage = Menu.AddOptionBool({"Hero Specific", "Legi
 LegionCommander.optionEnableSolar = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Combo"}, "Solar Crest", false)
 LegionCommander.optionEnableSatanic = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Combo"}, "Satanic", false)
 LegionCommander.optionEnableLotus = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Combo"}, "Lotus Orb", false)
-LegionCommander.optionBlinkRange = Menu.AddOptionSlider({"Hero Specific", "Legion Commander"}, "Minimum Blink Range", 201, 1150, 500)
 LegionCommander.optionEnablePoopLinken = Menu.AddOptionBool({"Hero Specific", "Legion Commander"}, "Enable Poop Linken", false)
 LegionCommander.optionEnablePoopForce = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Poop Linken Items"}, "Force Staff", false)
 LegionCommander.optionEnablePoopHex = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Poop Linken Items"}, "Scythe of Vise", false)
@@ -24,6 +23,7 @@ LegionCommander.optionEnablePoopOrchid = Menu.AddOptionBool({"Hero Specific", "L
 LegionCommander.optionEnablePoopBlood = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Poop Linken Items"}, "Bloodthorn", false)
 LegionCommander.optionEnablePoopEul = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Poop Linken Items"}, "EuL", false)
 LegionCommander.optionEnablePoopAbysalBlade = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Poop Linken Items"}, "Abyssal Blade", false)
+LegionCommander.optionBlinkRange = Menu.AddOptionSlider({"Hero Specific", "Legion Commander"}, "Minimum Blink Range", 201, 1150, 500)
 function LegionCommander.OnUpdate()
 if not Menu.IsEnabled(LegionCommander.optionEnable) or not Engine.IsInGame() or not Heroes.GetLocal() then return end
 local myHero = Heroes.GetLocal()
