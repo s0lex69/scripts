@@ -1,5 +1,5 @@
 local ptswitch = {}
-ptswitch.optionEnable = Menu.AddOptionBool({"Utility", "PT switcher"}, "Enable", false)
+ptswitch.optionEnable = Menu.AddOptionBool({"Utility"}, "PT Switcher", false)
 test = false
 test2 = false
 hits = {}
@@ -52,6 +52,7 @@ end
 function ptswitch.OnProjectile(projectile)
 	if not Heroes.GetLocal() or not Engine.IsInGame() or not Menu.IsEnabled(ptswitch.optionEnable) then return end
 	if not projectile then return end
+	if projectile.source == Heroes.GetLocal() then return end
 	if Entity.GetClassName(projectile.source) == "C_DOTA_BaseNPC_Creep_Lane" then return end
 	if projectile.source and projectile.isAttack and projectile.target == Heroes.GetLocal() then
 		local moveSpeed = projectile.moveSpeed
