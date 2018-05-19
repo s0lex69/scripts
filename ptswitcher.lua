@@ -58,7 +58,7 @@ function ptswitch.OnProjectile(projectile)
 		local moveSpeed = projectile.moveSpeed
 		local myProjectedPosition = Entity.GetAbsOrigin(Heroes.GetLocal())
 		local startTime = GameRules.GetGameTime()
-		local projectileTiming = ((Entity.GetAbsOrigin(projectile.source) - myProjectedPosition):Length2D() - NPC.GetHullRadius(myHero)) / projectile.moveSpeed
+		local projectileTiming = ((Entity.GetAbsOrigin(projectile.source) - myProjectedPosition):Length2D() - NPC.GetHullRadius(Heroes.GetLocal())) / projectile.moveSpeed
 		table.insert(hits, { source = projectile.source, target = projectile.target, movespeed = moveSpeed, starttime = startTime})
 	end	
 end
