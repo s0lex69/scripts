@@ -40,11 +40,11 @@ function ptswitch.OnUpdate()
 		else changed = false	
 		end
 		if NPC.IsAttacking(myHero) then 
-			if PowerTreads.GetStats(pt) - primAttribute == 1 and changed2 == false then
+			if PowerTreads.GetStats(pt) - primAttribute == (1 or -2) and changed2 == false then
 				Ability.CastNoTarget(pt)
 				Ability.CastNoTarget(pt)
 				changed2 = true
-			elseif PowerTreads.GetStats(pt) - primAttribute == 2 and changed2 == false then
+			elseif PowerTreads.GetStats(pt) - primAttribute == (2 or -1) and changed2 == false then
 				Ability.CastNoTarget(pt)
 				changed2 = true	
 			end	
