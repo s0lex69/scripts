@@ -1,5 +1,4 @@
 local Utility = {}
-Utility.optionDebugEnable = Menu.AddOptionBool({"Utility", "Debug"}, "Enable", false)
 Utility.lastAttackTime2 = 0
 Utility.LastTarget = nil
 Utility.lastAttackTime2 = 0
