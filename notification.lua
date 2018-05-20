@@ -293,7 +293,6 @@ if particle.name == "sandking_epicenter_tell" and not Entity.IsSameTeam(myHero, 
 if particle.name == "sven_spell_gods_strength" and not Entity.IsSameTeam(myHero, particle.entity) then if Menu.IsEnabled(notification.optionChatAlertEnable) then Engine.ExecuteCommand("say_team Вражеский Sven использовал ультимейт") end end
 if particle.name == "pangolier_gyroshell_cast" and not Entity.IsSameTeam(myHero, particle.entity) then if Menu.IsEnabled(notification.optionChatAlertEnable) then Engine.ExecuteCommand("say_team Вражеские Pangolier заряжает ультимейт") end end
 if particle.name == "lycan_shapeshift_cast" and not Entity.IsSameTeam(myHero, particle.entity) then if Menu.IsEnabled(notification.optionChatAlertEnable) then Engine.ExecuteCommand("say_team Вражеский Lycan заряжает ультимейт") end end
-if particle.name == "dragon_knight_transform_green" or particle.name == "dragon_knight_transform_blue" or particle.name == "dragon_knight_transform_red" and not Entity.IsSameTeam(myHero, particle.entity) then if Menu.IsEnabled(notification.optionChatAlertEnable) then Engine.ExecuteCommand("say_team Вражеский Dragon Knight использовал ультимейт") end end
 end
 function notification.BaraAlert()
 if not Menu.IsEnabled(notification.optionEnable) or not Menu.IsEnabled(notification.optionBaraAlert) or Heroes.GetLocal() == nil then return end
