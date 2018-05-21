@@ -52,9 +52,6 @@ function clinkz.Combo(myHero, enemy)
             Ability.ToggleMod(arrows)
             AutoCasted = true
           end
-        else
-          LockTarget = false
-          AutoCasted = false
         end
         if Utility.heroCanCastItems(myHero, enemy) == true then
           if NPC.IsLinkensProtected(enemy) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
@@ -81,12 +78,12 @@ function clinkz.Combo(myHero, enemy)
           if solar and Menu.IsEnabled(clinkz.optionEnableSolar) and Ability.IsCastable(solar, myMana) then
             Ability.CastTarget(solar, enemy)
           end
-        else
-          LockTarget = false
-          AutoCasted = false
         end
         Utility.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET", enemy, nil)
       end
+    else
+      LockTarget = false
+      AutoCasted = false
     end
   end
 end
