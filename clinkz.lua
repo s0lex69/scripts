@@ -41,7 +41,7 @@ function clinkz.Combo(myHero, enemy)
   local nullifier = NPC.GetItem(myHero, "item_nullifier", true)
   if enemy then
     if Menu.IsEnabled(clinkz.optionEnableLockTarget) then LockTarget = true end
-    if NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then LockTarget = false AutoCasted = false return end
+    if NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then AutoCasted = false return end
     if Menu.IsKeyDown(clinkz.optionKey) and Entity.GetHealth(enemy) > 0 then
       local attackRange = NPC.GetAttackRange(myHero)
       if NPC.IsEntityInRange(myHero, enemy, attackRange) then
@@ -81,12 +81,12 @@ function clinkz.Combo(myHero, enemy)
           end
           if solar and Menu.IsEnabled(clinkz.optionEnableSolar) and Ability.IsCastable(solar, myMana) then
             Ability.CastTarget(solar, enemy)
-          end
-          Utility.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET", enemy, nil)
+          end          
         else
           LockTarget = false
           AutoCasted = false
         end
+        Utility.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET", enemy, nil)
       end
     end
   end
