@@ -115,8 +115,8 @@ function LegionCommander.OnUpdate()
               Ability.CastTarget(orchid, enemy)
               return
             end
-            if alebarda and Menu.IsEnabled(LegionCommander.optionEnableAlebard) and Ability.IsCastable(courage, myMana) and Ability.IsCastable(duel, myMana) then
-              Ability.CastTarget(courage, enemy)
+            if alebarda and Menu.IsEnabled(LegionCommander.optionEnableAlebard) and Ability.IsCastable(alebarda, myMana) and Ability.IsCastable(duel, myMana) then
+              Ability.CastTarget(alebarda, enemy)
               return
             end
 
