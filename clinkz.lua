@@ -41,11 +41,10 @@ function clinkz.Combo(myHero, enemy)
   local nullifier = NPC.GetItem(myHero, "item_nullifier", true)
   if enemy then
     if Menu.IsEnabled(clinkz.optionEnableLockTarget) then LockTarget = true end
-    if NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then AutoCasted = false return end
     if Menu.IsKeyDown(clinkz.optionKey) and Entity.GetHealth(enemy) > 0 then
       local attackRange = NPC.GetAttackRange(myHero)
       if NPC.IsEntityInRange(myHero, enemy, attackRange) then
-        if Utility.heroCanCastSpells(myHero, enemy) == true then    
+        if Utility.heroCanCastSpells(myHero, enemy) == true then
           if strafe and Ability.IsCastable(strafe, myMana) then
             Ability.CastNoTarget(strafe)
           end
@@ -58,22 +57,22 @@ function clinkz.Combo(myHero, enemy)
           AutoCasted = false
         end
         if Utility.heroCanCastItems(myHero, enemy) == true then
-          if NPC.IsLinkensProtected(enemy) then
-          clinkz.PoopLinken(myHero, enemy)
-         end
-          if blood and Menu.IsEnabled(clinkz.optionEnableBlood) and Ability.IsCastable(blood, myMana) then
+          if NPC.IsLinkensProtected(enemy) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+            clinkz.PoopLinken(myHero, enemy)
+          end
+          if blood and Menu.IsEnabled(clinkz.optionEnableBlood) and Ability.IsCastable(blood, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             Ability.CastTarget(blood, enemy)
           end
-          if orchid and Menu.IsEnabled(clinkz.optionEnableOrchid) and Ability.IsCastable(orchid, myMana) then
+          if orchid and Menu.IsEnabled(clinkz.optionEnableOrchid) and Ability.IsCastable(orchid, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             Ability.CastTarget(orchid, enemy)
           end
           if bkb and Menu.IsEnabled(clinkz.optionEnableBkb) and Ability.IsCastable(bkb, myMana) then
             Ability.CastNoTarget(bkb)
           end
-          if hex and Menu.IsEnabled(clinkz.optionEnableHex) and Ability.IsCastable(hex, myMana) then
+          if hex and Menu.IsEnabled(clinkz.optionEnableHex) and Ability.IsCastable(hex, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             Ability.CastTarget(hex, enemy)
           end
-          if nullifier and Menu.IsEnabled(clinkz.optionEnableNullifier) and Ability.IsCastable(nullifier, myMana) then
+          if nullifier and Menu.IsEnabled(clinkz.optionEnableNullifier) and Ability.IsCastable(nullifier, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             Ability.CastTarget(nullifier, enemy)
           end
           if courage and Menu.IsEnabled(clinkz.optionEnableCourage) and Ability.IsCastable(courage, myMana) then
@@ -81,7 +80,7 @@ function clinkz.Combo(myHero, enemy)
           end
           if solar and Menu.IsEnabled(clinkz.optionEnableSolar) and Ability.IsCastable(solar, myMana) then
             Ability.CastTarget(solar, enemy)
-          end          
+          end
         else
           LockTarget = false
           AutoCasted = false
