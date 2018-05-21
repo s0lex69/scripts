@@ -95,7 +95,7 @@ function ShadowFiend.Combo(myHero, enemy)
 
     					end		
     				end	
-    				if NPC.HasModifier(enemy, "modifier_eul_cyclone") then
+    				if NPC.HasModifier(enemy, "modifier_eul_cyclone") and ShadowFiend.cycloneDieTime then
     					if not NPC.IsEntityInRange(myHero, enemy, 75) then
     						Utility.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION", nil, Entity.GetAbsOrigin(enemy))
     						return
