@@ -9,7 +9,7 @@ LegionCommander.optionEnableBkb = Menu.AddOptionBool({"Hero Specific", "Legion C
 LegionCommander.optionEnableOrchid = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Combo"}, "Orchid", false)
 LegionCommander.optionEnableBlood = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Combo"}, "Bloodthorn", false)
 LegionCommander.optionEnableMjolnir = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Combo"}, "Mjolnir", false)
-LegionCommander.optionEnableAlebard = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Combo"}, "Heavebs Halberd", false)
+LegionCommander.optionEnableAlebard = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Combo"}, "Heavens Halberd", false)
 LegionCommander.optionEnableCourage = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Combo"}, "Medallion of Courage", false)
 LegionCommander.optionEnableSolar = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Combo"}, "Solar Crest", false)
 LegionCommander.optionEnableSatanic = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Combo"}, "Satanic", false)
@@ -22,6 +22,7 @@ LegionCommander.optionEnablePoopDagon = Menu.AddOptionBool({"Hero Specific", "Le
 LegionCommander.optionEnablePoopOrchid = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Poop Linken"}, "Orchid", false)
 LegionCommander.optionEnablePoopBlood = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Poop Linken"}, "Bloodthorn", false)
 LegionCommander.optionEnablePoopEul = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Poop Linken"}, "EuL", false)
+LegionCommander.optionEnablePoopHeavens = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Poop Linken"}, "Heavens Halberd", false)
 LegionCommander.optionEnablePoopAbysalBlade = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Poop Linken"}, "Abyssal Blade", false)
 LegionCommander.optionBlinkRange = Menu.AddOptionSlider({"Hero Specific", "Legion Commander"}, "Minimum Blink Range", 201, 1150, 500)
 function LegionCommander.OnUpdate()
@@ -153,6 +154,7 @@ function LegionCommander.OnUpdate()
     local dagon = NPC.GetItem(myHero, "item_dagon", true)
     local eul = NPC.GetItem(myHero, "item_cyclone", true)
     local abyssal = NPC.GetItem(myHero, "item_abyssal_blade", true)
+    local alebarda = NPC.GetItem(myHero, "item_heavens_halberd", true)
     if not dagon then
       for i = 2, 5 do
         dagon = NPC.GetItem(myHero, "item_dagon_" .. i, true)
@@ -161,6 +163,10 @@ function LegionCommander.OnUpdate()
     end
 
     if duel and Ability.IsCastable(duel, myMana) then
+      if alebarda and Menu.IsEnabled(LegionCommander.optionEnablePoopHeavens) and Ability.IsCastable(alebarda, myMana) then
+        Ability.CastTarget(alebarda,enemy)
+        return
+      end 
       if Force and Menu.IsEnabled(LegionCommander.optionEnablePoopForce) and Ability.IsCastable(Force, myMana) then
         Ability.CastTarget(Force, enemy)
         return
