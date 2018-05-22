@@ -81,8 +81,8 @@ function ShadowFiend.Combo(myHero, enemy)
             Ability.CastTarget(hex, enemy)
           end
           if phase and Menu.IsEnabled(ShadowFiend.optionEnablePhase) and Ability.IsCastable(phase, myMana) then
-          	Ability.CastNoTarget(phase)
-      	  end
+            Ability.CastNoTarget(phase)
+          end
           if bkb and Ability.IsCastable(bkb, myMana) and Menu.IsEnabled(ShadowFiend.optionEnableBkb) then
             Ability.CastNoTarget(bkb)
           end
@@ -101,7 +101,7 @@ function ShadowFiend.Combo(myHero, enemy)
             end
           end
           if NPC.HasModifier(enemy, "modifier_eul_cyclone") and ShadowFiend.cycloneDieTime then
-            if not NPC.IsEntityInRange(myHero, enemy, 50) then
+            if not NPC.IsEntityInRange(myHero, enemy, 65) then
               Utility.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION", nil, Entity.GetAbsOrigin(enemy))
               return
             else
