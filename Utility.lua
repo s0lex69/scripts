@@ -201,12 +201,6 @@ function Utility.GenericMainAttack(myHero, attackType, target, position)
   Utility.GenericAttackIssuer(attackType, target, position, myHero)
 
 end
-function Utility.Debugger(time, npc, ability, order)
-
-  if not Menu.IsEnabled(Utility.optionDebugEnable) then return end
-  Log.Write(tostring(time) .. " " .. tostring(NPC.GetUnitName(npc)) .. " " .. tostring(ability) .. " " .. tostring(order))
-
-end
 function Utility.GenericAttackIssuer(attackType, target, position, npc)
 
   if not npc then return end
@@ -218,7 +212,6 @@ function Utility.GenericAttackIssuer(attackType, target, position, npc)
       if target ~= Utility.LastTarget then
         Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, target, Vector(0, 0, 0), ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, npc)
         Utility.LastTarget = target
-        Utility.Debugger(GameRules.GetGameTime(), npc, "attack", "DOTA_UNIT_ORDER_ATTACK_TARGET")
       end
     end
   end
@@ -229,7 +222,6 @@ function Utility.GenericAttackIssuer(attackType, target, position, npc)
         if position:__tostring() ~= Utility.LastTarget then
           Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_MOVE, target, position, ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, npc)
           Utility.LastTarget = position:__tostring()
-          Utility.Debugger(GameRules.GetGameTime(), npc, "attackMove", "DOTA_UNIT_ORDER_ATTACK_MOVE")
         end
       end
     end
@@ -240,7 +232,6 @@ function Utility.GenericAttackIssuer(attackType, target, position, npc)
       if position:__tostring() ~= Utility.LastTarget then
         Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, target, position, ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, npc)
         Utility.LastTarget = position:__tostring()
-        Utility.Debugger(GameRules.GetGameTime(), npc, "move", "DOTA_UNIT_ORDER_MOVE_TO_POSITION")
       end
     end
   end
