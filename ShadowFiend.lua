@@ -4,6 +4,7 @@ ShadowFiend.optionEnable = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend"},
 ShadowFiend.optionKey = Menu.AddKeyOption({"Hero Specific", "Shadow Fiend"}, "Auto Raze Key", Enum.ButtonCode.KEY_Z)
 ShadowFiend.optionEulKey = Menu.AddKeyOption({"Hero Specific", "Shadow Fiend"}, "Eul combo key", Enum.ButtonCode.KEY_F)
 ShadowFiend.optionEnableBlink = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend", "Eul Combo"}, "Blink", false)
+ShadowFiend.optionEnablePhase = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend", "Eul Combo"}, "Phase Boots", false)
 ShadowFiend.optionEnableBkb = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend", "Eul Combo"}, "BKB", false)
 ShadowFiend.optionEnableEblade = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend", "Eul Combo"}, "Ethereal blade", false)
 ShadowFiend.optionEnableHex = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend", "Eul Combo"}, "Hex", false)
@@ -45,6 +46,7 @@ function ShadowFiend.Combo(myHero, enemy)
   local blink = NPC.GetItem(myHero, "item_blink", true)
   local eul = NPC.GetItem(myHero, "item_cyclone", true)
   local bkb = NPC.GetItem(myHero, "item_black_king_bar", true)
+  local phase = NPC.GetItem(myHero, "item_phase_boots", true)
   if enemy then
     if NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then LockTarget = false return end
     if requiem and Ability.IsCastable(requiem, myMana) then
@@ -78,6 +80,9 @@ function ShadowFiend.Combo(myHero, enemy)
           if hex and Menu.IsEnabled(ShadowFiend.optionEnableHex) and Ability.IsCastable(hex, myMana) then
             Ability.CastTarget(hex, enemy)
           end
+          if phase and Menu.IsEnabled(ShadowFiend.optionEnablePhase) and Ability.IsCastable(phase, myMana) then
+          	Ability.CastNoTarget(phase)
+      	  end
           if bkb and Ability.IsCastable(bkb, myMana) and Menu.IsEnabled(ShadowFiend.optionEnableBkb) then
             Ability.CastNoTarget(bkb)
           end
@@ -96,7 +101,7 @@ function ShadowFiend.Combo(myHero, enemy)
             end
           end
           if NPC.HasModifier(enemy, "modifier_eul_cyclone") and ShadowFiend.cycloneDieTime then
-            if not NPC.IsEntityInRange(myHero, enemy, 75) then
+            if not NPC.IsEntityInRange(myHero, enemy, 50) then
               Utility.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION", nil, Entity.GetAbsOrigin(enemy))
               return
             else
