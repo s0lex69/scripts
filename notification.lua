@@ -1,6 +1,7 @@
 local notification = {}
 notification.optionEnable = Menu.AddOptionBool({"Awareness", "Notification"}, "Enable", false)
 notification.optionChatAlertEnable = Menu.AddOptionBool({"Awareness", "Notification"}, "Chat Alert", false)
+notification.optionLanguage = Menu.AddOptionCombo({"Awareness", "Notification", }, "Language", {"Русский", "English"}, 0)
 notification.optionBaraAlert = Menu.AddOptionBool({"Awareness", "Notification"}, "Bara Alert", false)
 notification.font = Renderer.LoadFont("Tahoma", 25, Enum.FontWeight.BOLD)
 notification.font2 = Renderer.LoadFont("Tahoma", 15, Enum.FontWeight.BOLD)
@@ -158,7 +159,7 @@ function notification.OnUpdate()
     notification.roshdietime = nil
     time = 0
   end
-
+  language = Menu.GetValue(notification.optionLanguage)
   local myHero = Heroes.GetLocal()
   if not myHero then return end
   local myTeam = Entity.GetTeamNum(myHero)
@@ -166,7 +167,17 @@ function notification.OnUpdate()
 end
 function notification.OnUnitAnimation(animation)
   if not Menu.IsEnabled(notification.optionEnable) then return end
-  if animation.sequenceName == "roshan_attack" or animation.sequenceName == "roshan_attack2" then notification.roshattack = true notification.roshattacktime = GameRules.GetGameTime() if Menu.IsEnabled(notification.optionChatAlertEnable) then Engine.ExecuteCommand("say_team Кто-то бьет рошана") end end
+  if animation.sequenceName == "roshan_attack" or animation.sequenceName == "roshan_attack2" then 
+  	notification.roshattack = true 
+    notification.roshattacktime = GameRules.GetGameTime() 
+  	if Menu.IsEnabled(notification.optionChatAlertEnable) then
+  		if language == 0 then 
+  			Engine.ExecuteCommand("say_team Кто-то бьет рошана")
+  		else
+  			Engine.ExecuteCommand("say_team Someone is attacking rosh") 	
+  		end	 
+  	end 
+  end
 end
 function notification.OnDraw()
   if not Menu.IsEnabled(notification.optionEnable) or Heroes.GetLocal() == nil then return end
@@ -281,38 +292,94 @@ function notification.OnParticleCreate(particle)
   if particle.name == "dropped_aegis" then notification.roshdead = true notification.roshdietime = GameRules.GetGameTime() - GameRules.GetGameStartTime()
     local min = math.floor(notification.roshdietime / 60)
     local sec = math.floor(notification.roshdietime%60)
-    Engine.ExecuteCommand("say_team Рошан умер - "..min..":"..sec)
+    if language == 0 then
+    	Engine.ExecuteCommand("say_team Рошан умер - "..min..":"..sec)
+    else
+    	Engine.ExecuteCommand("say_team Roshan died at - "..min..":"..sec)
+    end	
   end
-  if particle.name == "roshan_spawn" then if Menu.IsEnabled(notification.optionChatAlertEnable) then Engine.ExecuteCommand("say_team Рошан реснулся") end notification.roshattack = true notification.roshattacktime = GameRules.GetGameTime() end
-  if particle.name == "roshan_slam" then if Menu.IsEnabled(notification.optionChatAlertEnable) then Engine.ExecuteCommand("say_team Кто-то атакует рошана") end notification.roshattack = true notification.roshattacktime = GameRules.GetGameTime() notification.test = particle.index end
-  if particle.name == "nyx_assassin_vendetta_start" then if Menu.IsEnabled(notification.optionChatAlertEnable) then Engine.ExecuteCommand("say_team Nyx использовал ультимейт") end notification.vendeta = 1 notification.nyx = particle.index notification.vendetastart = GameRules.GetGameTime() - GameRules.GetGameStartTime() end
-  if particle.name == "smoke_of_deceit" then if Menu.IsEnabled(notification.optionChatAlertEnable) then Engine.ExecuteCommand("say_team Кто-то использовал смок") end notification.smoke = 1 notification.test = particle.index if GameRules.GetGameStartTime() == 0.0 then notification.beforegame = 1 notification.smokestart = GameRules.GetGameTime() else notification.smokestart = GameRules.GetGameTime() - GameRules.GetGameStartTime() end end
-  if particle.name == "mirana_moonlight_recipient" and not Entity.IsSameTeam(myHero, particle.entity) then if Menu.IsEnabled(notification.optionChatAlertEnable) then Engine.ExecuteCommand("say_team Вражеская мирана использовала ультимейт") end notification.moonlight = 1 notification.moonlightstart = GameRules.GetGameTime() - GameRules.GetGameStartTime() end
-  if particle.name == "wisp_relocate_channel" and not Entity.IsSameTeam(myHero, particle.entity) then if Menu.IsEnabled(notification.optionChatAlertEnable) then Engine.ExecuteCommand("say_team Вражеский Io использует ультимейт") end end
-  if particle.name == "sandking_epicenter_tell" and not Entity.IsSameTeam(myHero, particle.entity) then if Menu.IsEnabled(notification.optionChatAlertEnable) then Engine.ExecuteCommand("say_team Вражеский Sand King заряжает ультимейт") end end
-  if particle.name == "sven_spell_gods_strength" and not Entity.IsSameTeam(myHero, particle.entity) then if Menu.IsEnabled(notification.optionChatAlertEnable) then Engine.ExecuteCommand("say_team Вражеский Sven использовал ультимейт") end end
-  if particle.name == "pangolier_gyroshell_cast" and not Entity.IsSameTeam(myHero, particle.entity) then if Menu.IsEnabled(notification.optionChatAlertEnable) then Engine.ExecuteCommand("say_team Вражеские Pangolier заряжает ультимейт") end end
-  if particle.name == "lycan_shapeshift_cast" and not Entity.IsSameTeam(myHero, particle.entity) then if Menu.IsEnabled(notification.optionChatAlertEnable) then Engine.ExecuteCommand("say_team Вражеский Lycan заряжает ультимейт") end end
+  if particle.name == "roshan_spawn" then if Menu.IsEnabled(notification.optionChatAlertEnable) then
+  	if language == 0 then 
+    	Engine.ExecuteCommand("say_team Рошан реснулся")
+    else
+    	Engine.ExecuteCommand("say_team Roshan has respawned")
+    end		
+  end
+  notification.roshattack = true
+  notification.roshattacktime = GameRules.GetGameTime() end
+  if particle.name == "roshan_slam" then
+    if Menu.IsEnabled(notification.optionChatAlertEnable) then
+      if language == 0 then 	
+      	Engine.ExecuteCommand("say_team Кто-то бьет рошана")
+      else
+      	Engine.ExecuteCommand("say_team Someone is attacking rosh")	
+  	  end
+  	end
+      notification.roshattack = true
+      notification.roshattacktime = GameRules.GetGameTime()
+      notification.test = particle.index
+    end
+    if particle.name == "nyx_assassin_vendetta_start" then
+      if Menu.IsEnabled(notification.optionChatAlertEnable) then
+      	if language == 0 then
+        	Engine.ExecuteCommand("say_team Nyx использовал ультимейт")
+        else 
+        	Engine.ExecuteCommand("say_team Nyx has used ultimate")
+        end	
+      end notification.vendeta = 1
+        notification.nyx = particle.index
+        notification.vendetastart = GameRules.GetGameTime() - GameRules.GetGameStartTime()
+      end
+      if particle.name == "smoke_of_deceit" then
+        if Menu.IsEnabled(notification.optionChatAlertEnable) then
+          if language == 0 then
+          	Engine.ExecuteCommand("say_team Кто-то использовал смок")
+      	  else
+      	  	Engine.ExecuteCommand("say_team Someone has used smoke")
+      	  end	
+        end 
+          notification.smoke = 1
+          notification.test = particle.index
+          if GameRules.GetGameStartTime() == 0.0 then
+            notification.beforegame = 1 notification.smokestart = GameRules.GetGameTime()
+          else
+            notification.smokestart = GameRules.GetGameTime() - GameRules.GetGameStartTime()
+          end
+        end
+        if particle.name == "mirana_moonlight_recipient" and not Entity.IsSameTeam(myHero, particle.entity) then
+          if Menu.IsEnabled(notification.optionChatAlertEnable) then
+          	if language == 0 then 
+            	Engine.ExecuteCommand("say_team Вражеская мирана использовала ультимейт")
+        	else
+        		Engine.ExecuteCommand("say_team Mirana has used ultimate")
+        	end	
+          end
+          notification.moonlight = 1
+          notification.moonlightstart = GameRules.GetGameTime() - GameRules.GetGameStartTime()
+        end
 end
 function notification.BaraAlert()
-  if not Menu.IsEnabled(notification.optionEnable) or not Menu.IsEnabled(notification.optionBaraAlert) or Heroes.GetLocal() == nil then return end
-  local myHero = Heroes.GetLocal()
-  local myTeam = Entity.GetTeamNum(myHero)
-  for i = 1, Heroes.Count() do
-    local hero = Heroes.Get(i)
-    local heroName = NPC.GetUnitName(hero)
-    local heroTeam = Entity.GetTeamNum(hero)
-    if heroName == "npc_dota_hero_nyx_assassin" then
-      notification.ent = Heroes.Get(i)
-    end
-    if heroTeam == myTeam and NPC.HasModifier(hero, "modifier_spirit_breaker_charge_of_darkness_vision") then
-      Engine.ExecuteCommand("say_team Бара разгоняется на "..notification.HeroNameTable[heroName])
-    end
-  end
+     if not Menu.IsEnabled(notification.optionEnable) or not Menu.IsEnabled(notification.optionChatAlertEnable) or not Menu.IsEnabled(notification.optionBaraAlert) or Heroes.GetLocal() == nil then return end
+     local myHero = Heroes.GetLocal()
+     local myTeam = Entity.GetTeamNum(myHero)
+     for i = 1, Heroes.Count() do
+       local hero = Heroes.Get(i)
+       local heroName = NPC.GetUnitName(hero)
+       local heroTeam = Entity.GetTeamNum(hero)
+       if heroName == "npc_dota_hero_nyx_assassin" then
+         notification.ent = Heroes.Get(i)
+       end
+       if heroTeam == myTeam and NPC.HasModifier(hero, "modifier_spirit_breaker_charge_of_darkness_vision") then
+       	if language == 0 then
+         	Engine.ExecuteCommand("say_team Бара разгоняется на "..notification.HeroNameTable[heroName])
+         else
+         	Engine.ExecuteCommand("say_team Spirit breaker charging in "..notification.HeroNameTable[heroName])
+         end	
+       end
+     end
 end
 function notification.OnParticleUpdate(particle)
-  if particle.index == notification.nyx then notification.nyxpos = particle.position notification.nyx = nil end
-  if particle.index == notification.test then notification.pos = particle.position notification.test = nil end
+	if particle.index == notification.nyx then notification.nyxpos = particle.position notification.nyx = nil end
+    if particle.index == notification.test then notification.pos = particle.position notification.test = nil end
 end
-
 return notification
