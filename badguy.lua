@@ -1,8 +1,8 @@
 local badguy = {}
-badguy.optionEnable = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Enable", false)
-badguy.optionEnableAutoFeed = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Auto-Feed", false)
-badguy.optionEnableAutoLaugh = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Auto Laugh", false)
-badguy.optionSliderAutoLaugh = Menu.AddOptionSlider({"Utility", "Bad Guy"}, "Laugh delay", 15,100,15)
+badguy.optionEnable = Menu.AddOptionBool({"Awareness", "Bad Guy"}, "Enable", false)
+badguy.optionEnableAutoFeed = Menu.AddOptionBool({"Awareness", "Bad Guy"}, "Auto-Feed", false)
+badguy.optionEnableAutoLaugh = Menu.AddOptionBool({"Awareness", "Bad Guy"}, "Auto Laugh", false)
+badguy.optionSliderAutoLaugh = Menu.AddOptionSlider({"Awareness", "Bad Guy"}, "Laugh delay", 15,100,15)
 lastlaugh = nil
 function badguy.OnUpdate()
 	if not Heroes.GetLocal() or not Menu.IsEnabled(badguy.optionEnable) then lastlaugh = nil return end
@@ -28,8 +28,10 @@ function badguy.autofeed()
 end
 function badguy.autolaugh()
 	if not Entity.IsAlive(Heroes.GetLocal()) then return end
-	lastlaugh = GameRules.GetGameTime()
-	if math.floor(lastlaugh) >= math.floor(GameRules.GetGameTime()) then
+	if not lastlaugh then
+		lastlaugh = GameRules.GetGameTime()
+	end	
+	if math.floor(lastlaugh) == math.floor(GameRules.GetGameTime()) then
 		Engine.ExecuteCommand("say /laugh")
 		lastlaugh = lastlaugh + Menu.GetValue(badguy.optionSliderAutoLaugh)
 	end	
