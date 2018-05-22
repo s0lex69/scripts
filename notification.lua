@@ -167,6 +167,7 @@ function notification.OnUpdate()
 end
 function notification.OnUnitAnimation(animation)
   if not Menu.IsEnabled(notification.optionEnable) then return end
+  local language = Menu.GetValue(notification.optionLanguage)
   if animation.sequenceName == "roshan_attack" or animation.sequenceName == "roshan_attack2" then 
   	notification.roshattack = true 
     notification.roshattacktime = GameRules.GetGameTime() 
@@ -289,6 +290,7 @@ end
 function notification.OnParticleCreate(particle)
   if not Menu.IsEnabled(notification.optionEnable) then return end
   local myHero = Heroes.GetLocal()
+  local language = Menu.GetValue(notification.optionLanguage)
   if particle.name == "dropped_aegis" then notification.roshdead = true notification.roshdietime = GameRules.GetGameTime() - GameRules.GetGameStartTime()
     local min = math.floor(notification.roshdietime / 60)
     local sec = math.floor(notification.roshdietime%60)
@@ -369,6 +371,7 @@ function notification.BaraAlert()
        if heroName == "npc_dota_hero_nyx_assassin" then
          notification.ent = Heroes.Get(i)
        end
+       local language = Menu.GetValue(notification.optionLanguage)
        if heroTeam == myTeam and NPC.HasModifier(hero, "modifier_spirit_breaker_charge_of_darkness_vision") then
        	if language == 0 then
          	Engine.ExecuteCommand("say_team Бара разгоняется на "..notification.HeroNameTable[heroName])
