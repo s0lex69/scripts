@@ -6,12 +6,14 @@ clinkz.optionEnableLockTarget = Menu.AddOptionBool({"Hero Specific", "Clinkz"}, 
 clinkz.optionEnableBlood = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Bloodthorn", false)
 clinkz.optionEnableOrchid = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Orchid", false)
 clinkz.optionEnableNullifier = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Nullifier", false)
+clinkz.optionEnableDiffusal = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Diffusal Blade", false)
 clinkz.optionEnableHex = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Hex", false)
 clinkz.optionEnableBkb = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Bkb", false)
 clinkz.optionEnableSolar = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Solar Crest", false)
 clinkz.optionEnableCourage = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Medallion of Courage", false)
 clinkz.optionEnablePoopLinkens = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Poop Linken"}, "Enable", false)
 clinkz.optionEnablePoopForce = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Poop Linken"}, "Force Staff", false)
+clinkz.optionEnablePoopDiffusal = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Poop Linken"}, "Diffusal Blade", false)
 clinkz.optionEnablePoopBlood = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Poop Linken"}, "Bloodthorn", false)
 clinkz.optionEnablePoopOrchid = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Poop Linken"}, "Orchid", false)
 clinkz.optionEnablePoopEul = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Poop Linken"}, "Eul", false)
@@ -39,6 +41,7 @@ function clinkz.Combo(myHero, enemy)
   local courage = NPC.GetItem(myHero, "item_medallion_of_courage", true)
   local hex = NPC.GetItem(myHero, "item_sheepstick", true)
   local nullifier = NPC.GetItem(myHero, "item_nullifier", true)
+  local diffusal = NPC.GetItem(myHero, "item_diffusal_blade", true)
   if enemy then
     if Menu.IsEnabled(clinkz.optionEnableLockTarget) then LockTarget = true end
     if Menu.IsKeyDown(clinkz.optionKey) and Entity.GetHealth(enemy) > 0 then
@@ -57,6 +60,9 @@ function clinkz.Combo(myHero, enemy)
           if NPC.IsLinkensProtected(enemy) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             clinkz.PoopLinken(myHero, enemy)
           end
+          if diffusal and Menu.IsEnabled(clinkz.optionEnableDiffusal) and Ability.IsCastable(diffusal,myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+            Ability.CastTarget(diffusal, enemy)
+          end 
           if blood and Menu.IsEnabled(clinkz.optionEnableBlood) and Ability.IsCastable(blood, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             Ability.CastTarget(blood, enemy)
           end
@@ -88,6 +94,7 @@ function clinkz.Combo(myHero, enemy)
   end
 end
 function clinkz.PoopLinken(myHero, enemy)
+  local diffusal = NPC.GetItem(myHero, "item_diffusal_blade", true)
   local eul = NPC.GetItem(myHero, "item_cyclone", true)
   local force = NPC.GetItem(myHero, "item_force_staff", true)
   local pike = NPC.GetItem(myHero, "item_hurricane_pike", true)
@@ -95,6 +102,10 @@ function clinkz.PoopLinken(myHero, enemy)
   local blood = NPC.GetItem(myHero, "item_bloodthorn", true)
   local hex = NPC.GetItem(myHero, "item_sheepstick", true)
   local myMana = NPC.GetMana(myHero)
+  if diffusal and Menu.IsEnabled(clinkz.optionEnablePoopDiffusal) and Ability.IsCastable(diffusal, myMana) then
+    Ability.CastTarget(diffusal,enemy)
+    return
+  end 
   if eul and Menu.IsEnabled(clinkz.optionEnablePoopEul) and Ability.IsCastable(eul, myMana) then
     Ability.CastTarget(eul, enemy)
     return
