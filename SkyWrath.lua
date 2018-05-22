@@ -113,6 +113,7 @@ end
 
 
 function SkyWrathMage.OnDraw()
+	if not Heroes.GetLocal() then return end
 	if myHero == nil or NPC.GetUnitName(myHero) ~= "npc_dota_hero_skywrath_mage" or not Entity.IsAlive(myHero) then
 		if targetParticle ~= 0 then
 			Particle.Destroy(targetParticle)			
