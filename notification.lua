@@ -139,6 +139,8 @@ notification.ent = nil
 notification.cachedIcons = {}
 notification.roshdead = false
 position2 = nil
+charg = false
+charghero = nil
 function notification.OnUpdate()
   if not Menu.IsEnabled(notification.optionEnable) then return end
   if not Engine.IsInGame() or not Heroes.GetLocal() then
@@ -318,7 +320,7 @@ function notification.OnParticleCreate(particle)
       if language == 0 then 	
       	Engine.ExecuteCommand("say_team Кто-то бьет рошана")
       else
-      	Engine.ExecuteCommand("say_team Someone is attacking rosh")	
+      	Engine.ExecuteCommand("say_team Roshan is under attack")	
   	  end
   	end
       notification.roshattack = true
@@ -341,7 +343,7 @@ function notification.OnParticleCreate(particle)
           if language == 0 then
           	Engine.ExecuteCommand("say_team Кто-то использовал смок")
       	  else
-      	  	Engine.ExecuteCommand("say_team Someone has used smoke")
+      	  	Engine.ExecuteCommand("say_team Smoke of Deceit has been used")
       	  end	
         end 
           notification.smoke = 1
@@ -372,16 +374,27 @@ function notification.BaraAlert()
        local hero = Heroes.Get(i)
        local heroName = NPC.GetUnitName(hero)
        local heroTeam = Entity.GetTeamNum(hero)
+       if charghero and not NPC.HasModifier(charghero,"modifier_spirit_breaker_charge_of_darkness_vision") then
+          charghero = nil
+          charg = false
+          if language == 0 then
+          	Engine.ExecuteCommand("say_team Бара остановил разбег")
+          else
+          	Engine.ExecuteCommand("say_team Spirit Breaker has canceled his charge")
+          end		
+       end
        if heroName == "npc_dota_hero_nyx_assassin" then
          notification.ent = Heroes.Get(i)
        end
        local language = Menu.GetValue(notification.optionLanguage)
-       if heroTeam == myTeam and NPC.HasModifier(hero, "modifier_spirit_breaker_charge_of_darkness_vision") then
+       if heroTeam == myTeam and NPC.HasModifier(hero, "modifier_spirit_breaker_charge_of_darkness_vision") and charg == false then
        	if language == 0 then
          	Engine.ExecuteCommand("say_team Бара разгоняется на "..notification.HeroNameTable[heroName])
          else
          	Engine.ExecuteCommand("say_team Spirit breaker charging in "..notification.HeroNameTable[heroName])
-         end	
+         end
+         charg = true
+         charghero = hero
        end
      end
 end
