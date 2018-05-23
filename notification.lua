@@ -294,18 +294,22 @@ function notification.OnParticleCreate(particle)
   if particle.name == "dropped_aegis" then notification.roshdead = true notification.roshdietime = GameRules.GetGameTime() - GameRules.GetGameStartTime()
     local min = math.floor(notification.roshdietime / 60)
     local sec = math.floor(notification.roshdietime%60)
-    if language == 0 then
-    	Engine.ExecuteCommand("say_team Рошан умер - "..min..":"..sec)
-    else
-    	Engine.ExecuteCommand("say_team Roshan died at - "..min..":"..sec)
-    end	
+    if Menu.IsEnabled(notification.optionChatAlertEnable) then
+    	if language == 0 then
+    		Engine.ExecuteCommand("say_team Рошан умер - "..min..":"..sec)
+   		else
+    		Engine.ExecuteCommand("say_team Roshan died at - "..min..":"..sec)
+    	end
+    end
   end
   if particle.name == "roshan_spawn" then if Menu.IsEnabled(notification.optionChatAlertEnable) then
-  	if language == 0 then 
-    	Engine.ExecuteCommand("say_team Рошан реснулся")
-    else
-    	Engine.ExecuteCommand("say_team Roshan has respawned")
-    end		
+  	if Menu.IsEnabled(notification.optionChatAlertEnable) then
+  		if language == 0 then 
+    		Engine.ExecuteCommand("say_team Рошан реснулся")
+    	else
+    		Engine.ExecuteCommand("say_team Roshan has respawned")
+    	end
+    end
   end
   notification.roshattack = true
   notification.roshattacktime = GameRules.GetGameTime() end
