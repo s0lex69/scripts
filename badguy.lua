@@ -4,6 +4,7 @@ badguy.optionEnableAutoFeed = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Auto-F
 badguy.optionEnableAutoLaugh = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Auto Laugh", false)
 badguy.optionSliderAutoLaugh = Menu.AddOptionSlider({"Utility", "Bad Guy"}, "Laugh delay", 15,100,15)
 lastlaugh = nil
+laughed = false
 function badguy.OnUpdate()
 	if not Heroes.GetLocal() or not Menu.IsEnabled(badguy.optionEnable) then lastlaugh = nil return end
 	if Menu.IsEnabled(badguy.optionEnableAutoFeed) then
@@ -31,9 +32,12 @@ function badguy.autolaugh()
 	if not lastlaugh then
 		lastlaugh = GameRules.GetGameTime()
 	end	
-	if math.floor(lastlaugh) == math.floor(GameRules.GetGameTime()) then
+	if math.floor(lastlaugh) == math.floor(GameRules.GetGameTime()) and laughed == false then
 		Engine.ExecuteCommand("say /laugh")
 		lastlaugh = lastlaugh + Menu.GetValue(badguy.optionSliderAutoLaugh)
+		laughed = true
+	else
+		laughed = false	
 	end	
 end
 return badguy
