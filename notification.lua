@@ -391,7 +391,7 @@ function notification.BaraAlert()
        	if language == 0 then
          	Engine.ExecuteCommand("say_team Бара разгоняется на "..notification.HeroNameTable[heroName])
          else
-         	Engine.ExecuteCommand("say_team Spirit breaker charging in "..notification.HeroNameTable[heroName])
+         	Engine.ExecuteCommand("say_team Spirit Breaker charging in "..notification.HeroNameTable[heroName])
          end
          charg = true
          charghero = hero
