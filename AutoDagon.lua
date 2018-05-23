@@ -55,15 +55,6 @@ function AutoDagon.GetAmplifiers(hero, enemy)
 	if NPC.HasModifier(enemy, "modifier_shadow_demon_soul_catcher") then
 		amplfs = amplfs + Modifier.GetConstantByIndex(NPC.GetModifier(enemy, "modifier_shadow_demon_soul_catcher"), 0) / 100
 	end
-
-	if NPC.HasModifier(enemy, "modifier_slardar_sprint") then
-		amplfs = amplfs + Modifier.GetConstantByIndex(NPC.GetModifier(enemy, "modifier_slardar_sprint"), 0) / 100
-	end
-
-	if NPC.HasModifier(enemy, "modifier_slardar_sprint") then
-		amplfs = amplfs + Modifier.GetConstantByIndex(NPC.GetModifier(enemy, "modifier_slardar_sprint"), 0) / 100
-	end
-
 	if NPC.HasModifier(enemy, "modifier_item_mask_of_death") then
 		amplfs = amplfs + 25 / 100
 	end
