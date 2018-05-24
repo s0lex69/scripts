@@ -177,7 +177,7 @@ function notification.OnUnitAnimation(animation)
   		if language == 0 then 
   			Engine.ExecuteCommand("say_team Кто-то бьет рошана")
   		else
-  			Engine.ExecuteCommand("say_team Someone is attacking rosh") 	
+  			Engine.ExecuteCommand("say_team Roshan is under attack") 	
   		end	 
   	end 
   end
@@ -192,38 +192,18 @@ function notification.OnDraw()
     notification.cachedIcons[3] = Renderer.LoadImage("resource/flash3/images/spellicons/mirana_invis.png")
   end
   local x, y = Renderer.GetScreenSize()
-
+  if notification.Round(x/y,1) >= 1.7 then
+  	x = 1690/1920 * x
+  	y = 45/1080 * y
+  elseif notification.Round(x/y,1) >= 1.5 then
+  	x = 1480/1680 * x
+  	y = 43/1050 * y
+  else 
+  	x = 1126/1280 * x
+  	y = 43/1024 * y	
+  end
   local x1, y1
   local y2
-  if x == 1920 and y == 1080 then
-    x, y = 1690, 45
-    x1, y1 = 940, 45
-    y2 = 25
-  elseif x == 1600 and y == 900 then
-    x, y = 1405, 35
-    x1, y1 = 785, 37
-    y2 = 25
-  elseif x == 1366 and y == 768 then
-    x, y = 1200, 30
-    x1, y1 = 670, 30
-    y2 = 25
-  elseif x == 1280 and y == 720 then
-    x, y = 1124, 28
-    x1, y1 = 630, 28
-    y2 = 25
-  elseif x == 1280 and y == 1024 then
-    x, y = 1124, 40
-    x1, y1 = 630, 40
-    y2 = 25
-  elseif x == 1440 and y == 900 then
-    x, y = 1265, 35
-    x1, y1 = 710, 35
-    y2 = 25
-  elseif x == 1680 and y == 1050 then
-    x, y = 1475, 40
-    x1, y1 = 830, 40
-    y2 = 25
-  end
   local time
   local gametime = GameRules.GetGameTime() - GameRules.GetGameStartTime()
   if notification.roshdead == true then
@@ -311,6 +291,7 @@ function notification.OnParticleCreate(particle)
     	else
     		Engine.ExecuteCommand("say_team Roshan has respawned")
     	end
+    	notification.roshdead = false
     end
   end
   notification.roshattack = true
@@ -343,7 +324,7 @@ function notification.OnParticleCreate(particle)
           if language == 0 then
           	Engine.ExecuteCommand("say_team Кто-то использовал смок")
       	  else
-      	  	Engine.ExecuteCommand("say_team Smoke of Deceit has been used")
+      	  	Engine.ExecuteCommand("say_team Smoke has been used")
       	  end	
         end 
           notification.smoke = 1
@@ -401,5 +382,9 @@ end
 function notification.OnParticleUpdate(particle)
 	if particle.index == notification.nyx then notification.nyxpos = particle.position notification.nyx = nil end
     if particle.index == notification.test then notification.pos = particle.position notification.test = nil end
+end
+function notification.Round(num, numDecimalPlaces)
+	local mult = 10^(numDecimalPlaces or 0)
+	return math.floor(num * mult + 0.5) / mult
 end
 return notification
