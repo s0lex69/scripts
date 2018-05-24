@@ -95,7 +95,7 @@ function LegionCommander.OnUpdate()
               Ability.CastNoTarget(bkb)
               return
             end
-            if blood and Menu.IsEnabled(LegionCommander.optionEnableBlood) and Ability.IsCastable(blood, myMana) and Ability.IsCastable(duel, myMana) then
+            if blood and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and Menu.IsEnabled(LegionCommander.optionEnableBlood) and Ability.IsCastable(blood, myMana) and Ability.IsCastable(duel, myMana) then
               Ability.CastTarget(blood, enemy)
               return
             end
@@ -103,7 +103,7 @@ function LegionCommander.OnUpdate()
               Ability.CastTarget(mjolnir, myHero)
               return
             end
-            if orchid and Menu.IsEnabled(LegionCommander.optionEnableOrchid) and Ability.IsCastable(orchid, myMana) and Ability.IsCastable(duel, myMana) then
+            if orchid and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and Menu.IsEnabled(LegionCommander.optionEnableOrchid) and Ability.IsCastable(orchid, myMana) and Ability.IsCastable(duel, myMana) then
               Ability.CastTarget(orchid, enemy)
               return
             end
@@ -115,7 +115,7 @@ function LegionCommander.OnUpdate()
               Ability.CastTarget(courage, enemy)
               return
             end
-            if alebarda and Menu.IsEnabled(LegionCommander.optionEnableAlebard) and Ability.IsCastable(alebarda, myMana) and Ability.IsCastable(duel, myMana) then
+            if alebarda and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and Menu.IsEnabled(LegionCommander.optionEnableAlebard) and Ability.IsCastable(alebarda, myMana) and Ability.IsCastable(duel, myMana) then
               Ability.CastTarget(alebarda, enemy)
               return
             end
@@ -138,9 +138,9 @@ function LegionCommander.OnUpdate()
       if duel and Ability.IsReady(duel) and Ability.IsCastable(duel, myMana) and Utility.heroCanCastSpells(myHero, enemy) == true and not NPC.IsEntityInRange(myHero, enemy, 150) then
         local rotationVec = Entity.GetRotation(enemy):GetForward():Normalized()
         local pos = Entity.GetAbsOrigin(enemy) + rotationVec:Scaled(100)
-        Utility.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION", nil, pos)
+        	Utility.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION", nil, pos)
       else
-        Utility.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET", enemy, nil)
+        	Utility.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET", enemy, nil)
       end
     end
   end
