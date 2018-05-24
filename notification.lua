@@ -193,7 +193,7 @@ function notification.OnDraw()
   end
   local x, y = Renderer.GetScreenSize()
   if notification.Round(x/y,1) >= 1.7 then
-  	x = 1690/1920 * x
+  	x = 1730/1920 * x
   	y = 45/1080 * y
   elseif notification.Round(x/y,1) >= 1.5 then
   	x = 1480/1680 * x
