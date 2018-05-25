@@ -60,28 +60,28 @@ function clinkz.Combo(myHero, enemy)
           if NPC.IsLinkensProtected(enemy) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             clinkz.PoopLinken(myHero, enemy)
           end
-          if diffusal and Menu.IsEnabled(clinkz.optionEnableDiffusal) and Ability.IsCastable(diffusal,myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+          if diffusal and not NPC.HasModifier(enemy, "modifier_item_diffusal_blade_slow") Menu.IsEnabled(clinkz.optionEnableDiffusal) and Ability.IsCastable(diffusal,myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             Ability.CastTarget(diffusal, enemy)
           end 
-          if blood and Menu.IsEnabled(clinkz.optionEnableBlood) and Ability.IsCastable(blood, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+          if blood and not NPC.HasModifier(enemy, "modifier_bloodthorn_debuff") and Menu.IsEnabled(clinkz.optionEnableBlood) and Ability.IsCastable(blood, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             Ability.CastTarget(blood, enemy)
           end
-          if orchid and Menu.IsEnabled(clinkz.optionEnableOrchid) and Ability.IsCastable(orchid, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+          if orchid and not NPC.HasModifier(enemy, "modifier_orchid_malevolence_debuff") and Menu.IsEnabled(clinkz.optionEnableOrchid) and Ability.IsCastable(orchid, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             Ability.CastTarget(orchid, enemy)
           end
-          if bkb and Menu.IsEnabled(clinkz.optionEnableBkb) and Ability.IsCastable(bkb, myMana) then
+          if bkb and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and Menu.IsEnabled(clinkz.optionEnableBkb) and Ability.IsCastable(bkb, myMana) then
             Ability.CastNoTarget(bkb)
           end
-          if hex and Menu.IsEnabled(clinkz.optionEnableHex) and Ability.IsCastable(hex, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+          if hex and not NPC.HasModifier(enemy, "modifier_sheepstick_debuff") Menu.IsEnabled(clinkz.optionEnableHex) and Ability.IsCastable(hex, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             Ability.CastTarget(hex, enemy)
           end
-          if nullifier and Menu.IsEnabled(clinkz.optionEnableNullifier) and Ability.IsCastable(nullifier, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+          if nullifier and not NPC.HasModifier(enemy, "modifier_nullifier_debuff") and Menu.IsEnabled(clinkz.optionEnableNullifier) and Ability.IsCastable(nullifier, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             Ability.CastTarget(nullifier, enemy)
           end
-          if courage and Menu.IsEnabled(clinkz.optionEnableCourage) and Ability.IsCastable(courage, myMana) then
+          if courage and not NPC.HasModifier(enemy, "modifier_item_medallion_of_courage_armor_reduction") and Menu.IsEnabled(clinkz.optionEnableCourage) and Ability.IsCastable(courage, myMana) then
             Ability.CastTarget(courage, enemy)
           end
-          if solar and Menu.IsEnabled(clinkz.optionEnableSolar) and Ability.IsCastable(solar, myMana) then
+          if solar and not NPC.HasModifier(enemy, "modifier_item_solar_crest_armor_reduction") and Menu.IsEnabled(clinkz.optionEnableSolar) and Ability.IsCastable(solar, myMana) then
             Ability.CastTarget(solar, enemy)
           end
         end
