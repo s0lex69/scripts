@@ -60,7 +60,7 @@ function clinkz.Combo(myHero, enemy)
           if NPC.IsLinkensProtected(enemy) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             clinkz.PoopLinken(myHero, enemy)
           end
-          if diffusal and not NPC.HasModifier(enemy, "modifier_item_diffusal_blade_slow") Menu.IsEnabled(clinkz.optionEnableDiffusal) and Ability.IsCastable(diffusal,myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+          if diffusal and not NPC.HasModifier(enemy, "modifier_item_diffusal_blade_slow") and Menu.IsEnabled(clinkz.optionEnableDiffusal) and Ability.IsCastable(diffusal,myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             Ability.CastTarget(diffusal, enemy)
           end 
           if blood and not NPC.HasModifier(enemy, "modifier_bloodthorn_debuff") and Menu.IsEnabled(clinkz.optionEnableBlood) and Ability.IsCastable(blood, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
@@ -72,7 +72,7 @@ function clinkz.Combo(myHero, enemy)
           if bkb and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and Menu.IsEnabled(clinkz.optionEnableBkb) and Ability.IsCastable(bkb, myMana) then
             Ability.CastNoTarget(bkb)
           end
-          if hex and not NPC.HasModifier(enemy, "modifier_sheepstick_debuff") Menu.IsEnabled(clinkz.optionEnableHex) and Ability.IsCastable(hex, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+          if hex and not NPC.HasModifier(enemy, "modifier_sheepstick_debuff") and Menu.IsEnabled(clinkz.optionEnableHex) and Ability.IsCastable(hex, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             Ability.CastTarget(hex, enemy)
           end
           if nullifier and not NPC.HasModifier(enemy, "modifier_nullifier_debuff") and Menu.IsEnabled(clinkz.optionEnableNullifier) and Ability.IsCastable(nullifier, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
