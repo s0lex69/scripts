@@ -259,10 +259,6 @@ function SkyWrathMage.PrayToDog()
 		Ability.CastNoTarget(soulring)
 		return
 	end
-	if not NPC.HasModifier(enemy, "modifier_item_nullifier_mute") and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
-		if SkyWrathMage.UseItem(nullifier, SkyWrathMage.ItemsOptionID["nullifier"]) then return end
-		return
-	end
 	if SkyWrathMage.UseBlink() then return end
 	if SkyWrathMage.AeonDispelling() then return end
 	if SkyWrathMage.CastAbility(slow, SkyWrathMage.AbilitiesOptionID["slow"]) then return end
@@ -276,6 +272,10 @@ function SkyWrathMage.PrayToDog()
 	if SkyWrathMage.UseItem(dagon, SkyWrathMage.ItemsOptionID["dagon"]) then return end
 	if SkyWrathMage.UseItem(blood, SkyWrathMage.ItemsOptionID["blood"]) then return end
 	if SkyWrathMage.UseItem(shiva, SkyWrathMage.ItemsOptionID["shiva"]) then return end
+	if not NPC.HasModifier(enemy, "modifier_item_nullifier_mute") and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+		if SkyWrathMage.UseItem(nullifier, SkyWrathMage.ItemsOptionID["nullifier"]) then return end
+		return
+	end
 end
 
 function SkyWrathMage.AeonDispelling()
