@@ -7,8 +7,8 @@ SkyWrathMage.combokey = Menu.AddKeyOption({"Hero Specific", "SkyWrathMage"}, "Co
 SkyWrathMage.harraskey = Menu.AddKeyOption({"Hero Specific", "SkyWrathMage"}, "Harras Key", Enum.ButtonCode.KEY_D)
 SkyWrathMage.enemyInRange = Menu.AddOptionSlider({"Hero Specific", "SkyWrathMage"}, "Closest to mouse range", 100, 600, 100)
 
-SkyWrathMage.menuItems = {atos = "Rod of Atos", hex = "Scythe of Vyse", eblade = "Ethereal Blade", veil = "Veil of Discrod", dagon = "Dagon", orchid = "Orchid", blood = "Bloodthorn", shiva = "Shiva's guard"}
-SkyWrathMage.ItemsOptionID = {atos, hex, eblade, veil, dagon, orchid, blood, shiva}
+SkyWrathMage.menuItems = {atos = "Rod of Atos", hex = "Scythe of Vyse", eblade = "Ethereal Blade", veil = "Veil of Discrod", dagon = "Dagon", orchid = "Orchid", blood = "Bloodthorn", shiva = "Shiva's guard", nullifier = "Nullifier"}
+SkyWrathMage.ItemsOptionID = {atos, hex, eblade, veil, dagon, orchid, blood, shiva, nullifier}
 for k, v in pairs(SkyWrathMage.menuItems) do
 	SkyWrathMage.ItemsOptionID[k] = Menu.AddOptionBool({"Hero Specific", "SkyWrathMage", "Magic Damage Items"}, SkyWrathMage.menuItems[k], false)
 end
@@ -259,7 +259,10 @@ function SkyWrathMage.PrayToDog()
 		Ability.CastNoTarget(soulring)
 		return
 	end
-
+	if not NPC.HasModifier(enemy, "modifier_item_nullifier_mute") and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+		if SkyWrathMage.UseItem(nullifier, SkyWrathMage.ItemsOptionID["nullifier"]) then return end
+		return
+	end
 	if SkyWrathMage.UseBlink() then return end
 	if SkyWrathMage.AeonDispelling() then return end
 	if SkyWrathMage.CastAbility(slow, SkyWrathMage.AbilitiesOptionID["slow"]) then return end
@@ -349,6 +352,7 @@ function SkyWrathMage.GetItems()
 	hex = NPC.GetItem(myHero, "item_sheepstick", true)
 	veil = NPC.GetItem(myHero, "item_veil_of_discord", true)
 	eblade = NPC.GetItem(myHero, "item_ethereal_blade", true)
+	nullifier = NPC.GetItem(myHero, "item_nullifier", true)
 	dagon = NPC.GetItem(myHero, "item_dagon", true)
 	if not dagon then
 		for i = 2, 5 do
