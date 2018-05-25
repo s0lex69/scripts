@@ -214,8 +214,8 @@ function SkyWrathMage.PrayToDog()
 	enemyPos = Entity.GetAbsOrigin(enemy)
 	if not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_ATTACK_IMMUNE) then	
 		Player.AttackTarget(myPlayer, myHero, enemy, false)
-	end	
-	if not SkyWrathMage.CheckForModifiers() or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+	end
+	if not SkyWrathMage.CheckForModifiers() or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) or NPC.HasModifier(enemy, "modifier_oracle_fates_edict") then
 		return
 	end
 
