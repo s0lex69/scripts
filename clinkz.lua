@@ -85,7 +85,7 @@ function clinkz.Combo(myHero, enemy)
             Ability.CastTarget(solar, enemy)
           end
         end
-        Utility.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET", enemy, nil)
+        Player.AttackTarget(Players.GetLocal(), Heroes.GetLocal(), enemy)
       end
     else
       LockTarget = false
