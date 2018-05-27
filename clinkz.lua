@@ -44,7 +44,7 @@ function clinkz.Combo(myHero, enemy)
   local diffusal = NPC.GetItem(myHero, "item_diffusal_blade", true)
   if enemy then
     if Menu.IsEnabled(clinkz.optionEnableLockTarget) then LockTarget = true end
-    if Menu.IsKeyDown(clinkz.optionKey) and Entity.GetHealth(enemy) > 0 then
+    if Menu.IsKeyDown(clinkz.optionKey) and Entity.GetHealth(enemy) > 0 and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) and not NPC.HasModifier(enemy, "modifier_dark_willow_shadow_realm_buff") then
       local attackRange = NPC.GetAttackRange(myHero)
       if NPC.IsEntityInRange(myHero, enemy, attackRange) then
         if Utility.heroCanCastSpells(myHero, enemy) == true then
