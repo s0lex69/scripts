@@ -171,15 +171,15 @@ function notification.OnUnitAnimation(animation)
   if not Menu.IsEnabled(notification.optionEnable) then return end
   local language = Menu.GetValue(notification.optionLanguage)
   if animation.sequenceName == "roshan_attack" or animation.sequenceName == "roshan_attack2" then 
-  	notification.roshattack = true 
+    notification.roshattack = true 
     notification.roshattacktime = GameRules.GetGameTime() 
-  	if Menu.IsEnabled(notification.optionChatAlertEnable) then
-  		if language == 0 then 
-  			Engine.ExecuteCommand("say_team Кто-то бьет рошана")
-  		else
-  			Engine.ExecuteCommand("say_team Roshan is under attack") 	
-  		end	 
-  	end 
+    if Menu.IsEnabled(notification.optionChatAlertEnable) then
+      if language == 0 then 
+        Engine.ExecuteCommand("say_team Кто-то бьет рошана")
+      else
+        Engine.ExecuteCommand("say_team Roshan is under attack")  
+      end  
+    end 
   end
 end
 function notification.OnDraw()
@@ -192,18 +192,24 @@ function notification.OnDraw()
     notification.cachedIcons[3] = Renderer.LoadImage("resource/flash3/images/spellicons/mirana_invis.png")
   end
   local x, y = Renderer.GetScreenSize()
+  local x1,y1
   if notification.Round(x/y,1) >= 1.7 then
-  	x = 1730/1920 * x
-  	y = 45/1080 * y
+    x1 = 950/1920 * x
+    y1 = 60/1080 * y
+    x = 1730/1920 * x
+    y = 45/1080 * y
   elseif notification.Round(x/y,1) >= 1.5 then
-  	x = 1480/1680 * x
-  	y = 43/1050 * y
-  else 
-  	x = 1126/1280 * x
-  	y = 43/1024 * y	
+    x1 = 930/1680 * x
+    y1 = 55/1050 * y
+    x = 1480/1680 * x
+    y = 43/1050 * y
+  else
+    x1 = 900/1280 * x
+    y1 = 50/1024 * y
+    x = 1126/1280 * x
+    y = 43/1024 * y 
   end
-  local x1, y1
-  local y2
+  local y2 = 25
   local time
   local gametime = GameRules.GetGameTime() - GameRules.GetGameStartTime()
   if notification.roshdead == true then
@@ -277,44 +283,44 @@ function notification.OnParticleCreate(particle)
     local min = math.floor(notification.roshdietime / 60)
     local sec = math.floor(notification.roshdietime%60)
     if Menu.IsEnabled(notification.optionChatAlertEnable) then
-    	if language == 0 then
-    		Engine.ExecuteCommand("say_team Рошан умер - "..min..":"..sec)
-   		else
-    		Engine.ExecuteCommand("say_team Roshan died at - "..min..":"..sec)
-    	end
+      if language == 0 then
+        Engine.ExecuteCommand("say_team Рошан умер - "..min..":"..sec)
+      else
+        Engine.ExecuteCommand("say_team Roshan died at - "..min..":"..sec)
+      end
     end
   end
   if particle.name == "roshan_spawn" then if Menu.IsEnabled(notification.optionChatAlertEnable) then
-  	if Menu.IsEnabled(notification.optionChatAlertEnable) then
-  		if language == 0 then 
-    		Engine.ExecuteCommand("say_team Рошан реснулся")
-    	else
-    		Engine.ExecuteCommand("say_team Roshan has respawned")
-    	end
-    	notification.roshdead = false
+    if Menu.IsEnabled(notification.optionChatAlertEnable) then
+      if language == 0 then 
+        Engine.ExecuteCommand("say_team Рошан реснулся")
+      else
+        Engine.ExecuteCommand("say_team Roshan has respawned")
+      end
+      notification.roshdead = false
     end
   end
   notification.roshattack = true
   notification.roshattacktime = GameRules.GetGameTime() end
   if particle.name == "roshan_slam" then
     if Menu.IsEnabled(notification.optionChatAlertEnable) then
-      if language == 0 then 	
-      	Engine.ExecuteCommand("say_team Кто-то бьет рошана")
+      if language == 0 then   
+        Engine.ExecuteCommand("say_team Кто-то бьет рошана")
       else
-      	Engine.ExecuteCommand("say_team Roshan is under attack")	
-  	  end
-  	end
+        Engine.ExecuteCommand("say_team Roshan is under attack")  
+      end
+    end
       notification.roshattack = true
       notification.roshattacktime = GameRules.GetGameTime()
       notification.test = particle.index
     end
     if particle.name == "nyx_assassin_vendetta_start" then
       if Menu.IsEnabled(notification.optionChatAlertEnable) then
-      	if language == 0 then
-        	Engine.ExecuteCommand("say_team Nyx использовал ультимейт")
+        if language == 0 then
+          Engine.ExecuteCommand("say_team Nyx использовал ультимейт")
         else 
-        	Engine.ExecuteCommand("say_team Nyx has used ultimate")
-        end	
+          Engine.ExecuteCommand("say_team Nyx has used ultimate")
+        end 
       end notification.vendeta = 1
         notification.nyx = particle.index
         notification.vendetastart = GameRules.GetGameTime() - GameRules.GetGameStartTime()
@@ -322,10 +328,10 @@ function notification.OnParticleCreate(particle)
       if particle.name == "smoke_of_deceit" then
         if Menu.IsEnabled(notification.optionChatAlertEnable) then
           if language == 0 then
-          	Engine.ExecuteCommand("say_team Кто-то использовал смок")
-      	  else
-      	  	Engine.ExecuteCommand("say_team Smoke has been used")
-      	  end	
+            Engine.ExecuteCommand("say_team Кто-то использовал смок")
+          else
+            Engine.ExecuteCommand("say_team Smoke has been used")
+          end 
         end 
           notification.smoke = 1
           notification.test = particle.index
@@ -337,11 +343,11 @@ function notification.OnParticleCreate(particle)
         end
         if particle.name == "mirana_moonlight_recipient" and not Entity.IsSameTeam(myHero, particle.entity) then
           if Menu.IsEnabled(notification.optionChatAlertEnable) then
-          	if language == 0 then 
-            	Engine.ExecuteCommand("say_team Вражеская мирана использовала ультимейт")
-        	else
-        		Engine.ExecuteCommand("say_team Mirana has used ultimate")
-        	end	
+            if language == 0 then 
+              Engine.ExecuteCommand("say_team Вражеская мирана использовала ультимейт")
+          else
+            Engine.ExecuteCommand("say_team Mirana has used ultimate")
+          end 
           end
           notification.moonlight = 1
           notification.moonlightstart = GameRules.GetGameTime() - GameRules.GetGameStartTime()
@@ -359,20 +365,20 @@ function notification.BaraAlert()
           charghero = nil
           charg = false
           if language == 0 then
-          	Engine.ExecuteCommand("say_team Бара остановил разбег")
+            Engine.ExecuteCommand("say_team Бара остановил разбег")
           else
-          	Engine.ExecuteCommand("say_team Spirit Breaker has canceled his charge")
-          end		
+            Engine.ExecuteCommand("say_team Spirit Breaker has canceled his charge")
+          end   
        end
        if heroName == "npc_dota_hero_nyx_assassin" then
          notification.ent = Heroes.Get(i)
        end
        local language = Menu.GetValue(notification.optionLanguage)
        if heroTeam == myTeam and NPC.HasModifier(hero, "modifier_spirit_breaker_charge_of_darkness_vision") and charg == false then
-       	if language == 0 then
-         	Engine.ExecuteCommand("say_team Бара разгоняется на "..notification.HeroNameTable[heroName])
+        if language == 0 then
+          Engine.ExecuteCommand("say_team Бара разгоняется на "..notification.HeroNameTable[heroName])
          else
-         	Engine.ExecuteCommand("say_team Spirit Breaker charging in "..notification.HeroNameTable[heroName])
+          Engine.ExecuteCommand("say_team Spirit Breaker charging in "..notification.HeroNameTable[heroName])
          end
          charg = true
          charghero = hero
@@ -380,11 +386,11 @@ function notification.BaraAlert()
      end
 end
 function notification.OnParticleUpdate(particle)
-	if particle.index == notification.nyx then notification.nyxpos = particle.position notification.nyx = nil end
+  if particle.index == notification.nyx then notification.nyxpos = particle.position notification.nyx = nil end
     if particle.index == notification.test then notification.pos = particle.position notification.test = nil end
 end
 function notification.Round(num, numDecimalPlaces)
-	local mult = 10^(numDecimalPlaces or 0)
-	return math.floor(num * mult + 0.5) / mult
+  local mult = 10^(numDecimalPlaces or 0)
+  return math.floor(num * mult + 0.5) / mult
 end
 return notification
