@@ -76,7 +76,13 @@ function clinkz.Combo(myHero, enemy)
             Ability.CastTarget(hex, enemy)
           end
           if nullifier and not NPC.HasModifier(enemy, "modifier_item_nullifier_mute") and Menu.IsEnabled(clinkz.optionEnableNullifier) and Ability.IsCastable(nullifier, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
-            Ability.CastTarget(nullifier, enemy)
+            if NPC.GetItem(enemy, "item_aeon_disk", true) then
+              if NPC.HasModifier(enemy, "modifier_item_aeon_disk_buff") and not Ability.IsReady(NPC.GetItem(enemy, "item_aeon_disk", true)) then
+                 Ability.CastTarget(nullifier,enemy)
+              end
+            else
+              Ability.CastTarget(nullifier,enemy) 
+            end 
           end
           if courage and not NPC.HasModifier(enemy, "modifier_item_medallion_of_courage_armor_reduction") and Menu.IsEnabled(clinkz.optionEnableCourage) and Ability.IsCastable(courage, myMana) then
             Ability.CastTarget(courage, enemy)
