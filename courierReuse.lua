@@ -56,8 +56,8 @@ function courierReuse.OnUpdate()
         if Menu.IsKeyDown(courierReuse.optionKey) then
           Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET, myHero, Vector(0, 0, 0), reuse, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, index_npc)
         end
-        if courierEnt then
-          if (Menu.IsEnabled(courierReuse.optionMuteFilter) and courierReuse.muted[courierEnt]) or Menu.IsEnabled(courierReuse.players[Hero.GetPlayerID(courierEnt)]) then
+        if courierEnt and courierReuse.players[Hero.GetPlayerID(courierEnt)] then
+          if (Menu.IsEnabled(courierReuse.optionMuteFilter) and courierReuse.muted[Hero.GetPlayerID(courierEnt)]) or Menu.IsEnabled(courierReuse.players[Hero.GetPlayerID(courierEnt)]) then
             Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET, myHero, Vector(0, 0, 0), go_home, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, index_npc)
           end
         end
