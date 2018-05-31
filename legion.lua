@@ -1,4 +1,3 @@
-local Utility = require("scripts/Utility")
 local LegionCommander = {}
 LegionCommander.optionEnable = Menu.AddOptionBool({"Hero Specific", "Legion Commander"}, "Enable", false)
 LegionCommander.optionKey = Menu.AddKeyOption({"Hero Specific", "Legion Commander"}, "Combo Key", Enum.ButtonCode.KEY_Z)
@@ -25,6 +24,8 @@ LegionCommander.optionEnablePoopEul = Menu.AddOptionBool({"Hero Specific", "Legi
 LegionCommander.optionEnablePoopHeavens = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Poop Linken"}, "Heavens Halberd", false)
 LegionCommander.optionEnablePoopAbysalBlade = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Poop Linken"}, "Abyssal Blade", false)
 LegionCommander.optionBlinkRange = Menu.AddOptionSlider({"Hero Specific", "Legion Commander"}, "Minimum Blink Range", 201, 1150, 500)
+LastTarget = nil
+lastAttackTime2 = 0
 function LegionCommander.OnUpdate()
   if not Menu.IsEnabled(LegionCommander.optionEnable) or not Engine.IsInGame() or not Heroes.GetLocal() then return end
   local myHero = Heroes.GetLocal()
@@ -50,10 +51,10 @@ function LegionCommander.OnUpdate()
     local satanic = NPC.GetItem(myHero, "item_satanic", true)
     local myMana = NPC.GetMana(myHero)
     if enemy and Entity.IsAlive(enemy) then
-      if Utility.heroCanCastSpells(myHero, enemy) == true then
+      if LegionCommander.heroCanCastSpells(myHero, enemy) == true then
         if not (NPC.HasModifier(myHero, "modifier_item_invisibility_edge_windwalk") or NPC.HasModifier(myHero, "modifier_item_silver_edge_windwalk")) then
           if not NPC.IsEntityInRange(myHero, enemy, Menu.GetValue(LegionCommander.optionBlinkRange)) and Ability.IsCastable(duel, myMana) then
-            if pressTheAttack and Menu.IsEnabled(LegionCommander.optionEnablePressTheAttack) and Ability.IsCastable(pressTheAttack, myMana) and Ability.IsCastable(duel, myMana) then
+            if pressTheAttack and Menu.IsEnabled(LegionCommander.optionEnablePressTheAttack) and NPC.IsEntityInRange(myHero, enemy, 1199) and Ability.IsCastable(pressTheAttack, myMana) and Ability.IsCastable(duel, myMana) then
               Ability.CastTarget(pressTheAttack, myHero)
               return
             end
@@ -71,10 +72,15 @@ function LegionCommander.OnUpdate()
             end
             if blink and Ability.IsReady(blink) and NPC.IsEntityInRange(myHero, enemy, 1199) then
               Ability.CastPosition(blink, Entity.GetAbsOrigin(enemy))
+              return
+            end
+            if mjolnir and Menu.IsEnabled(LegionCommander.optionEnableMjolnir) and Ability.IsCastable(mjolnir, myMana) and Ability.IsCastable(duel, myMana) then
+              Ability.CastTarget(mjolnir, myHero)
+              return
             end
           end
-          if NPC.IsEntityInRange(myHero, enemy, 200) then
-            if NPC.IsLinkensProtected(enemy) then LegionCommander.PoopLinken(myHero, enemy, duel, myMana)end
+          if NPC.IsEntityInRange(myHero, enemy, 150) then
+            if NPC.IsLinkensProtected(enemy) then LegionCommander.PoopLinken(myHero, enemy, duel, myMana) end
             if Blademail and Menu.IsEnabled(LegionCommander.optionEnableBlademail) and Ability.IsCastable(Blademail, myMana) and Ability.IsCastable(duel, myMana) then
               Ability.CastNoTarget(Blademail)
               return
@@ -119,28 +125,19 @@ function LegionCommander.OnUpdate()
               Ability.CastTarget(alebarda, enemy)
               return
             end
-
-            if NPC.IsStunned(enemy) then
-              if pressTheAttack and Ability.IsCastable(pressTheAttack, myMana) then
-                Ability.CastTarget(pressTheAttack, myHero)
-                return
-              end
-            end
-            if NPC.IsEntityInRange(myHero, enemy, 150) then
-              if duel and Ability.IsCastable(duel, myMana) then
-                Ability.CastTarget(duel, enemy)
-                return
-              end
+            if duel and Ability.IsCastable(duel,myMana) and NPC.IsEntityInRange(myHero, enemy, 150) then
+              Ability.CastTarget(duel,enemy)
+              return
             end
           end
         end
       end
-      if duel and Ability.IsReady(duel) and Ability.IsCastable(duel, myMana) and Utility.heroCanCastSpells(myHero, enemy) == true and not NPC.IsEntityInRange(myHero, enemy, 150) then
+      if duel and Ability.IsReady(duel) and Ability.IsCastable(duel, myMana) and LegionCommander.heroCanCastSpells(myHero, enemy) == true and not NPC.IsEntityInRange(myHero, enemy, 150) then
         local rotationVec = Entity.GetRotation(enemy):GetForward():Normalized()
         local pos = Entity.GetAbsOrigin(enemy) + rotationVec:Scaled(100)
-        	Utility.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION", nil, pos)
+        	LegionCommander.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION", nil, pos)
       else
-        	Utility.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET", enemy, nil)
+        	LegionCommander.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET", enemy, nil)
       end
     end
   end
@@ -201,4 +198,171 @@ function LegionCommander.OnUpdate()
       end
     end
   end
-  return LegionCommander
+function LegionCommander.heroCanCastSpells(myHero, enemy)
+
+  if not myHero then return false end
+  if not Entity.IsAlive(myHero) then return false end
+
+  if NPC.IsSilenced(myHero) then return false end
+  if NPC.IsStunned(myHero) then return false end
+  if NPC.HasModifier(myHero, "modifier_bashed") then return false end
+  if NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then return false end
+  if NPC.HasModifier(myHero, "modifier_eul_cyclone") then return false end
+  if NPC.HasModifier(myHero, "modifier_obsidian_destroyer_astral_imprisonment_prison") then return false end
+  if NPC.HasModifier(myHero, "modifier_shadow_demon_disruption") then return false end
+  if NPC.HasModifier(myHero, "modifier_invoker_tornado") then return false end
+  if NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_HEXED) then return false end
+  if NPC.HasModifier(myHero, "modifier_legion_commander_duel") then return false end
+  if NPC.HasModifier(myHero, "modifier_axe_berserkers_call") then return false end
+  if NPC.HasModifier(myHero, "modifier_winter_wyvern_winters_curse") then return false end
+  if NPC.HasModifier(myHero, "modifier_bane_fiends_grip") then return false end
+  if NPC.HasModifier(myHero, "modifier_bane_nightmare") then return false end
+  if NPC.HasModifier(myHero, "modifier_faceless_void_chronosphere_freeze") then return false end
+  if NPC.HasModifier(myHero, "modifier_enigma_black_hole_pull") then return false end
+  if NPC.HasModifier(myHero, "modifier_magnataur_reverse_polarity") then return false end
+  if NPC.HasModifier(myHero, "modifier_pudge_dismember") then return false end
+  if NPC.HasModifier(myHero, "modifier_shadow_shaman_shackles") then return false end
+  if NPC.HasModifier(myHero, "modifier_techies_stasis_trap_stunned") then return false end
+  if NPC.HasModifier(myHero, "modifier_storm_spirit_electric_vortex_pull") then return false end
+  if NPC.HasModifier(myHero, "modifier_tidehunter_ravage") then return false end
+  if NPC.HasModifier(myHero, "modifier_windrunner_shackle_shot") then return false end
+  if NPC.HasModifier(myHero, "modifier_item_nullifier_mute") then return false end
+  if enemy then
+    if NPC.HasModifier(enemy, "modifier_item_aeon_disk_buff") then return false end
+  end
+  return true
+end
+function LegionCommander.GenericMainAttack(myHero, attackType, target, position)
+
+  if not myHero then return end
+  if not target and not position then return end
+
+  if LegionCommander.isHeroChannelling(myHero) == true then return end
+  if LegionCommander.heroCanCastItems(myHero) == false then return end
+  if LegionCommander.IsInAbilityPhase(myHero) == true then return end
+  LegionCommander.GenericAttackIssuer(attackType, target, position, myHero)
+
+end
+function LegionCommander.heroCanCastItems(myHero)
+
+  if not myHero then return false end
+  if not Entity.IsAlive(myHero) then return false end
+
+  if NPC.IsStunned(myHero) then return false end
+  if NPC.HasModifier(myHero, "modifier_bashed") then return false end
+  if NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then return false end
+  if NPC.HasModifier(myHero, "modifier_eul_cyclone") then return false end
+  if NPC.HasModifier(myHero, "modifier_obsidian_destroyer_astral_imprisonment_prison") then return false end
+  if NPC.HasModifier(myHero, "modifier_shadow_demon_disruption") then return false end
+  if NPC.HasModifier(myHero, "modifier_invoker_tornado") then return false end
+  if NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_HEXED) then return false end
+  if NPC.HasModifier(myHero, "modifier_legion_commander_duel") then return false end
+  if NPC.HasModifier(myHero, "modifier_axe_berserkers_call") then return false end
+  if NPC.HasModifier(myHero, "modifier_winter_wyvern_winters_curse") then return false end
+  if NPC.HasModifier(myHero, "modifier_bane_fiends_grip") then return false end
+  if NPC.HasModifier(myHero, "modifier_bane_nightmare") then return false end
+  if NPC.HasModifier(myHero, "modifier_faceless_void_chronosphere_freeze") then return false end
+  if NPC.HasModifier(myHero, "modifier_enigma_black_hole_pull") then return false end
+  if NPC.HasModifier(myHero, "modifier_magnataur_reverse_polarity") then return false end
+  if NPC.HasModifier(myHero, "modifier_pudge_dismember") then return false end
+  if NPC.HasModifier(myHero, "modifier_shadow_shaman_shackles") then return false end
+  if NPC.HasModifier(myHero, "modifier_techies_stasis_trap_stunned") then return false end
+  if NPC.HasModifier(myHero, "modifier_storm_spirit_electric_vortex_pull") then return false end
+  if NPC.HasModifier(myHero, "modifier_tidehunter_ravage") then return false end
+  if NPC.HasModifier(myHero, "modifier_windrunner_shackle_shot") then return false end
+  if NPC.HasModifier(myHero, "modifier_item_nullifier_mute") then return false end
+
+  return true
+end
+function LegionCommander.IsInAbilityPhase(myHero)
+
+  if not myHero then return false end
+
+  local myAbilities = {}
+
+  for i = 0, 10 do
+    local ability = NPC.GetAbilityByIndex(myHero, i)
+    if ability and Entity.IsAbility(ability) and Ability.GetLevel(ability) > 0 then
+      table.insert(myAbilities, ability)
+    end
+  end
+
+  if #myAbilities < 1 then return false end
+
+  for _, v in ipairs(myAbilities) do
+    if v then
+      if Ability.IsInAbilityPhase(v) then
+        return true
+      end
+    end
+  end
+
+  return false
+
+end
+function LegionCommander.isHeroChannelling(myHero)
+
+  if not myHero then return true end
+
+  if NPC.IsChannellingAbility(myHero) then return true end
+  if NPC.HasModifier(myHero, "modifier_teleporting") then return true end
+
+  return false
+
+end
+function LegionCommander.GenericAttackIssuer(attackType, target, position, npc)
+
+  if not npc then return end
+  if not target and not position then return end
+  if os.clock() - lastAttackTime2 < 0.5 then return end
+
+  if attackType == "Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET" then
+    if target ~= nil then
+      if target ~= LastTarget then
+        Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, target, Vector(0, 0, 0), ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, npc)
+        LastTarget = target
+      end
+    end
+  end
+
+  if attackType == "Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_MOVE" then
+    if position ~= nil then
+      if not NPC.IsAttacking(npc) or not NPC.IsRunning(npc) then
+        if position:__tostring() ~= LastTarget then
+          Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_MOVE, target, position, ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, npc)
+          LastTarget = position:__tostring()
+        end
+      end
+    end
+  end
+
+  if attackType == "Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION" then
+    if position ~= nil then
+      if position:__tostring() ~= LastTarget then
+        Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, target, position, ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, npc)
+        LastTarget = position:__tostring()
+      end
+    end
+  end
+
+  if target ~= nil then
+    if target == LastTarget then
+      if not NPC.IsAttacking(npc) then
+        LastTarget = nil
+        lastAttackTime2 = os.clock()
+        return
+      end
+    end
+  end
+
+  if position ~= nil then
+    if position:__tostring() == LastTarget then
+      if not NPC.IsRunning(npc) then
+        LastTarget = nil
+        lastAttackTime2 = os.clock()
+        return
+      end
+    end
+  end
+end
+return LegionCommander

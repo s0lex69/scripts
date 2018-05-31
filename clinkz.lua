@@ -1,4 +1,3 @@
-local Utility = require("scripts/Utility")
 local clinkz = {}
 clinkz.optionEnable = Menu.AddOptionBool({"Hero Specific", "Clinkz"}, "Enable", false)
 clinkz.optionKey = Menu.AddKeyOption({"Hero Specific", "Clinkz"}, "Combo Key", Enum.ButtonCode.KEY_Z)
@@ -47,7 +46,7 @@ function clinkz.Combo(myHero, enemy)
     if Menu.IsKeyDown(clinkz.optionKey) and Entity.GetHealth(enemy) > 0 and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) and not NPC.HasModifier(enemy, "modifier_dark_willow_shadow_realm_buff") then
       local attackRange = NPC.GetAttackRange(myHero)
       if NPC.IsEntityInRange(myHero, enemy, attackRange) then
-        if Utility.heroCanCastSpells(myHero, enemy) == true then
+        if clinkz.heroCanCastSpells(myHero, enemy) == true then
           if strafe and Ability.IsCastable(strafe, myMana) then
             Ability.CastNoTarget(strafe)
           end
@@ -56,7 +55,7 @@ function clinkz.Combo(myHero, enemy)
             AutoCasted = true
           end
         end
-        if Utility.heroCanCastItems(myHero, enemy) == true then
+        if clinkz.heroCanCastItems(myHero, enemy) == true then
           if NPC.IsLinkensProtected(enemy) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             clinkz.PoopLinken(myHero, enemy)
           end
@@ -136,5 +135,72 @@ function clinkz.PoopLinken(myHero, enemy)
     Ability.CastTarget(hex, enemy)
     return
   end
+end
+function clinkz.heroCanCastSpells(myHero, enemy)
+
+  if not myHero then return false end
+  if not Entity.IsAlive(myHero) then return false end
+
+  if NPC.IsSilenced(myHero) then return false end
+  if NPC.IsStunned(myHero) then return false end
+  if NPC.HasModifier(myHero, "modifier_bashed") then return false end
+  if NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then return false end
+  if NPC.HasModifier(myHero, "modifier_eul_cyclone") then return false end
+  if NPC.HasModifier(myHero, "modifier_obsidian_destroyer_astral_imprisonment_prison") then return false end
+  if NPC.HasModifier(myHero, "modifier_shadow_demon_disruption") then return false end
+  if NPC.HasModifier(myHero, "modifier_invoker_tornado") then return false end
+  if NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_HEXED) then return false end
+  if NPC.HasModifier(myHero, "modifier_legion_commander_duel") then return false end
+  if NPC.HasModifier(myHero, "modifier_axe_berserkers_call") then return false end
+  if NPC.HasModifier(myHero, "modifier_winter_wyvern_winters_curse") then return false end
+  if NPC.HasModifier(myHero, "modifier_bane_fiends_grip") then return false end
+  if NPC.HasModifier(myHero, "modifier_bane_nightmare") then return false end
+  if NPC.HasModifier(myHero, "modifier_faceless_void_chronosphere_freeze") then return false end
+  if NPC.HasModifier(myHero, "modifier_enigma_black_hole_pull") then return false end
+  if NPC.HasModifier(myHero, "modifier_magnataur_reverse_polarity") then return false end
+  if NPC.HasModifier(myHero, "modifier_pudge_dismember") then return false end
+  if NPC.HasModifier(myHero, "modifier_shadow_shaman_shackles") then return false end
+  if NPC.HasModifier(myHero, "modifier_techies_stasis_trap_stunned") then return false end
+  if NPC.HasModifier(myHero, "modifier_storm_spirit_electric_vortex_pull") then return false end
+  if NPC.HasModifier(myHero, "modifier_tidehunter_ravage") then return false end
+  if NPC.HasModifier(myHero, "modifier_windrunner_shackle_shot") then return false end
+  if NPC.HasModifier(myHero, "modifier_item_nullifier_mute") then return false end
+
+  if enemy then
+    if NPC.HasModifier(enemy, "modifier_item_aeon_disk_buff") then return false end
+  end
+
+  return true
+end
+function clinkz.heroCanCastItems(myHero)
+
+  if not myHero then return false end
+  if not Entity.IsAlive(myHero) then return false end
+
+  if NPC.IsStunned(myHero) then return false end
+  if NPC.HasModifier(myHero, "modifier_bashed") then return false end
+  if NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then return false end
+  if NPC.HasModifier(myHero, "modifier_eul_cyclone") then return false end
+  if NPC.HasModifier(myHero, "modifier_obsidian_destroyer_astral_imprisonment_prison") then return false end
+  if NPC.HasModifier(myHero, "modifier_shadow_demon_disruption") then return false end
+  if NPC.HasModifier(myHero, "modifier_invoker_tornado") then return false end
+  if NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_HEXED) then return false end
+  if NPC.HasModifier(myHero, "modifier_legion_commander_duel") then return false end
+  if NPC.HasModifier(myHero, "modifier_axe_berserkers_call") then return false end
+  if NPC.HasModifier(myHero, "modifier_winter_wyvern_winters_curse") then return false end
+  if NPC.HasModifier(myHero, "modifier_bane_fiends_grip") then return false end
+  if NPC.HasModifier(myHero, "modifier_bane_nightmare") then return false end
+  if NPC.HasModifier(myHero, "modifier_faceless_void_chronosphere_freeze") then return false end
+  if NPC.HasModifier(myHero, "modifier_enigma_black_hole_pull") then return false end
+  if NPC.HasModifier(myHero, "modifier_magnataur_reverse_polarity") then return false end
+  if NPC.HasModifier(myHero, "modifier_pudge_dismember") then return false end
+  if NPC.HasModifier(myHero, "modifier_shadow_shaman_shackles") then return false end
+  if NPC.HasModifier(myHero, "modifier_techies_stasis_trap_stunned") then return false end
+  if NPC.HasModifier(myHero, "modifier_storm_spirit_electric_vortex_pull") then return false end
+  if NPC.HasModifier(myHero, "modifier_tidehunter_ravage") then return false end
+  if NPC.HasModifier(myHero, "modifier_windrunner_shackle_shot") then return false end
+  if NPC.HasModifier(myHero, "modifier_item_nullifier_mute") then return false end
+
+  return true
 end
 return clinkz
