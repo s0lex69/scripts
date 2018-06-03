@@ -20,6 +20,7 @@ ShadowFiend.font = Renderer.LoadFont("Tahoma", 25, Enum.FontWeight.BOLD)
 ShadowFiend.lastTick = 0
 ShadowFiend.EbladeCasted = {}
 ShadowFiend.cycloneDieTime = nil
+lastAttackTime2 = 0
 ShadowFiend.Draw = false
 LockTarget = false
 enemy = nil
