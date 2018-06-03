@@ -172,7 +172,7 @@ function invokerDisplay.DrawAbilitySquare(hero, ability, x, y, index)
         Renderer.DrawFilledRect(realX + 1, y + (invokerDisplay.innerBoxSize - cooldownSize) + 1, invokerDisplay.innerBoxSize, cooldownSize)
 
         Renderer.SetDrawColor(255, 255, 255)
-        Renderer.DrawText(invokerDisplay.font, realX + 1, y, math.floor(Ability.GetCooldown(ability)), 0)
+        Renderer.DrawText(invokerDisplay.font, realX + 1, y, math.ceil(Ability.GetCooldown(ability)), 0)
     elseif hoveringOver and Input.IsKeyDownOnce(Enum.ButtonCode.MOUSE_LEFT) then
         invokerDisplay.InvokeAbility(ability)
     end
