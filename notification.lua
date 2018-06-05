@@ -194,7 +194,7 @@ function notification.OnDraw()
     	notification.cachedIcons[3] = Renderer.LoadImage("resource/flash3/images/spellicons/mirana_invis.png")
   	end
   	local x, y = Renderer.GetScreenSize()
-  	  	if notification.roshres == true then
+  	if notification.roshres == true then
   	  	if GameRules.GetGameTime() - notification.roshrestime <= 5 then
   	  		Renderer.SetDrawColor(255,0,255)
   	  		Renderer.DrawText(notification.font,x/2, y/2, "Roshan Respawned")
