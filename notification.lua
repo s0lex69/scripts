@@ -194,6 +194,15 @@ function notification.OnDraw()
     	notification.cachedIcons[3] = Renderer.LoadImage("resource/flash3/images/spellicons/mirana_invis.png")
   	end
   	local x, y = Renderer.GetScreenSize()
+  	  	if notification.roshres == true then
+  	  	if GameRules.GetGameTime() - notification.roshrestime <= 5 then
+  	  		Renderer.SetDrawColor(255,0,255)
+  	  		Renderer.DrawText(notification.font,x/2, y/2, "Roshan Respawned")
+  		else
+  	  		notification.roshres = false
+  	  		notification.roshrestime = 0
+  		end
+  	end	
   	local x1,y1
   	if notification.Round(x/y,1) >= 1.7 then
   		x1 = 950/1920 * x
@@ -225,15 +234,6 @@ function notification.OnDraw()
       		notification.roshdietime = nil
     	end
   	end
-  	if notification.roshres == true then
-  	  	if GameRules.GetGameTime() - notification.roshrestime <= 5 then
-  	  		Renderer.SetDrawColor(255,0,255)
-  	  		Renderer.DrawText(notification.font,683, 384, "Roshan Respawned")
-  		else
-  	  		notification.roshres = false
-  	  		notification.roshrestime = 0
-  		end
-  	end	
   	if notification.roshattack == true then
     	if GameRules.GetGameTime() - notification.roshattacktime <= 5 and GameRules.GetGameTime() - notification.roshattacktime > 0 then
       	MiniMap.DrawCircle(Vector(-2253.187500, 1704.875000, 159.968750), 195, 255, 0, 255)
