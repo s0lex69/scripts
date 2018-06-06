@@ -223,7 +223,7 @@ function SkyWrathMage.PrayToDog()
 	SkyWrathMage.GetItems()
 	SkyWrathMage.isFullDebuffed = SkyWrathMage.IsFullDebuffed()
 
-	if Menu.IsEnabled(SkyWrathMage.IsPopAMReflectToggled) and NPC.GetUnitName(enemy) == "npc_dota_hero_antimage" and not NPC.HasModifier(enemy, "modifier_silver_edge_debuff") and(NPC.GetItem(enemy, "item_ultimate_scepter", true) or NPC.HasModifier(enemy, "modifier_item_ultimate_scepter_consumed")) and Ability.IsReady(NPC.GetAbility(enemy, "antimage_spell_shield")) then
+	if Menu.IsEnabled(SkyWrathMage.IsPopAMReflectToggled) and NPC.GetUnitName(enemy) == "npc_dota_hero_antimage" and not NPC.HasModifier(enemy, "modifier_silver_edge_debuff") and not NPC.HasModifier(enemy, "modifier_viper_nethertoxin") and(NPC.GetItem(enemy, "item_ultimate_scepter", true) or NPC.HasModifier(enemy, "modifier_item_ultimate_scepter_consumed")) and Ability.IsReady(NPC.GetAbility(enemy, "antimage_spell_shield")) then
 		if SkyWrathMage.PopLinkens(forcestaff, SkyWrathMage.PopupAMReflectOptionID["forcestaff"]) then return end
 		if SkyWrathMage.PopLinkens(cyclone, SkyWrathMage.PopupAMReflectOptionID["cyclone"]) then return end
 		if SkyWrathMage.PopLinkens(dagon, SkyWrathMage.PopupAMReflectOptionID["dagon"]) then return end
