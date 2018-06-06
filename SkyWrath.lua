@@ -273,7 +273,11 @@ function SkyWrathMage.PrayToDog()
 	if SkyWrathMage.UseItem(blood, SkyWrathMage.ItemsOptionID["blood"]) then return end
 	if SkyWrathMage.UseItem(shiva, SkyWrathMage.ItemsOptionID["shiva"]) then return end
 	if not NPC.HasModifier(enemy, "modifier_item_nullifier_mute") and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
-		if SkyWrathMage.UseItem(nullifier, SkyWrathMage.ItemsOptionID["nullifier"]) then return end
+		if NPC.GetItem(enemy, "item_aeon_disk", true) and not Ability.IsReady(NPC.GetItem(enemy, "item_aeon_disk", true)) then
+			if SkyWrathMage.UseItem(nullifier, SkyWrathMage.ItemsOptionID["nullifier"]) then return end
+		elseif not NPC.GetItem(enemy, "item_aeon_disk", true) then
+			if SkyWrathMage.UseItem(nullifier, SkyWrathMage.ItemsOptionID["nullifier"]) then return end
+		end	
 		return
 	end
 end
