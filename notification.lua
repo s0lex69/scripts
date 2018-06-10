@@ -3,7 +3,7 @@ notification.optionEnable = Menu.AddOptionBool({"Awareness", "Notification"}, "E
 notification.optionChatAlertEnable = Menu.AddOptionBool({"Awareness", "Notification", "Chat Alert"}, "Enable", false)
 notification.optionSkillAlertEnable = Menu.AddOptionBool({"Awareness", "Notification", "Chat Alert"}, "Skill Alert", false)
 notification.optionRoshAlertEnable = Menu.AddOptionBool({"Awareness", "Notification", "Chat Alert"}, "Roshan Alert", false)
-notification.optionLanguage = Menu.AddOptionCombo({"Awareness", "Notification", }, "Language", {"Русский", "English"}, 0)
+notification.optionLanguage = Menu.AddOptionCombo({"Awareness", "Notification", }, "Language", {"Русский", "English", "Український"}, 0)
 notification.optionBaraAlert = Menu.AddOptionBool({"Awareness", "Notification", "Chat Alert"}, "Bara Alert", false)
 notification.font = Renderer.LoadFont("Tahoma", 25, Enum.FontWeight.BOLD)
 notification.font2 = Renderer.LoadFont("Tahoma", 15, Enum.FontWeight.BOLD)
@@ -178,8 +178,10 @@ function notification.OnUnitAnimation(animation)
   		if Menu.IsEnabled(notification.optionChatAlertEnable) and Menu.IsEnabled(notification.optionRoshAlertEnable) then
   			if language == 0 then 
   				Engine.ExecuteCommand("say_team Кто-то бьет рошана")
+  			elseif language == 1 then
+  				Engine.ExecuteCommand("say_team Roshan is under attack")
   			else
-  				Engine.ExecuteCommand("say_team Roshan is under attack") 	
+  				Engine.ExecuteCommand("say_team Хтось б'є рошана")		
   			end	 
   		end
  	end
@@ -194,15 +196,6 @@ function notification.OnDraw()
     	notification.cachedIcons[3] = Renderer.LoadImage("resource/flash3/images/spellicons/mirana_invis.png")
   	end
   	local x, y = Renderer.GetScreenSize()
-  	if notification.roshres == true then
-  	  	if GameRules.GetGameTime() - notification.roshrestime <= 5 then
-  	  		Renderer.SetDrawColor(255,0,255)
-  	  		Renderer.DrawText(notification.font,x/2, y/2, "Roshan Respawned")
-  		else
-  	  		notification.roshres = false
-  	  		notification.roshrestime = 0
-  		end
-  	end	
   	local x1,y1
   	if notification.Round(x/y,1) >= 1.7 then
   		x1 = 950/1920 * x
@@ -234,6 +227,15 @@ function notification.OnDraw()
       		notification.roshdietime = nil
     	end
   	end
+  	if notification.roshres == true then
+  	  	if GameRules.GetGameTime() - notification.roshrestime <= 5 then
+  	  		Renderer.SetDrawColor(255,0,255)
+  	  		Renderer.DrawText(notification.font,683, 384, "Roshan Respawned")
+  		else
+  	  		notification.roshres = false
+  	  		notification.roshrestime = 0
+  		end
+  	end	
   	if notification.roshattack == true then
     	if GameRules.GetGameTime() - notification.roshattacktime <= 5 and GameRules.GetGameTime() - notification.roshattacktime > 0 then
       	MiniMap.DrawCircle(Vector(-2253.187500, 1704.875000, 159.968750), 195, 255, 0, 255)
@@ -317,8 +319,44 @@ function notification.OnModifierCreate(ent,mod)
 			local hero = Heroes.Get(i)
 			local heroName = NPC.GetUnitName(hero)
 			if heroName == "npc_dota_hero_invoker" and not Entity.IsSameTeam(Heroes.GetLocal(), hero) then
-				local ss = NPC.GetAbility(hero, "invoker_sun_strike")
-				Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_PING_ABILITY, ss, Vector(0,0,0), ss, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, Heroes.GetLocal())
+				local ability = NPC.GetAbility(hero, "invoker_sun_strike")
+				Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_PING_ABILITY, ability, Vector(0,0,0), ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, Heroes.GetLocal())
+			end
+		end
+	elseif Modifier.GetName(mod) == "modifier_kunkka_torrent_thinker" then
+		for i = 1, Heroes.Count() do
+			local hero = Heroes.Get(i)
+			local heroName = NPC.GetUnitName(hero)
+			if heroName == "npc_dota_hero_kunkka" and not Entity.IsSameTeam(Heroes.GetLocal(), hero) then
+				local ability = NPC.GetAbility(hero, "kunkka_torrent")
+				Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_PING_ABILITY, ability, Vector(0,0,0), ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, Heroes.GetLocal())
+			end
+		end
+	elseif Modifier.GetName(mod) == "modifier_lina_light_strike_array" then
+		for i = 1, Heroes.Count() do
+			local hero = Heroes.Get(i)
+			local heroName = NPC.GetUnitName(hero)
+			if heroName == "npc_dota_hero_lina" and not Entity.IsSameTeam(Heroes.GetLocal(), hero) then
+				local ability = NPC.GetAbility(hero, "lina_light_strike_array")
+				Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_PING_ABILITY, ability, Vector(0,0,0), ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, Heroes.GetLocal())
+			end
+		end
+	elseif Modifier.GetName(mod) == "modifier_tusk_snowball_visible" then
+		for i = 1, Heroes.Count() do
+			local hero = Heroes.Get(i)
+			local heroName = NPC.GetUnitName(hero)
+			if heroName == "npc_dota_hero_tusk" and not Entity.IsSameTeam(Heroes.GetLocal(), hero) then
+				local ability = NPC.GetAbility(hero, "tusk_snowball")
+				Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_PING_ABILITY, ability, Vector(0,0,0), ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, Heroes.GetLocal())
+			end
+		end
+	elseif Modifier.GetName(mod) == "modifier_leshrac_split_earth_thinker" then
+		for i = 1, Heroes.Count() do
+			local hero = Heroes.Get(i)
+			local heroName = NPC.GetUnitName(hero)
+			if heroName == "npc_dota_hero_leshrac" and not Entity.IsSameTeam(Heroes.GetLocal(), hero) then
+				local ability = NPC.GetAbility(hero, "leshrac_split_earth")
+				Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_PING_ABILITY, ability, Vector(0,0,0), ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, Heroes.GetLocal())
 			end
 		end	
 	end
@@ -335,8 +373,10 @@ function notification.OnParticleCreate(particle)
     	if Menu.IsEnabled(notification.optionChatAlertEnable) and Menu.IsEnabled(notification.optionRoshAlertEnable) then
     		if language == 0 then
     			Engine.ExecuteCommand("say_team Рошан умер - "..min..":"..sec)
-   			else
+   			elseif language == 1 then
     			Engine.ExecuteCommand("say_team Roshan died at - "..min..":"..sec)
+    		else
+    			Engine.ExecuteCommand("say_team Рошан помер - "..min..":"..sec)	
     		end
     	end
   	end
@@ -348,8 +388,10 @@ function notification.OnParticleCreate(particle)
   			if Menu.IsEnabled(notification.optionChatAlertEnable) and Menu.IsEnabled(notification.optionRoshAlertEnable) then
   			if language == 0 then 
     			Engine.ExecuteCommand("say_team Рошан реснулся")
-    		else
+    		elseif language == 1 then
     			Engine.ExecuteCommand("say_team Roshan has respawned")
+    		else
+    			Engine.ExecuteCommand("say_team З'явився рошан")	
     		end
    		end
   	end
@@ -359,8 +401,10 @@ function notification.OnParticleCreate(particle)
     	if Menu.IsEnabled(notification.optionChatAlertEnable) and Menu.IsEnabled(notification.optionRoshAlertEnable) then
       		if language == 0 then 	
       			Engine.ExecuteCommand("say_team Кто-то бьет рошана")
+      		elseif language == 1 then
+      			Engine.ExecuteCommand("say_team Roshan is under attack")
       		else
-      			Engine.ExecuteCommand("say_team Roshan is under attack")	
+      			Engine.ExecuteCommand("say_team Хтось б'є рошана")		
   	  		end
   		end
     	notification.roshattack = true
@@ -371,8 +415,10 @@ function notification.OnParticleCreate(particle)
       	if Menu.IsEnabled(notification.optionChatAlertEnable) and Menu.IsEnabled(notification.optionSkillAlertEnable) then
       		if language == 0 then
         		Engine.ExecuteCommand("say_team Nyx использовал ультимейт")
-        	else 
+        	elseif language == 1 then
         		Engine.ExecuteCommand("say_team Nyx has used ultimate")
+        	else
+        		Engine.ExecuteCommand("say_team Nyx використовував ультімейт")	
         	end	
       	end 
       	notification.vendeta = 1
@@ -383,8 +429,10 @@ function notification.OnParticleCreate(particle)
     	if Menu.IsEnabled(notification.optionChatAlertEnable) and Menu.IsEnabled(notification.optionSkillAlertEnable) then
         	if language == 0 then
         		Engine.ExecuteCommand("say_team Кто-то использовал смок")
-      		else
+      		elseif language == 1 then
       			Engine.ExecuteCommand("say_team Smoke has been used")
+      		else
+      			Engine.ExecuteCommand("say_team Хтось використовав смок")	
       		end	
         end 
         notification.smoke = 1
@@ -399,8 +447,10 @@ function notification.OnParticleCreate(particle)
         if Menu.IsEnabled(notification.optionChatAlertEnable) and Menu.IsEnabled(notification.optionSkillAlertEnable) then
           	if language == 0 then 
             	Engine.ExecuteCommand("say_team Вражеская мирана использовала ультимейт")
-        	else
+        	elseif language == 1 then
         		Engine.ExecuteCommand("say_team Mirana has used ultimate")
+        	else
+        		Engine.ExecuteCommand("say_team Ворожа Мірана використовувала ультімейт")	
         	end	
         end
         notification.moonlight = 1
@@ -420,8 +470,10 @@ function notification.BaraAlert()
           	charg = false
           	if language == 0 then
           		Engine.ExecuteCommand("say_team Бара остановил разбег")
-          	else
+          	elseif language == 1 then
           		Engine.ExecuteCommand("say_team Spirit Breaker has canceled his charge")
+          	else
+          		Engine.ExecuteCommand("say_team Бара зупинив розбіг")	
           	end		
        	end
        	if heroName == "npc_dota_hero_nyx_assassin" then
@@ -431,8 +483,10 @@ function notification.BaraAlert()
        	if heroTeam == myTeam and NPC.HasModifier(hero, "modifier_spirit_breaker_charge_of_darkness_vision") and charg == false then
        		if language == 0 then
          		Engine.ExecuteCommand("say_team Бара разгоняется на "..notification.HeroNameTable[heroName])
-         	else
+         	elseif language == 1 then
          		Engine.ExecuteCommand("say_team Spirit Breaker charging in "..notification.HeroNameTable[heroName])
+         	else
+         		Engine.ExecuteCommand("say_team Бара розганяється на "..notification.HeroNameTable[heroName])	
          	end
          	charg = true
          	charghero = hero
