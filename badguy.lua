@@ -83,7 +83,7 @@ function badguy.toxicFlame()
 			if not Entity.IsAlive(hero) and aliveHeroes[Hero.GetPlayerID(hero)] and not Entity.IsSameTeam(myHero, hero) then
 				for i = 1, Players.Count() do
 					local player = Players.Get(i)
-					if Player.GetPlayerID(player) == Hero.GetPlayerID(hero) then
+					if Player.GetPlayerID(player) == Hero.GetPlayerID(hero) and not Entity.IsSameTeam(myHero, hero) then
 						local language = Menu.GetValue(badguy.optionLanguage)
 						if language == 0 then
 							Engine.ExecuteCommand("say "..Player.GetName(player).." "..badguy.phrase[math.random(#badguy.phrase)])
