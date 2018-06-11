@@ -4,12 +4,20 @@ badguy.optionEnableAutoFeed = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Auto-F
 badguy.optionEnableAutoLaugh = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Auto Laugh", false)
 badguy.optionSliderAutoLaugh = Menu.AddOptionSlider({"Utility", "Bad Guy"}, "Laugh delay", 15,100,15)
 badguy.optionToxicFlame = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Toxic Flame", false)
+badguy.optionLanguage = Menu.AddOptionCombo({"Utility","Bad Guy"}, "Language", {"Русский", "English"}, 0)
 badguy.phrase = {
 	"vk.com/cheats_dota",
 	"uc.zone",
 	"Что-то ты слишком изи",
 	"Как два пальца",
 	"Слишком легко для меня"
+}
+badguy.engphrase = {
+	"vk.com/cheats_dota",
+	"uc.zone",
+	"fuck you cunt",
+	"yeah you are bad.",
+	"how's hell looks like?"
 }
 lastlaugh = nil
 laughed = false
@@ -76,7 +84,12 @@ function badguy.toxicFlame()
 				for i = 1, Players.Count() do
 					local player = Players.Get(i)
 					if Player.GetPlayerID(player) == Hero.GetPlayerID(hero) then
-						Engine.ExecuteCommand("say "..Player.GetName(player).." "..badguy.phrase[math.random(#badguy.phrase)])
+						local language = Menu.GetValue(badguy.optionLanguage)
+						if language == 0 then
+							Engine.ExecuteCommand("say "..Player.GetName(player).." "..badguy.phrase[math.random(#badguy.phrase)])
+						else
+							Engine.ExecuteCommand("say "..Player.GetName(player).." "..badguy.engphrase[math.random(#badguy.engphrase)])
+						end	
 						aliveHeroes[Hero.GetPlayerID(hero)] = nil
 					end	
 				end
