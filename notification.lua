@@ -2,6 +2,7 @@ local notification = {}
 notification.optionEnable = Menu.AddOptionBool({"Awareness", "Notification"}, "Enable", false)
 notification.optionChatAlertEnable = Menu.AddOptionBool({"Awareness", "Notification", "Chat Alert"}, "Enable", false)
 notification.optionSkillAlertEnable = Menu.AddOptionBool({"Awareness", "Notification", "Chat Alert"}, "Skill Alert", false)
+notification.optionRunesAlertEnable = Menu.AddOptionBool({"Awareness", "Notification", "Chat Alert"}, "Runes Alert", false)
 notification.optionRoshAlertEnable = Menu.AddOptionBool({"Awareness", "Notification", "Chat Alert"}, "Roshan Alert", false)
 notification.optionLanguage = Menu.AddOptionCombo({"Awareness", "Notification", }, "Language", {"Русский", "English", "Український"}, 0)
 notification.optionBaraAlert = Menu.AddOptionBool({"Awareness", "Notification", "Chat Alert"}, "Bara Alert", false)
@@ -145,6 +146,7 @@ notification.roshrestime = 0
 position2 = nil
 charg = false
 charghero = nil
+alertTime = {}
 function notification.OnUpdate()
 	if not Menu.IsEnabled(notification.optionEnable) then return end
  	if not Engine.IsInGame() or not Heroes.GetLocal() then
@@ -167,7 +169,33 @@ function notification.OnUpdate()
   	end
 	local myHero = Heroes.GetLocal()
 	if not myHero then return end
+	notification.runesAlert()
 	notification.BaraAlert()
+end
+function notification.OnGameStart()
+	alertTime = {}
+end
+function notification.OnGameEnd()
+	alertTime = {}
+end
+function notification.runesAlert()
+	if not Menu.IsEnabled(notification.optionRunesAlertEnable) then return end
+	local gameTime = GameRules.GetGameTime() - GameRules.GetGameStartTime()
+	while gameTime >= 300 do
+		gameTime = gameTime - 300
+	end	
+	if math.floor(gameTime) == 270 and not alertTime[math.floor(gameTime)] then
+		Engine.ExecuteCommand("chatwheel_say 58")
+		alertTime[math.floor(gameTime)] = true
+	end
+	if math.floor(gameTime) == 280 and not alertTime[math.floor(gameTime)] then
+		Engine.ExecuteCommand("chatwheel_say 58")
+		alertTime[math.floor(gameTime)] = true
+	end
+	if math.floor(gameTime) == 290 and not alertTime[math.floor(gameTime)] then
+		Engine.ExecuteCommand("chatwheel_say 58")
+		alertTime[math.floor(gameTime)] = true
+	end	
 end
 function notification.OnUnitAnimation(animation)
 	if not Menu.IsEnabled(notification.optionEnable) then return end
