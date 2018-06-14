@@ -489,6 +489,7 @@ function notification.BaraAlert()
     if not Menu.IsEnabled(notification.optionEnable) or not Menu.IsEnabled(notification.optionChatAlertEnable) or not Menu.IsEnabled(notification.optionBaraAlert) or Heroes.GetLocal() == nil then return end
     local myHero = Heroes.GetLocal()
     local myTeam = Entity.GetTeamNum(myHero)
+    local language = Menu.GetValue(notification.optionLanguage)
     for i = 1, Heroes.Count() do
     	local hero = Heroes.Get(i)
        	local heroName = NPC.GetUnitName(hero)
@@ -507,7 +508,6 @@ function notification.BaraAlert()
        	if heroName == "npc_dota_hero_nyx_assassin" then
          	notification.ent = Heroes.Get(i)
        	end
-       	local language = Menu.GetValue(notification.optionLanguage)
        	if heroTeam == myTeam and NPC.HasModifier(hero, "modifier_spirit_breaker_charge_of_darkness_vision") and charg == false then
        		if language == 0 then
          		Engine.ExecuteCommand("say_team Бара разгоняется на "..notification.HeroNameTable[heroName])
