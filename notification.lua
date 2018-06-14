@@ -322,7 +322,7 @@ function notification.OnDraw()
    			y = y + y2 
    		end
     	Renderer.SetDrawColor(255, 0, 0, 255)
-    	Renderer.DrawText(notification.font, x, y, "Mirana ulti "..math.floor(notification.moonlightend - time)) 
+    	Renderer.DrawText(notification.font, x, y, "Moon "..math.floor(notification.moonlightend - time)) 
     	Renderer.SetDrawColor(255, 255, 255, 255) 
     	Renderer.DrawImage(notification.cachedIcons[3], x - 20, y + 4, 22, 22)
   	end
