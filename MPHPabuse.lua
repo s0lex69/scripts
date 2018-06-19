@@ -89,7 +89,7 @@ MPHPAbuse.optionToggleKey = Menu.AddKeyOption({"Utility", "MP/HP Abuse"}, "Toggl
 MPHPAbuse.threshold = Menu.AddOptionSlider({"Utility", "MP/HP Abuse"}, "HP % Threshold", 0, 100, 5)
 MPHPAbuse.font = Renderer.LoadFont("Tahoma", 18, Enum.FontWeight.BOLD)
 function MPHPAbuse.OnPrepareUnitOrders(orders)
-	if not Heroes.GetLocal() or not Engine.IsInGame() or not Menu.IsEnabled(MPHPAbuse.optionEnable) or not orders or not Entity.IsEntity(orders.ability) or not Entity.IsAbility(orders.ability) then return end
+	if not Heroes.GetLocal() or not Engine.IsInGame() or not Menu.IsEnabled(MPHPAbuse.optionEnable) or not orders or not Entity.IsAbility(orders.ability) then return end
 	if not toggled then return end
 	local myHero = Heroes.GetLocal()
 	if Entity.GetHealth(myHero)/Entity.GetMaxHealth(myHero) < Menu.GetValue(MPHPAbuse.threshold)/100 then return end
