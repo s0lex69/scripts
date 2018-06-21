@@ -19,13 +19,29 @@ badguy.engphrase = {
 	"yeah you are bad.",
 	"how's hell looks like?"
 }
-lastlaugh = nil
-laughed = false
-aliveHeroes = {}
+local lastlaugh = nil
+local laughed = false
+local aliveHeroes = {}
+local myHero = nil
+local needInit = true
+local base = nil
+function badguy.Init()
+	myHero = Heroes.GetLocal()
+	myTeam = Entity.GetTeamNum(myHero)
+	local radiant = Vector(-7317.406250, -6815.406250, 512.000000)
+	local dire = Vector(7264.000000, 6560.000000, 512.000000)
+	if myTeam == 2 then
+		base = dire
+	elseif myTeam == 3 then
+		base = radiant
+	end
+	needInit = false
+end
 function badguy.OnGameStart()
 	aliveHeroes = {}
 	lastlaugh = nil
 	laughed = false
+	needInit = true
 end
 function badguy.OnGameEnd()
 	aliveHeroes = {}
@@ -34,6 +50,9 @@ function badguy.OnGameEnd()
 end
 function badguy.OnUpdate()
 	if not Heroes.GetLocal() or not Menu.IsEnabled(badguy.optionEnable) then lastlaugh = nil aliveHeroes = {} return end
+	if needInit then
+		badguy.Init()
+	end
 	if Menu.IsEnabled(badguy.optionEnableAutoFeed) then
 		badguy.autofeed()
 	end
@@ -45,20 +64,12 @@ function badguy.OnUpdate()
 	end	
 end	
 function badguy.autofeed()
-	local myHero = Heroes.GetLocal()
-	local radiant = Vector(-7317.406250, -6815.406250, 512.000000)
-	local dire = Vector(7264.000000, 6560.000000, 512.000000)
-	local myTeam = Entity.GetTeamNum(myHero)
 	if Entity.IsAlive(myHero) then
-		if myTeam == 2 then 
-			Player.PrepareUnitOrders(Players.GetLocal(),Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION,nil,dire,nil,Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY,myHero)
-		else
-			Player.PrepareUnitOrders(Players.GetLocal(),Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION,nil,radiant,nil,Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY,myHero)
-		end	
+		Player.PrepareUnitOrders(Players.GetLocal(),Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION,nil,base,nil,Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY,myHero)
 	end
 end
 function badguy.autolaugh()
-	if not Entity.IsAlive(Heroes.GetLocal()) then return end
+	if not Entity.IsAlive(myHero) then return end
 	if not lastlaugh then
 		lastlaugh = GameRules.GetGameTime()
 	end	
@@ -71,7 +82,6 @@ function badguy.autolaugh()
 	end	
 end
 function badguy.toxicFlame()
-	local myHero = Heroes.GetLocal()
 	for i = 1, Heroes.Count() do
 		local hero = Heroes.Get(i)
 		if Entity.IsAlive(hero) and not aliveHeroes[Hero.GetPlayerID(hero)] then

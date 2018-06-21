@@ -5,7 +5,17 @@ courierReuse.optionKey = Menu.AddKeyOption({ "Utility", "Courier"}, "Key to reus
 courierReuse.optionMuteFilter = Menu.AddOptionBool({"Utility", "Courier"}, "Mute Filter", false)
 courierReuse.players = {}
 courierReuse.muted = {}
-
+local needInit = true
+local myHero
+local myTeam
+function courierReuse.OnGameStart()
+	needInit = true
+end
+function courierReuse.Init()
+	myHero = Heroes.GetLocal()
+	myTeam = Entity.GetTeamNum(myHero)
+	needInit = false
+end
 function courierReuse.OnUpdate()
   	if not Engine.IsInGame() or not Heroes.GetLocal() then
     	for i = 0, 10 do
@@ -15,9 +25,10 @@ function courierReuse.OnUpdate()
     	end
   	end
   	if not Menu.IsEnabled(courierReuse.OptionEnabled) then return end
-  	local myHero = Heroes.GetLocal()
-  	if myHero == nil then return end
-  	local myTeam = Entity.GetTeamNum(myHero)
+  	if needInit then
+  		courierReuse.Init()
+  	end
+  	if not myHero then return end
   	local bReuse = false
   	for i = 1, Players.Count() do
     	local player = Players.Get(i)

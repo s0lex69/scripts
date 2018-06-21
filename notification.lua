@@ -143,37 +143,52 @@ notification.cachedIcons = {}
 notification.roshdead = false
 notification.roshres = false
 notification.roshrestime = 0
-position2 = nil
-charg = false
-charghero = nil
-alertTime = {}
+local position2 = nil
+local charg = false
+local charghero = nil
+local alertTime = {}
+local myHero
+local myTeam
+local x,y,x1,y1,y2
+local needInit = true
+local language
+function notification.Init()
+	myHero = Heroes.GetLocal()
+	myTeam = Entity.GetTeamNum(myHero)
+	x,y = Renderer.GetScreenSize()
+	x1 = x * 0.495
+	y1 = x * 0.05
+	x = x * 0.9
+	y = y * 0.04
+	y2 = 25
+	needInit = false
+	language = Menu.GetValue(notification.optionLanguage)
+end
 function notification.OnUpdate()
 	if not Menu.IsEnabled(notification.optionEnable) then return end
- 	if not Engine.IsInGame() or not Heroes.GetLocal() then
-    	notification.smoke = nil
-    	notification.smokestart = nil
-    	notification.smokeend = nil
-    	notification.vendeta = nil
-    	notification.vendetastart = nil
-    	notification.vendetaend = nil
-    	notification.moonlight = nil
-    	notification.moonlightstart = nil
-    	notification.moonlightend = nil
-    	notification.vendetaduration = nil
-    	notification.beforegame = nil
-    	notification.pos = nil
-    	notification.test = nil
-    	notification.roshdead = false
-    	notification.roshdietime = nil
-    	time = 0
-  	end
-	local myHero = Heroes.GetLocal()
 	if not myHero then return end
 	notification.runesAlert()
 	notification.BaraAlert()
 end
 function notification.OnGameStart()
+	notification.smoke = nil
+    notification.smokestart = nil
+    notification.smokeend = nil
+    notification.vendeta = nil
+    notification.vendetastart = nil
+    notification.vendetaend = nil
+    notification.moonlight = nil
+    notification.moonlightstart = nil
+    notification.moonlightend = nil
+    notification.vendetaduration = nil
+    notification.beforegame = nil
+    notification.pos = nil
+    notification.test = nil
+    notification.roshdead = false
+    notification.roshdietime = nil
+    time = 0
 	alertTime = {}
+	needInit = true
 end
 function notification.OnGameEnd()
 	alertTime = {}
@@ -199,7 +214,6 @@ function notification.runesAlert()
 end
 function notification.OnUnitAnimation(animation)
 	if not Menu.IsEnabled(notification.optionEnable) then return end
-  	local language = Menu.GetValue(notification.optionLanguage)
   	if animation.sequenceName == "roshan_attack" or animation.sequenceName == "roshan_attack2" then 
   		notification.roshattack = true 
     	notification.roshattacktime = GameRules.GetGameTime() 
@@ -216,6 +230,9 @@ function notification.OnUnitAnimation(animation)
 end
 function notification.OnDraw()
   	if not Menu.IsEnabled(notification.optionEnable) or Heroes.GetLocal() == nil then return end
+   	if needInit then
+ 		notification.Init()
+ 	end	
   	if notification.cachedIcons[1] == nil then
   		notification.cachedIcons[1] = Renderer.LoadImage("resource/flash3/images/items/smoke_of_deceit.png")
   	elseif notification.cachedIcons[2] == nil then
@@ -223,25 +240,6 @@ function notification.OnDraw()
   	elseif notification.cachedIcons[3] == nil then
     	notification.cachedIcons[3] = Renderer.LoadImage("resource/flash3/images/spellicons/mirana_invis.png")
   	end
-  	local x, y = Renderer.GetScreenSize()
-  	local x1,y1
-  	if notification.Round(x/y,1) >= 1.7 then
-  		x1 = 950/1920 * x
-  		y1 = 60/1080 * y
-  		x = 1730/1920 * x
-  		y = 45/1080 * y
-  	elseif notification.Round(x/y,1) >= 1.5 then
-  		x1 = 930/1680 * x
-  		y1 = 55/1050 * y
-  		x = 1480/1680 * x
-  		y = 43/1050 * y
-  	else
-  		x1 = 900/1280 * x
-  		y1 = 50/1024 * y
-  		x = 1126/1280 * x
-  		y = 43/1024 * y	
-  	end
-  	local y2 = 25
   	local time
   	local gametime = GameRules.GetGameTime() - GameRules.GetGameStartTime()
   	if notification.roshdead == true then
@@ -324,7 +322,7 @@ function notification.OnDraw()
     	Renderer.SetDrawColor(255, 0, 0, 255)
     	Renderer.DrawText(notification.font, x, y, "Moon "..math.floor(notification.moonlightend - time)) 
     	Renderer.SetDrawColor(255, 255, 255, 255) 
-    	Renderer.DrawImage(notification.cachedIcons[3], x - 20, y + 4, 22, 22)
+    	Renderer.DrawImage(notification.cachedIcons[3], x - 24, y + 4, 22, 22)
   	end
   	if notification.vendeta ~= nil and time < notification.vendetaend then
     	if notification.smoke ~= nil then
@@ -391,8 +389,6 @@ function notification.OnModifierCreate(ent,mod)
 end
 function notification.OnParticleCreate(particle)
   	if not Menu.IsEnabled(notification.optionEnable) then return end
-  	local myHero = Heroes.GetLocal()
-  	local language = Menu.GetValue(notification.optionLanguage)
   	if particle.name == "dropped_aegis" then 
   		notification.roshdead = true 
   		notification.roshdietime = GameRules.GetGameTime() - GameRules.GetGameStartTime()
@@ -487,9 +483,6 @@ function notification.OnParticleCreate(particle)
 end
 function notification.BaraAlert()
     if not Menu.IsEnabled(notification.optionEnable) or not Menu.IsEnabled(notification.optionChatAlertEnable) or not Menu.IsEnabled(notification.optionBaraAlert) or Heroes.GetLocal() == nil then return end
-    local myHero = Heroes.GetLocal()
-    local myTeam = Entity.GetTeamNum(myHero)
-    local language = Menu.GetValue(notification.optionLanguage)
     for i = 1, Heroes.Count() do
     	local hero = Heroes.Get(i)
        	local heroName = NPC.GetUnitName(hero)

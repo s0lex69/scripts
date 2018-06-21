@@ -18,18 +18,29 @@ clinkz.optionEnablePoopOrchid = Menu.AddOptionBool({"Hero Specific", "Clinkz", "
 clinkz.optionEnablePoopEul = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Poop Linken"}, "Eul", false)
 clinkz.optionEnablePoopHex = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Poop Linken"}, "Hex", false)
 clinkz.optionEnablePoopPike = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Poop Linken"}, "Hurricane Pike", false)
-LockTarget = false
-enemy = nil
+local LockTarget = false
+local enemy = nil
+local myHero
+local needInit = true
+function clinkz.Init()
+    myHero = Heroes.GetLocal()
+    needInit = false
+end
+function clinkz.OnGameStart()
+  needInit = true
+end
 function clinkz.OnUpdate()
-  if not Menu.IsEnabled(clinkz.optionEnable) or not Engine.IsInGame() or not Heroes.GetLocal() then return end
-  local myHero = Heroes.GetLocal()
+  if not Menu.IsEnabled(clinkz.optionEnable) or not Engine.IsInGame() then return end
+  if needInit then
+    clinkz.Init()
+  end
   if NPC.GetUnitName(myHero) ~= "npc_dota_hero_clinkz" then return end
   if LockTarget == false then
     enemy = Input.GetNearestHeroToCursor(Entity.GetTeamNum(myHero), Enum.TeamType.TEAM_ENEMY)
   end
-  clinkz.Combo(myHero, enemy)
+  clinkz.Combo(enemy)
 end
-function clinkz.Combo(myHero, enemy)
+function clinkz.Combo(enemy)
   local myMana = NPC.GetMana(myHero)
   local strafe = NPC.GetAbilityByIndex(myHero, 0)
   local arrows = NPC.GetAbilityByIndex(myHero, 1)
@@ -46,7 +57,7 @@ function clinkz.Combo(myHero, enemy)
     if Menu.IsKeyDown(clinkz.optionKey) and Entity.GetHealth(enemy) > 0 and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) and not NPC.HasModifier(enemy, "modifier_dark_willow_shadow_realm_buff") then
       local attackRange = NPC.GetAttackRange(myHero)
       if NPC.IsEntityInRange(myHero, enemy, attackRange) then
-        if clinkz.heroCanCastSpells(myHero, enemy) == true then
+        if clinkz.heroCanCastSpells(enemy) == true then
           if strafe and Ability.IsCastable(strafe, myMana) then
             Ability.CastNoTarget(strafe)
           end
@@ -55,7 +66,7 @@ function clinkz.Combo(myHero, enemy)
             AutoCasted = true
           end
         end
-        if clinkz.heroCanCastItems(myHero, enemy) == true then
+        if clinkz.heroCanCastItems() == true then
           if NPC.IsLinkensProtected(enemy) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
             clinkz.PoopLinken(myHero, enemy)
           end
@@ -98,7 +109,7 @@ function clinkz.Combo(myHero, enemy)
     end
   end
 end
-function clinkz.PoopLinken(myHero, enemy)
+function clinkz.PoopLinken(enemy)
   local diffusal = NPC.GetItem(myHero, "item_diffusal_blade", true)
   local eul = NPC.GetItem(myHero, "item_cyclone", true)
   local force = NPC.GetItem(myHero, "item_force_staff", true)
@@ -136,7 +147,7 @@ function clinkz.PoopLinken(myHero, enemy)
     return
   end
 end
-function clinkz.heroCanCastSpells(myHero, enemy)
+function clinkz.heroCanCastSpells(enemy)
 
   if not myHero then return false end
   if not Entity.IsAlive(myHero) then return false end
@@ -172,7 +183,7 @@ function clinkz.heroCanCastSpells(myHero, enemy)
 
   return true
 end
-function clinkz.heroCanCastItems(myHero)
+function clinkz.heroCanCastItems()
 
   if not myHero then return false end
   if not Entity.IsAlive(myHero) then return false end

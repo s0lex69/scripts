@@ -81,17 +81,30 @@ MPHPAbuse.dropItems = {
 	item_heart = true,
 	item_black_king_bar = true
 }
-changed = false
-dropped = 0
-toggled = false
+local changed = false
+local dropped = 0
+local toggled = false
+local needInit = true
+local x,y
+local myHero
 MPHPAbuse.optionEnable = Menu.AddOptionBool({ "Utility", "MP/HP Abuse" }, "Enable", false)
 MPHPAbuse.optionToggleKey = Menu.AddKeyOption({"Utility", "MP/HP Abuse"}, "Toggle Key", Enum.ButtonCode.KEY_NONE)
 MPHPAbuse.threshold = Menu.AddOptionSlider({"Utility", "MP/HP Abuse"}, "HP % Threshold", 0, 100, 5)
 MPHPAbuse.font = Renderer.LoadFont("Tahoma", 18, Enum.FontWeight.BOLD)
+function MPHPAbuse.OnGameStart()
+	needInit = true
+end
+function MPHPAbuse.Init()
+	myHero = Heroes.GetLocal()
+	x, y = Renderer.GetScreenSize()
+	x = x * 0.59
+	y = y * 0.8426
+	y = y - 20
+	needInit = false	
+end
 function MPHPAbuse.OnPrepareUnitOrders(orders)
 	if not Heroes.GetLocal() or not Engine.IsInGame() or not Menu.IsEnabled(MPHPAbuse.optionEnable) or not orders or not Entity.IsAbility(orders.ability) then return end
 	if not toggled then return end
-	local myHero = Heroes.GetLocal()
 	if Entity.GetHealth(myHero)/Entity.GetMaxHealth(myHero) < Menu.GetValue(MPHPAbuse.threshold)/100 then return end
 	if orders.order ~= 8 then return end
 	if Entity.IsAlive(myHero) and not NPC.IsStunned(myHero) then
@@ -116,7 +129,8 @@ function MPHPAbuse.OnPrepareUnitOrders(orders)
 	end
 end
 function MPHPAbuse.OnUpdate()
-	if not Menu.IsEnabled(MPHPAbuse.optionEnable) or not Heroes.GetLocal() then return end
+	if not Menu.IsEnabled(MPHPAbuse.optionEnable) then return end
+	if not myHero then return end	
 	if Menu.IsKeyDownOnce(MPHPAbuse.optionToggleKey) then
 		if toggled == false then
 			toggled = true
@@ -127,23 +141,9 @@ function MPHPAbuse.OnUpdate()
 end
 function MPHPAbuse.OnDraw()
 	if not Menu.IsEnabled(MPHPAbuse.optionEnable) or not Heroes.GetLocal() then return end
-	local x, y = Renderer.GetScreenSize()
-	if x == 1920 and y == 1080 then
-		x, y = 1150, 910
-	elseif x== 1600 and y == 900 then
-		x, y = 950, 755
-	elseif x== 1366 and y == 768 then
-		x, y = 805, 643
-	elseif x==1280 and y == 720 then
-		x, y = 752, 600
-	elseif x==1280 and y == 1024 then
-		x, y = 800, 860
-	elseif x==1440 and y == 900 then
-		x, y = 870, 755
-	elseif x== 1680 and y == 1050 then
-		x, y = 1025, 885
-	end
-	y = y - 20
+	if needInit then
+		MPHPAbuse.Init()
+	end	
 	if toggled then 
 		Renderer.SetDrawColor(90, 255, 100)
 		Renderer.DrawText(MPHPAbuse.font, x, y, "[MP/HP Abuse: ON]")

@@ -24,17 +24,27 @@ LegionCommander.optionEnablePoopEul = Menu.AddOptionBool({"Hero Specific", "Legi
 LegionCommander.optionEnablePoopHeavens = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Poop Linken"}, "Heavens Halberd", false)
 LegionCommander.optionEnablePoopAbysalBlade = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Poop Linken"}, "Abyssal Blade", false)
 LegionCommander.optionBlinkRange = Menu.AddOptionSlider({"Hero Specific", "Legion Commander"}, "Minimum Blink Range", 201, 1150, 500)
-LastTarget = nil
-lastAttackTime2 = 0
+local LastTarget = nil
+local lastAttackTime2 = 0
+local myHero
+local needInit = true
+function LegionCommander.Init()
+	myHero = Heroes.GetLocal()
+	needInit = false
+end
+function LegionCommander.OnGameStart()
+	needInit = true
+end
 function LegionCommander.OnUpdate()
-  if not Menu.IsEnabled(LegionCommander.optionEnable) or not Engine.IsInGame() or not Heroes.GetLocal() then return end
-  local myHero = Heroes.GetLocal()
+  if not Menu.IsEnabled(LegionCommander.optionEnable) or not Engine.IsInGame() then return end
+  LegionCommander.Init()
+  if not myHero then return end
   if NPC.GetUnitName(myHero) ~= "npc_dota_hero_legion_commander" then return end
   local enemy = Input.GetNearestHeroToCursor(Entity.GetTeamNum(myHero), Enum.TeamType.TEAM_ENEMY)
   if Menu.IsKeyDown(LegionCommander.optionKey) then
-    LegionCommander.Combo(myHero, enemy) end
+    LegionCommander.Combo(enemy) end
   end
-  function LegionCommander.Combo(myHero, enemy)
+  function LegionCommander.Combo(enemy)
     local odds = NPC.GetAbilityByIndex(myHero, 0)
     local pressTheAttack = NPC.GetAbilityByIndex(myHero, 1)
     local duel = NPC.GetAbility(myHero, "legion_commander_duel")
@@ -51,7 +61,7 @@ function LegionCommander.OnUpdate()
     local satanic = NPC.GetItem(myHero, "item_satanic", true)
     local myMana = NPC.GetMana(myHero)
     if enemy and Entity.IsAlive(enemy) then
-      if LegionCommander.heroCanCastSpells(myHero, enemy) == true then
+      if LegionCommander.heroCanCastSpells(enemy) == true then
         if not (NPC.HasModifier(myHero, "modifier_item_invisibility_edge_windwalk") or NPC.HasModifier(myHero, "modifier_item_silver_edge_windwalk")) then
           if not NPC.IsEntityInRange(myHero, enemy, Menu.GetValue(LegionCommander.optionBlinkRange)) and Ability.IsCastable(duel, myMana) then
             if pressTheAttack and Menu.IsEnabled(LegionCommander.optionEnablePressTheAttack) and NPC.IsEntityInRange(myHero, enemy, 1199) and Ability.IsCastable(pressTheAttack, myMana) and Ability.IsCastable(duel, myMana) then
@@ -80,7 +90,7 @@ function LegionCommander.OnUpdate()
             end
           end
           if NPC.IsEntityInRange(myHero, enemy, 150) then
-            if NPC.IsLinkensProtected(enemy) then LegionCommander.PoopLinken(myHero, enemy, duel, myMana) end
+            if NPC.IsLinkensProtected(enemy) then LegionCommander.PoopLinken(enemy, duel, myMana) end
             if Blademail and Menu.IsEnabled(LegionCommander.optionEnableBlademail) and Ability.IsCastable(Blademail, myMana) and Ability.IsCastable(duel, myMana) then
               Ability.CastNoTarget(Blademail)
               return
@@ -132,16 +142,16 @@ function LegionCommander.OnUpdate()
           end
         end
       end
-      if duel and Ability.IsReady(duel) and Ability.IsCastable(duel, myMana) and LegionCommander.heroCanCastSpells(myHero, enemy) == true and not NPC.IsEntityInRange(myHero, enemy, 150) then
+      if duel and Ability.IsReady(duel) and Ability.IsCastable(duel, myMana) and LegionCommander.heroCanCastSpells(enemy) == true and not NPC.IsEntityInRange(myHero, enemy, 150) then
         local rotationVec = Entity.GetRotation(enemy):GetForward():Normalized()
         local pos = Entity.GetAbsOrigin(enemy) + rotationVec:Scaled(100)
-        	LegionCommander.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION", nil, pos)
+        	LegionCommander.GenericMainAttack("Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION", nil, pos)
       else
-        	LegionCommander.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET", enemy, nil)
+        	LegionCommander.GenericMainAttack("Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET", enemy, nil)
       end
     end
   end
-  function LegionCommander.PoopLinken(myHero, enemy, duel, myMana)
+  function LegionCommander.PoopLinken(enemy, duel, myMana)
     if not Menu.IsEnabled(LegionCommander.optionEnablePoopLinken) then return end
     local Force = NPC.GetItem(myHero, "item_force_staff", true)
     local pike = NPC.GetItem(myHero, "item_hurricane_pike", true)
@@ -198,7 +208,7 @@ function LegionCommander.OnUpdate()
       end
     end
   end
-function LegionCommander.heroCanCastSpells(myHero, enemy)
+function LegionCommander.heroCanCastSpells(enemy)
 
   if not myHero then return false end
   if not Entity.IsAlive(myHero) then return false end
@@ -232,7 +242,7 @@ function LegionCommander.heroCanCastSpells(myHero, enemy)
   end
   return true
 end
-function LegionCommander.GenericMainAttack(myHero, attackType, target, position)
+function LegionCommander.GenericMainAttack(attackType, target, position)
 
   if not myHero then return end
   if not target and not position then return end
@@ -243,7 +253,7 @@ function LegionCommander.GenericMainAttack(myHero, attackType, target, position)
   LegionCommander.GenericAttackIssuer(attackType, target, position, myHero)
 
 end
-function LegionCommander.heroCanCastItems(myHero)
+function LegionCommander.heroCanCastItems()
 
   if not myHero then return false end
   if not Entity.IsAlive(myHero) then return false end
@@ -274,7 +284,7 @@ function LegionCommander.heroCanCastItems(myHero)
 
   return true
 end
-function LegionCommander.IsInAbilityPhase(myHero)
+function LegionCommander.IsInAbilityPhase()
 
   if not myHero then return false end
 
@@ -300,7 +310,7 @@ function LegionCommander.IsInAbilityPhase(myHero)
   return false
 
 end
-function LegionCommander.isHeroChannelling(myHero)
+function LegionCommander.isHeroChannelling()
 
   if not myHero then return true end
 
