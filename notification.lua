@@ -157,7 +157,7 @@ function notification.Init()
 	myTeam = Entity.GetTeamNum(myHero)
 	x,y = Renderer.GetScreenSize()
 	x1 = x * 0.495
-	y1 = x * 0.05
+	y1 = x * 0.03
 	x = x * 0.9
 	y = y * 0.04
 	y2 = 25
@@ -229,7 +229,7 @@ function notification.OnUnitAnimation(animation)
  	end
 end
 function notification.OnDraw()
-  	if not Menu.IsEnabled(notification.optionEnable) or Heroes.GetLocal() == nil then return end
+  	if not Menu.IsEnabled(notification.optionEnable) or not Heroes.GetLocal() then return end
    	if needInit then
  		notification.Init()
  	end	

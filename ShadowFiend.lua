@@ -20,20 +20,28 @@ ShadowFiend.font = Renderer.LoadFont("Tahoma", 25, Enum.FontWeight.BOLD)
 ShadowFiend.lastTick = 0
 ShadowFiend.EbladeCasted = {}
 ShadowFiend.cycloneDieTime = nil
-lastAttackTime2 = 0
+local lastAttackTime2 = 0
 ShadowFiend.Draw = false
-LockTarget = false
-enemy = nil
+local LockTarget = false
+local enemy = nil
+local needInit = true
+local myHero
+function ShadowFiend.Init()
+  myHero = Heroes.GetLocal()
+  needInit = false
+end
 function ShadowFiend.OnUpdate()
   if not Menu.IsEnabled(ShadowFiend.optionEnable) or not Engine.IsInGame() or not Heroes.GetLocal() then return end
-  local myHero = Heroes.GetLocal()
+  if needInit then
+    ShadowFiend.Init()
+  end
   if LockTarget == false then
     enemy = Input.GetNearestHeroToCursor(Entity.GetTeamNum(myHero), Enum.TeamType.TEAM_ENEMY)
   end
   if NPC.GetUnitName(myHero) ~= "npc_dota_hero_nevermore" then return end
-  ShadowFiend.Combo(myHero, enemy)
+  ShadowFiend.Combo(enemy)
 end
-function ShadowFiend.Combo(myHero, enemy)
+function ShadowFiend.Combo(enemy)
   local razeShort = NPC.GetAbilityByIndex(myHero, 0)
   local razeMid = NPC.GetAbilityByIndex(myHero, 1)
   local razeLong = NPC.GetAbilityByIndex(myHero, 2)
@@ -52,9 +60,9 @@ function ShadowFiend.Combo(myHero, enemy)
     if requiem and Ability.IsCastable(requiem, myMana) then
       if Menu.IsKeyDown(ShadowFiend.optionEulKey) and Entity.GetHealth(enemy) > 0 then
         LockTarget = true
-        if not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and ShadowFiend.heroCanCastSpells(myHero, enemy) == true then
+        if not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and ShadowFiend.heroCanCastSpells(enemy) == true then
           if NPC.IsLinkensProtected(enemy) then
-            ShadowFiend.PoopLinken(myHero, enemy, eul, requiem, myMana)
+            ShadowFiend.PoopLinken(enemy, eul, requiem, myMana)
           end
           local possibleRange = 0.80 * NPC.GetMoveSpeed(myHero)
           if not NPC.IsEntityInRange(myHero, enemy, possibleRange) then
@@ -62,7 +70,7 @@ function ShadowFiend.Combo(myHero, enemy)
               Ability.CastPosition(blink, (Entity.GetAbsOrigin(enemy) + (Entity.GetAbsOrigin(myHero) - Entity.GetAbsOrigin(enemy)):Normalized():Scaled(0.75 * possibleRange)))
               return
             else
-              ShadowFiend.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION", nil, Entity.GetAbsOrigin(enemy))
+              ShadowFiend.GenericMainAttack("Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION", nil, Entity.GetAbsOrigin(enemy))
               return
             end
           end
@@ -99,7 +107,7 @@ function ShadowFiend.Combo(myHero, enemy)
           if NPC.HasModifier(enemy, "modifier_eul_cyclone") then
             ShadowFiend.cycloneDieTime = Modifier.GetDieTime(NPC.GetModifier(enemy, "modifier_eul_cyclone"))
             if not NPC.IsEntityInRange(myHero, enemy, 65) then
-              ShadowFiend.GenericMainAttack(myHero, "Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION", nil, Entity.GetAbsOrigin(enemy))
+              ShadowFiend.GenericMainAttack("Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION", nil, Entity.GetAbsOrigin(enemy))
               return
             else
               if ShadowFiend.cycloneDieTime - GameRules.GetGameTime() <= 1.67 then
@@ -117,7 +125,7 @@ function ShadowFiend.Combo(myHero, enemy)
       if razeShort and Ability.IsCastable(razeShort, myMana) then
         local razePos = Entity.GetAbsOrigin(myHero) + Entity.GetRotation(myHero):GetForward():Normalized():Scaled(200)
         local razePrediction = 0.55 + 0.1 + (NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) * 2)
-        local predictedPos = ShadowFiend.castPrediction(myHero, enemy, razePrediction)
+        local predictedPos = ShadowFiend.castPrediction(enemy, razePrediction)
         local disRazePOSpredictedPOS = (razePos - predictedPos):Length2D()
         if disRazePOSpredictedPOS <= 200 and not NPC.IsTurning(myHero) then
           Ability.CastNoTarget(razeShort) return
@@ -126,7 +134,7 @@ function ShadowFiend.Combo(myHero, enemy)
       if razeMid and Ability.IsCastable(razeMid, myMana) then
         local razePos = Entity.GetAbsOrigin(myHero) + Entity.GetRotation(myHero):GetForward():Normalized():Scaled(450)
         local razePrediction = 0.55 + 0.1 + (NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) * 2)
-        local predictedPos = ShadowFiend.castPrediction(myHero, enemy, razePrediction)
+        local predictedPos = ShadowFiend.castPrediction(enemy, razePrediction)
         local disRazePOSpredictedPOS = (razePos - predictedPos):Length2D()
         if disRazePOSpredictedPOS <= 200 and not NPC.IsTurning(myHero) then
           Ability.CastNoTarget(razeMid) return
@@ -135,7 +143,7 @@ function ShadowFiend.Combo(myHero, enemy)
       if razeLong and Ability.IsCastable(razeLong, myMana) then
         local razePos = Entity.GetAbsOrigin(myHero) + Entity.GetRotation(myHero):GetForward():Normalized():Scaled(700)
         local razePrediction = 0.55 + 0.1 + (NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) * 2)
-        local predictedPos = ShadowFiend.castPrediction(myHero, enemy, razePrediction)
+        local predictedPos = ShadowFiend.castPrediction(enemy, razePrediction)
         local disRazePOSpredictedPOS = (razePos - predictedPos):Length2D()
         if disRazePOSpredictedPOS <= 200 and not NPC.IsTurning(myHero) then
           Ability.CastNoTarget(razeLong) return
@@ -144,7 +152,7 @@ function ShadowFiend.Combo(myHero, enemy)
     end
   end
 end
-function ShadowFiend.PoopLinken(myHero, enemy, eul, requiem, myMana)
+function ShadowFiend.PoopLinken(enemy, eul, requiem, myMana)
   if not Menu.IsEnabled(ShadowFiend.optionEnablePoopLinken) then return end
   local Force = NPC.GetItem(myHero, "item_force_staff", true)
   local pike = NPC.GetItem(myHero, "item_hurricane_pike", true)
@@ -186,7 +194,7 @@ function ShadowFiend.PoopLinken(myHero, enemy, eul, requiem, myMana)
     end
   end
 end
-function ShadowFiend.heroCanCastSpells(myHero, enemy)
+function ShadowFiend.heroCanCastSpells(enemy)
 
   if not myHero then return false end
   if not Entity.IsAlive(myHero) then return false end
@@ -219,18 +227,18 @@ function ShadowFiend.heroCanCastSpells(myHero, enemy)
   end
   return true
 end
-function ShadowFiend.GenericMainAttack(myHero, attackType, target, position)
+function ShadowFiend.GenericMainAttack(attackType, target, position)
 
   if not myHero then return end
   if not target and not position then return end
 
-  if ShadowFiend.isHeroChannelling(myHero) == true then return end
-  if ShadowFiend.heroCanCastItems(myHero) == false then return end
-  if ShadowFiend.IsInAbilityPhase(myHero) == true then return end
-  ShadowFiend.GenericAttackIssuer(attackType, target, position, myHero)
+  if ShadowFiend.isHeroChannelling() == true then return end
+  if ShadowFiend.heroCanCastItems() == false then return end
+  if ShadowFiend.IsInAbilityPhase() == true then return end
+  ShadowFiend.GenericAttackIssuer(attackType, target, position)
 
 end
-function ShadowFiend.heroCanCastItems(myHero)
+function ShadowFiend.heroCanCastItems()
 
   if not myHero then return false end
   if not Entity.IsAlive(myHero) then return false end
@@ -261,7 +269,7 @@ function ShadowFiend.heroCanCastItems(myHero)
 
   return true
 end
-function ShadowFiend.IsInAbilityPhase(myHero)
+function ShadowFiend.IsInAbilityPhase()
 
   if not myHero then return false end
 
@@ -287,7 +295,7 @@ function ShadowFiend.IsInAbilityPhase(myHero)
   return false
 
 end
-function ShadowFiend.isHeroChannelling(myHero)
+function ShadowFiend.isHeroChannelling()
 
   if not myHero then return true end
 
@@ -297,16 +305,17 @@ function ShadowFiend.isHeroChannelling(myHero)
   return false
 
 end
-function ShadowFiend.GenericAttackIssuer(attackType, target, position, npc)
+function ShadowFiend.GenericAttackIssuer(attackType, target, position)
 
-  if not npc then return end
+  if not myHero then return end
+  local npc = myHero
   if not target and not position then return end
   if os.clock() - lastAttackTime2 < 0.5 then return end
 
   if attackType == "Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET" then
     if target ~= nil then
       if target ~= LastTarget then
-        Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, target, Vector(0, 0, 0), ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, npc)
+        Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, target, Vector(0, 0, 0), ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
         LastTarget = target
       end
     end
@@ -352,7 +361,7 @@ function ShadowFiend.GenericAttackIssuer(attackType, target, position, npc)
     end
   end
 end
-function ShadowFiend.castPrediction(myHero, enemy, adjustmentVariable)
+function ShadowFiend.castPrediction(enemy, adjustmentVariable)
 
   if not myHero then return end
   if not enemy then return end
