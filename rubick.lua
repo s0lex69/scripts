@@ -38,7 +38,7 @@ function Rubick.OnUpdate()
     local myMana = NPC.GetMana(myHero)
 
     if Rubick.TimeTick > GameRules.GetGameTime() then return end 
-
+    Rubick.Draw()
     local ultimate = NPC.GetAbility(myHero, "rubick_spell_steal")
 
     if not ultimate or Ability.GetCooldownTimeLeft(ultimate)>0 or not Ability.IsCastable(ultimate, myMana) then return end
@@ -337,7 +337,7 @@ function Rubick.DrawAbilityLevels(ability, x, y)
     end
 end
 
-function Rubick.OnDraw()
+function Rubick.Draw()
     if not Menu.IsEnabled(Rubick.option) then return end
     if not Menu.IsKeyDown(Rubick.optionKey) then return end
 
