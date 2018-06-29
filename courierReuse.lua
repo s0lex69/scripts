@@ -1,7 +1,7 @@
 local courierReuse = {}
 
 courierReuse.OptionEnabled = Menu.AddOptionBool({"Utility", "Courier"}, "Enabled", false)
-courierReuse.optionKey = Menu.AddKeyOption({ "Utility", "Courier"}, "Toggle Key to reuse", Enum.ButtonCode.KEY_T)
+courierReuse.optionKey = Menu.AddKeyOption({ "Utility", "Courier"}, "Toggle to reuse", Enum.ButtonCode.KEY_T)
 courierReuse.optionMuteFilter = Menu.AddOptionBool({"Utility", "Courier"}, "Mute Filter", false)
 courierReuse.players = {}
 courierReuse.muted = {}
@@ -92,7 +92,7 @@ function courierReuse.OnUpdate()
         					break
         				end
         			end
-        			if hasItem then        			
+        			if hasItem and Entity.IsAlive(myHero) then        			
           				Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET, myHero, Vector(0, 0, 0), reuse, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, index_npc)
           			end
         		end
