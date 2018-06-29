@@ -1,7 +1,7 @@
 local courierReuse = {}
 
 courierReuse.OptionEnabled = Menu.AddOptionBool({"Utility", "Courier"}, "Enabled", false)
-courierReuse.optionKey = Menu.AddKeyOption({ "Utility", "Courier"}, "Toggle to reuse", Enum.ButtonCode.KEY_T)
+courierReuse.optionKey = Menu.AddKeyOption({ "Utility", "Courier"}, "Toggle Key to reuse", Enum.ButtonCode.KEY_T)
 courierReuse.optionMuteFilter = Menu.AddOptionBool({"Utility", "Courier"}, "Mute Filter", false)
 courierReuse.players = {}
 courierReuse.muted = {}
