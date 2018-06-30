@@ -26,7 +26,7 @@ function wisp.OnGameStart()
 	needInit = true
 end
 function wisp.OnUpdate() 
-	if not Heroes.GetLocal() or not Menu.IsEnabled(wisp.optionEnable) then return end
+	if not Heroes.GetLocal() or not Menu.IsEnabled(wisp.optionEnable) or not myHero then return end
 	if NPC.GetUnitName(myHero) ~= "npc_dota_hero_wisp" then return end
 	if Menu.IsKeyDownOnce(wisp.toggleKey) then
 		if toggled1 == false then
