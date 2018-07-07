@@ -219,6 +219,7 @@ function notification.runesAlert()
 		nextTick = GameRules.GetGameTime() + 0.5
 	end
 	if nextTick ~= 0 and GameRules.GetGameTime() > nextTick then
+		alertTime = {}
 		nextTick = 0
 	end
 end
