@@ -152,6 +152,7 @@ local myTeam
 local x,y,x1,y1,y2
 local needInit = true
 local language
+local nextTick = 0
 function notification.Init()
 	myHero = Heroes.GetLocal()
 	myTeam = Entity.GetTeamNum(myHero)
@@ -186,6 +187,7 @@ function notification.OnGameStart()
     notification.test = nil
     notification.roshdead = false
     notification.roshdietime = nil
+    nextTick = 0
     time = 0
 	alertTime = {}
 	needInit = true
@@ -195,22 +197,30 @@ function notification.OnGameEnd()
 end
 function notification.runesAlert()
 	if not Menu.IsEnabled(notification.optionRunesAlertEnable) then return end
+	if GameRules.GetGameStartTime() < 1 then return end
 	local gameTime = GameRules.GetGameTime() - GameRules.GetGameStartTime()
-	while gameTime >= 300 do
-		gameTime = gameTime - 300
+	if gameTime >= 300 then
+		gameTime = gameTime % 300
 	end	
-	if math.floor(gameTime) == 270 and not alertTime[math.floor(gameTime)] then
+	--Log.Write(gameTime)
+	if math.floor(gameTime) == 285 and not alertTime[math.floor(gameTime)] then
 		Engine.ExecuteCommand("chatwheel_say 58")
 		alertTime[math.floor(gameTime)] = true
-	end
-	if math.floor(gameTime) == 280 and not alertTime[math.floor(gameTime)] then
-		Engine.ExecuteCommand("chatwheel_say 58")
-		alertTime[math.floor(gameTime)] = true
+		nextTick = GameRules.GetGameTime() + 0.5
 	end
 	if math.floor(gameTime) == 290 and not alertTime[math.floor(gameTime)] then
 		Engine.ExecuteCommand("chatwheel_say 58")
 		alertTime[math.floor(gameTime)] = true
-	end	
+		nextTick = GameRules.GetGameTime() + 0.5
+	end
+	if math.floor(gameTime) == 295 and not alertTime[math.floor(gameTime)] then
+		Engine.ExecuteCommand("chatwheel_say 58")
+		alertTime[math.floor(gameTime)] = true
+		nextTick = GameRules.GetGameTime() + 0.5
+	end
+	if nextTick ~= 0 and GameRules.GetGameTime() > nextTick then
+		nextTick = 0
+	end
 end
 function notification.OnUnitAnimation(animation)
 	if not Menu.IsEnabled(notification.optionEnable) then return end
@@ -389,6 +399,42 @@ function notification.OnModifierCreate(ent,mod)
 end
 function notification.OnParticleCreate(particle)
   	if not Menu.IsEnabled(notification.optionEnable) then return end
+  	--Log.Write(particle.name)
+  	if Menu.IsEnabled(notification.optionSkillAlertEnable) and Menu.IsEnabled(notification.optionChatAlertEnable) then
+  		if particle.name == "sandking_epicenter_tell" then
+  			for i = 1, Heroes.Count() do
+  				local hero = Heroes.Get(i)
+  				local heroName = NPC.GetUnitName(hero)
+  				if heroName == "npc_dota_hero_sand_king" and not Entity.IsSameTeam(hero,myHero) then
+  					local ability = NPC.GetAbility(hero, "sandking_epicenter")
+  					Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_PING_ABILITY, ability, Vector(0,0,0), ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, Heroes.GetLocal())
+  				end
+  			end
+  		end
+  		if particle.name == "sven_spell_gods_strength_ambient" or particle.name == "sven_spell_gods_strength" then
+  			for i = 1, Heroes.Count() do
+  				local hero = Heroes.Get(i)
+  				local heroName = NPC.GetUnitName(hero)
+  				if heroName == "npc_dota_hero_sven" and not Entity.IsSameTeam(hero,myHero) then
+  					local ability = NPC.GetAbility(hero, "sven_gods_strength")
+  					Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_PING_ABILITY, ability, Vector(0,0,0), ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, Heroes.GetLocal())
+  				end
+  			end
+  		end
+  		if particle.name == "lycan_shapeshift_cast" then
+  			for i = 1, Heroes.Count() do
+  				local hero = Heroes.Get(i)
+  				local heroName = NPC.GetUnitName(hero)
+  				if heroName == "npc_dota_hero_lycan" and not Entity.IsSameTeam(hero,myHero) then
+  					local ability = NPC.GetAbility(hero, "lycan_shapeshift")
+  					Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_PING_ABILITY, ability, Vector(0,0,0), ability, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, Heroes.GetLocal())
+  				end
+  			end
+  		end
+  	end
+  	if particle.name == "aegis_respawn_timer" then
+  		notification.roshdead = false
+  	end
   	if particle.name == "dropped_aegis" then 
   		notification.roshdead = true 
   		notification.roshdietime = GameRules.GetGameTime() - GameRules.GetGameStartTime()
