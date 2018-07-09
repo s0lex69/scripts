@@ -168,6 +168,7 @@ function notification.Init()
 	y2 = 25
 	needInit = false
 	language = Menu.GetValue(notification.optionLanguage)
+	notification.roshalive = false
 end
 function notification.OnUpdate()
 	if not Menu.IsEnabled(notification.optionEnable) then return end
