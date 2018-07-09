@@ -1,5 +1,6 @@
 local notification = {}
 notification.optionEnable = Menu.AddOptionBool({"Awareness", "Notification"}, "Enable", false)
+notification.optionRoshInfo = Menu.AddOptionBool({"Awareness", "Notification"}, "Rosh Info", false)
 notification.optionChatAlertEnable = Menu.AddOptionBool({"Awareness", "Notification", "Chat Alert"}, "Enable", false)
 notification.optionSkillAlertEnable = Menu.AddOptionBool({"Awareness", "Notification", "Chat Alert"}, "Skill Alert", false)
 notification.optionRunesAlertEnable = Menu.AddOptionBool({"Awareness", "Notification", "Chat Alert"}, "Runes Alert", false)
@@ -143,13 +144,14 @@ notification.cachedIcons = {}
 notification.roshdead = false
 notification.roshres = false
 notification.roshrestime = 0
+notification.roshalive = false
 local position2 = nil
 local charg = false
 local charghero = nil
 local alertTime = {}
 local myHero
 local myTeam
-local x,y,x1,y1,y2
+local x,y,x1,y1,y2,x3,y3
 local needInit = true
 local language
 local nextTick = 0
@@ -158,7 +160,9 @@ function notification.Init()
 	myTeam = Entity.GetTeamNum(myHero)
 	x,y = Renderer.GetScreenSize()
 	x1 = x * 0.495
-	y1 = x * 0.03
+	y1 = y * 0.03
+	x3 = x * 0.732
+	y3 = y * 0.04
 	x = x * 0.9
 	y = y * 0.04
 	y2 = 25
@@ -251,17 +255,26 @@ function notification.OnDraw()
   	elseif notification.cachedIcons[3] == nil then
     	notification.cachedIcons[3] = Renderer.LoadImage("resource/flash3/images/spellicons/mirana_invis.png")
   	end
+  	if Menu.IsEnabled(notification.optionRoshInfo) then
+  		if notification.roshalive then
+  			Renderer.SetDrawColor(0,255,0)
+  			Renderer.DrawText(notification.font, x3,y3, "rosh alive")
+  		else
+  			Renderer.SetDrawColor(255,0,0)
+  			Renderer.DrawText(notification.font, x3,y3,"rosh dead")	
+  		end
+  	end
   	local time
   	local gametime = GameRules.GetGameTime() - GameRules.GetGameStartTime()
   	if notification.roshdead == true then
     	if (gametime - notification.roshdietime) <= 300 then
-      		Renderer.SetDrawColor(255, 0, 255)
-      		local roshtimermin = math.floor((gametime - notification.roshdietime) / 60)
+     		Renderer.SetDrawColor(255, 0, 255)
+     		local roshtimermin = math.floor((gametime - notification.roshdietime) / 60)
       		local roshtimersec = math.floor((gametime - notification.roshdietime)%60)
       		Renderer.DrawText(notification.font2, x1, y1, 4 - roshtimermin..":"..60 - roshtimersec)
     	else
-      		notification.roshdead = false
-      		notification.roshdietime = nil
+   			notification.roshdead = false
+   			notification.roshdietime = nil
     	end
   	end
   	if notification.roshres == true then
@@ -437,6 +450,7 @@ function notification.OnParticleCreate(particle)
   		notification.roshdead = false
   	end
   	if particle.name == "dropped_aegis" then 
+  		notification.roshalive = false
   		notification.roshdead = true 
   		notification.roshdietime = GameRules.GetGameTime() - GameRules.GetGameStartTime()
     	local min = math.floor(notification.roshdietime / 60)
@@ -451,7 +465,8 @@ function notification.OnParticleCreate(particle)
     		end
     	end
   	end
-  	if particle.name == "roshan_spawn" then 
+  	if particle.name == "roshan_spawn" then
+  		notification.roshalive = true
   		notification.roshres = true 
   		notification.roshrestime = GameRules.GetGameTime() 
   		notification.roshdead = false 
