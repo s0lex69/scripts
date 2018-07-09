@@ -160,7 +160,7 @@ function notification.Init()
 	myTeam = Entity.GetTeamNum(myHero)
 	x,y = Renderer.GetScreenSize()
 	x1 = x * 0.495
-	y1 = y * 0.03
+	y1 = y * 0.05
 	x3 = x * 0.732
 	y3 = y * 0.04
 	x = x * 0.9
