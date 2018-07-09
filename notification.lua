@@ -204,81 +204,6 @@ function notification.OnUpdate()
   	  		notification.roshrestime = 0
   		end
   	end	
-  	if notification.roshattack == true then
-    	if GameRules.GetGameTime() - notification.roshattacktime <= 5 and GameRules.GetGameTime() - notification.roshattacktime > 0 then
-      	MiniMap.DrawCircle(Vector(-2253.187500, 1704.875000, 159.968750), 195, 255, 0, 255)
-    	else 
-    		notification.roshattacktime = nil notification.roshattack = false
-    	end
-  	end
-  	if notification.smokestart ~= nil then
-    	if notification.beforegame == nil then
-      		time = GameRules.GetGameTime() - GameRules.GetGameStartTime()
-    	else 
-    		time = GameRules.GetGameTime() 
-    	end
-    	notification.smokeend = notification.smokestart + 35.00
-  	end
-  	if notification.moonlightstart ~= nil then 
-  		time = GameRules.GetGameTime() - GameRules.GetGameStartTime()
-    	notification.moonlightend = notification.moonlightstart + 15.00
-  	end
-  	if notification.vendetastart ~= nil then 
-  		time = GameRules.GetGameTime() - GameRules.GetGameStartTime()
-    	for i = 1, Heroes.Count() do
-      		local hero = Heroes.Get(i)
-      		local vendeta
-      		local vendetalvl
-      		if NPC.GetUnitName(hero) == "npc_dota_hero_nyx_assassin" then
-        		vendeta = NPC.GetAbility(hero, "nyx_assassin_vendetta")
-        		vendetalvl = Ability.GetLevel(vendeta)
-        		if vendetalvl == 3 then 
-        			notification.vendetaduration = 60.00
-        		else
-         			if vendetalvl == 2 then 
-         				notification.vendetaduration = 50.00
-          			else 
-          				notification.vendetaduration = 40.00 
-          			end
-        		end
-        	notification.vendetaend = notification.vendetastart + notification.vendetaduration
-      		end
-    	end
- 	end
-  	if notification.smoke ~= nil and time < notification.smokeend then 
-  		Renderer.SetDrawColor(255, 0, 0, 255) 
-  		Renderer.DrawText(notification.font, x, y, "Smoke "..math.floor(notification.smokeend - time)) 
-  		MiniMap.DrawCircle(notification.pos, 255, 0, 225, 255) 
-  		Renderer.SetDrawColor(255, 255, 255, 255) 
-  		Renderer.DrawImage(notification.cachedIcons[1], x - 24, y + 4, 22, 22)
-  	else 
-  		notification.smokestart = nil 
-  		notification.smokeend = nil 
-  		notification.smoke = nil 
-  		notification.pos = nil 
-  	end
-  	if notification.moonlight ~= nil and time < notification.moonlightend then
-   		if notification.smoke ~= nil then
-   			y = y + y2 
-   		end
-    	Renderer.SetDrawColor(255, 0, 0, 255)
-    	Renderer.DrawText(notification.font, x, y, "Moon "..math.floor(notification.moonlightend - time)) 
-    	Renderer.SetDrawColor(255, 255, 255, 255) 
-    	Renderer.DrawImage(notification.cachedIcons[3], x - 24, y + 4, 22, 22)
-  	end
-  	if notification.vendeta ~= nil and time < notification.vendetaend then
-    	if notification.smoke ~= nil then
-    		y = y + y2 
-    	end
-    	if notification.smoke == nil and notification.moonlight ~= nil then 
-    		y = y + y2 
-    	end
-    	Renderer.SetDrawColor(255, 0, 0, 255)
-    	Renderer.DrawText(notification.font, x, y, "Vendetta "..math.floor(notification.vendetaend - time)) 
-    	Renderer.SetDrawColor(255, 255, 255, 255) 
-    	Renderer.DrawImage(notification.cachedIcons[2], x - 24, y + 4, 22, 22)
-    	MiniMap.DrawHeroIcon("npc_dota_hero_nyx_assassin", notification.nyxpos, 255, 0, 0, 255, 800)
-  	end
 	notification.runesAlert()
 	notification.BaraAlert()
 end
@@ -361,6 +286,81 @@ function notification.OnDraw()
     	notification.cachedIcons[2] = Renderer.LoadImage("resource/flash3/images/spellicons/nyx_assassin_vendetta.png")
   	elseif notification.cachedIcons[3] == nil then
     	notification.cachedIcons[3] = Renderer.LoadImage("resource/flash3/images/spellicons/mirana_invis.png")
+  	end
+  	if notification.roshattack == true then
+    	if GameRules.GetGameTime() - notification.roshattacktime <= 5 and GameRules.GetGameTime() - notification.roshattacktime > 0 then
+      	MiniMap.DrawCircle(Vector(-2253.187500, 1704.875000, 159.968750), 195, 255, 0, 255)
+    	else 
+    		notification.roshattacktime = nil notification.roshattack = false
+    	end
+  	end
+  	if notification.smokestart ~= nil then
+    	if notification.beforegame == nil then
+      		time = GameRules.GetGameTime() - GameRules.GetGameStartTime()
+    	else 
+    		time = GameRules.GetGameTime() 
+    	end
+    	notification.smokeend = notification.smokestart + 35.00
+  	end
+  	if notification.moonlightstart ~= nil then 
+  		time = GameRules.GetGameTime() - GameRules.GetGameStartTime()
+    	notification.moonlightend = notification.moonlightstart + 15.00
+  	end
+  	if notification.vendetastart ~= nil then 
+  		time = GameRules.GetGameTime() - GameRules.GetGameStartTime()
+    	for i = 1, Heroes.Count() do
+      		local hero = Heroes.Get(i)
+      		local vendeta
+      		local vendetalvl
+      		if NPC.GetUnitName(hero) == "npc_dota_hero_nyx_assassin" then
+        		vendeta = NPC.GetAbility(hero, "nyx_assassin_vendetta")
+        		vendetalvl = Ability.GetLevel(vendeta)
+        		if vendetalvl == 3 then 
+        			notification.vendetaduration = 60.00
+        		else
+         			if vendetalvl == 2 then 
+         				notification.vendetaduration = 50.00
+          			else 
+          				notification.vendetaduration = 40.00 
+          			end
+        		end
+        	notification.vendetaend = notification.vendetastart + notification.vendetaduration
+      		end
+    	end
+ 	end
+  	if notification.smoke ~= nil and time < notification.smokeend then 
+  		Renderer.SetDrawColor(255, 0, 0, 255) 
+  		Renderer.DrawText(notification.font, x, y, "Smoke "..math.floor(notification.smokeend - time)) 
+  		MiniMap.DrawCircle(notification.pos, 255, 0, 225, 255) 
+  		Renderer.SetDrawColor(255, 255, 255, 255) 
+  		Renderer.DrawImage(notification.cachedIcons[1], x - 24, y + 4, 22, 22)
+  	else 
+  		notification.smokestart = nil 
+  		notification.smokeend = nil 
+  		notification.smoke = nil 
+  		notification.pos = nil 
+  	end
+  	if notification.moonlight ~= nil and time < notification.moonlightend then
+   		if notification.smoke ~= nil then
+   			y = y + y2 
+   		end
+    	Renderer.SetDrawColor(255, 0, 0, 255)
+    	Renderer.DrawText(notification.font, x, y, "Moon "..math.floor(notification.moonlightend - time)) 
+    	Renderer.SetDrawColor(255, 255, 255, 255) 
+    	Renderer.DrawImage(notification.cachedIcons[3], x - 24, y + 4, 22, 22)
+  	end
+  	if notification.vendeta ~= nil and time < notification.vendetaend then
+    	if notification.smoke ~= nil then
+    		y = y + y2 
+    	end
+    	if notification.smoke == nil and notification.moonlight ~= nil then 
+    		y = y + y2 
+    	end
+    	Renderer.SetDrawColor(255, 0, 0, 255)
+    	Renderer.DrawText(notification.font, x, y, "Vendetta "..math.floor(notification.vendetaend - time)) 
+    	Renderer.SetDrawColor(255, 255, 255, 255) 
+    	Renderer.DrawImage(notification.cachedIcons[2], x - 24, y + 4, 22, 22)
+    	MiniMap.DrawHeroIcon("npc_dota_hero_nyx_assassin", notification.nyxpos, 255, 0, 0, 255, 800)
   	end
 end
 function notification.OnModifierCreate(ent,mod)
