@@ -196,7 +196,7 @@ function notification.OnGameEnd()
 	alertTime = {}
 end
 function notification.runesAlert()
-	if not Menu.IsEnabled(notification.optionRunesAlertEnable) then return end
+	if not Menu.IsEnabled(notification.optionRunesAlertEnable) or not Menu.IsEnabled(notification.optionChatAlertEnable) then return end
 	if GameRules.GetGameStartTime() < 1 then return end
 	local gameTime = GameRules.GetGameTime() - GameRules.GetGameStartTime()
 	if gameTime >= 300 then
