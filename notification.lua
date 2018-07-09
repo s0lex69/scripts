@@ -172,90 +172,7 @@ end
 function notification.OnUpdate()
 	if not Menu.IsEnabled(notification.optionEnable) then return end
 	if not myHero then return end
-	notification.runesAlert()
-	notification.BaraAlert()
-end
-function notification.OnGameStart()
-	notification.smoke = nil
-    notification.smokestart = nil
-    notification.smokeend = nil
-    notification.vendeta = nil
-    notification.vendetastart = nil
-    notification.vendetaend = nil
-    notification.moonlight = nil
-    notification.moonlightstart = nil
-    notification.moonlightend = nil
-    notification.vendetaduration = nil
-    notification.beforegame = nil
-    notification.pos = nil
-    notification.test = nil
-    notification.roshdead = false
-    notification.roshdietime = nil
-    nextTick = 0
-    time = 0
-	alertTime = {}
-	needInit = true
-end
-function notification.OnGameEnd()
-	alertTime = {}
-end
-function notification.runesAlert()
-	if not Menu.IsEnabled(notification.optionRunesAlertEnable) or not Menu.IsEnabled(notification.optionChatAlertEnable) then return end
-	if GameRules.GetGameStartTime() < 1 then return end
-	local gameTime = GameRules.GetGameTime() - GameRules.GetGameStartTime()
-	if gameTime >= 300 then
-		gameTime = gameTime % 300
-	end	
-	--Log.Write(gameTime)
-	if math.floor(gameTime) == 285 and not alertTime[math.floor(gameTime)] then
-		Engine.ExecuteCommand("chatwheel_say 58")
-		alertTime[math.floor(gameTime)] = true
-		nextTick = GameRules.GetGameTime() + 0.5
-	end
-	if math.floor(gameTime) == 290 and not alertTime[math.floor(gameTime)] then
-		Engine.ExecuteCommand("chatwheel_say 58")
-		alertTime[math.floor(gameTime)] = true
-		nextTick = GameRules.GetGameTime() + 0.5
-	end
-	if math.floor(gameTime) == 295 and not alertTime[math.floor(gameTime)] then
-		Engine.ExecuteCommand("chatwheel_say 58")
-		alertTime[math.floor(gameTime)] = true
-		nextTick = GameRules.GetGameTime() + 0.5
-	end
-	if nextTick ~= 0 and GameRules.GetGameTime() > nextTick then
-		alertTime = {}
-		nextTick = 0
-	end
-end
-function notification.OnUnitAnimation(animation)
-	if not Menu.IsEnabled(notification.optionEnable) then return end
-  	if animation.sequenceName == "roshan_attack" or animation.sequenceName == "roshan_attack2" then 
-  		notification.roshattack = true 
-    	notification.roshattacktime = GameRules.GetGameTime() 
-  		if Menu.IsEnabled(notification.optionChatAlertEnable) and Menu.IsEnabled(notification.optionRoshAlertEnable) then
-  			if language == 0 then 
-  				Engine.ExecuteCommand("say_team Кто-то бьет рошана")
-  			elseif language == 1 then
-  				Engine.ExecuteCommand("say_team Roshan is under attack")
-  			else
-  				Engine.ExecuteCommand("say_team Хтось б'є рошана")		
-  			end	 
-  		end
- 	end
-end
-function notification.OnDraw()
-  	if not Menu.IsEnabled(notification.optionEnable) or not Heroes.GetLocal() then return end
-   	if needInit then
- 		notification.Init()
- 	end	
-  	if notification.cachedIcons[1] == nil then
-  		notification.cachedIcons[1] = Renderer.LoadImage("resource/flash3/images/items/smoke_of_deceit.png")
-  	elseif notification.cachedIcons[2] == nil then
-    	notification.cachedIcons[2] = Renderer.LoadImage("resource/flash3/images/spellicons/nyx_assassin_vendetta.png")
-  	elseif notification.cachedIcons[3] == nil then
-    	notification.cachedIcons[3] = Renderer.LoadImage("resource/flash3/images/spellicons/mirana_invis.png")
-  	end
-  	if Menu.IsEnabled(notification.optionRoshInfo) then
+	if Menu.IsEnabled(notification.optionRoshInfo) then
   		if notification.roshalive then
   			Renderer.SetDrawColor(0,255,0)
   			Renderer.DrawText(notification.font, x3,y3, "rosh alive")
@@ -361,9 +278,92 @@ function notification.OnDraw()
     	Renderer.DrawImage(notification.cachedIcons[2], x - 24, y + 4, 22, 22)
     	MiniMap.DrawHeroIcon("npc_dota_hero_nyx_assassin", notification.nyxpos, 255, 0, 0, 255, 800)
   	end
+	notification.runesAlert()
+	notification.BaraAlert()
+end
+function notification.OnGameStart()
+	notification.smoke = nil
+    notification.smokestart = nil
+    notification.smokeend = nil
+    notification.vendeta = nil
+    notification.vendetastart = nil
+    notification.vendetaend = nil
+    notification.moonlight = nil
+    notification.moonlightstart = nil
+    notification.moonlightend = nil
+    notification.vendetaduration = nil
+    notification.beforegame = nil
+    notification.pos = nil
+    notification.test = nil
+    notification.roshdead = false
+    notification.roshdietime = nil
+    nextTick = 0
+    time = 0
+	alertTime = {}
+	needInit = true
+end
+function notification.OnGameEnd()
+	alertTime = {}
+end
+function notification.runesAlert()
+	if not Menu.IsEnabled(notification.optionRunesAlertEnable) or not Menu.IsEnabled(notification.optionChatAlertEnable) then return end
+	if GameRules.GetGameStartTime() < 1 then return end
+	local gameTime = GameRules.GetGameTime() - GameRules.GetGameStartTime()
+	if gameTime >= 300 then
+		gameTime = gameTime % 300
+	end	
+	--Log.Write(gameTime)
+	if math.floor(gameTime) == 285 and not alertTime[math.floor(gameTime)] then
+		Engine.ExecuteCommand("chatwheel_say 58")
+		alertTime[math.floor(gameTime)] = true
+		nextTick = GameRules.GetGameTime() + 0.5
+	end
+	if math.floor(gameTime) == 290 and not alertTime[math.floor(gameTime)] then
+		Engine.ExecuteCommand("chatwheel_say 58")
+		alertTime[math.floor(gameTime)] = true
+		nextTick = GameRules.GetGameTime() + 0.5
+	end
+	if math.floor(gameTime) == 295 and not alertTime[math.floor(gameTime)] then
+		Engine.ExecuteCommand("chatwheel_say 58")
+		alertTime[math.floor(gameTime)] = true
+		nextTick = GameRules.GetGameTime() + 0.5
+	end
+	if nextTick ~= 0 and GameRules.GetGameTime() > nextTick then
+		alertTime = {}
+		nextTick = 0
+	end
+end
+function notification.OnUnitAnimation(animation)
+	if not Menu.IsEnabled(notification.optionEnable) then return end
+  	if animation.sequenceName == "roshan_attack" or animation.sequenceName == "roshan_attack2" then 
+  		notification.roshattack = true 
+    	notification.roshattacktime = GameRules.GetGameTime() 
+  		if Menu.IsEnabled(notification.optionChatAlertEnable) and Menu.IsEnabled(notification.optionRoshAlertEnable) then
+  			if language == 0 then 
+  				Engine.ExecuteCommand("say_team Кто-то бьет рошана")
+  			elseif language == 1 then
+  				Engine.ExecuteCommand("say_team Roshan is under attack")
+  			else
+  				Engine.ExecuteCommand("say_team Хтось б'є рошана")		
+  			end	 
+  		end
+ 	end
+end
+function notification.OnDraw()
+  	if not Menu.IsEnabled(notification.optionEnable) or not Heroes.GetLocal() then return end
+   	if needInit then
+ 		notification.Init()
+ 	end	
+  	if notification.cachedIcons[1] == nil then
+  		notification.cachedIcons[1] = Renderer.LoadImage("resource/flash3/images/items/smoke_of_deceit.png")
+  	elseif notification.cachedIcons[2] == nil then
+    	notification.cachedIcons[2] = Renderer.LoadImage("resource/flash3/images/spellicons/nyx_assassin_vendetta.png")
+  	elseif notification.cachedIcons[3] == nil then
+    	notification.cachedIcons[3] = Renderer.LoadImage("resource/flash3/images/spellicons/mirana_invis.png")
+  	end
 end
 function notification.OnModifierCreate(ent,mod)
-	if not Heroes.GetLocal() or not Menu.IsEnabled(notification.optionEnable) or not Menu.IsEnabled(notification.optionChatAlertEnable) or not Menu.IsEnabled(notification.optionSkillAlertEnable) or NPC.GetUnitName(Heroes.GetLocal()) == "npc_dota_hero_invoker" then return end
+	if not Heroes.GetLocal() or not Menu.IsEnabled(notification.optionEnable) or not Menu.IsEnabled(notification.optionChatAlertEnable) or not Menu.IsEnabled(notification.optionSkillAlertEnable) then return end
 	if Modifier.GetName(mod) == "modifier_invoker_sun_strike" then
 		for i = 1, Heroes.Count() do
 			local hero = Heroes.Get(i)
