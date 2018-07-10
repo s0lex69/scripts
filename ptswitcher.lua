@@ -18,7 +18,7 @@ function ptswitch.OnUpdate()
 		ptswitch.Init()
 	end
 	if not myHero then return end
-	if lastStat and GameRules.GetGameTime() >= nextTick then
+	if lastStat and GameRules.GetGameTime() >= nextTick and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVISIBLE) then
 		local pt = NPC.GetItem(myHero, "item_power_treads", true)
 		if pt then
 			if PowerTreads.GetStats(pt) ~= lastStat then
@@ -33,7 +33,7 @@ function ptswitch.OnUpdate()
 end
 function ptswitch.OnPrepareUnitOrders(orders)
 	if not Menu.IsEnabled(ptswitch.optionEnable) or not myHero then return end
-	if NPC.HasState(Heroes.GetLocal(), Enum.ModifierState.MODIFIER_STATE_INVISIBLE) then return end
+	if NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVISIBLE) then return end
 	if orders.order ~= 5 and orders.order ~= 6 and orders.order ~= 7 and orders.order ~= 8 and orders.order ~= 9 then return end
 	if not orders.ability or not Entity.IsAbility(orders.ability) then return end
 	if Ability.GetManaCost(orders.ability) < 1 then return end
