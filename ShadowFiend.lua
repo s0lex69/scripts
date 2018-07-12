@@ -110,7 +110,7 @@ function ShadowFiend.Combo(enemy)
               ShadowFiend.GenericMainAttack("Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION", nil, Entity.GetAbsOrigin(enemy))
               return
             else
-              if ShadowFiend.cycloneDieTime - GameRules.GetGameTime() <= 1.67 then
+              if ShadowFiend.cycloneDieTime - GameRules.GetGameTime() <= 1.67 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
                 Ability.CastNoTarget(requiem)
                 return
               end
