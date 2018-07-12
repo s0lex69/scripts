@@ -18,7 +18,7 @@ function ptswitch.OnUpdate()
 		ptswitch.Init()
 	end
 	if not myHero then return end
-	if lastStat and GameRules.GetGameTime() >= nextTick and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVISIBLE) then
+	if lastStat and GameRules.GetGameTime() >= nextTick and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVISIBLE) and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
 		local pt = NPC.GetItem(myHero, "item_power_treads", true)
 		if pt then
 			if PowerTreads.GetStats(pt) ~= lastStat then
