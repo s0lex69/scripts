@@ -1,6 +1,7 @@
 local badguy = {}
 badguy.optionEnable = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Enable", false)
 badguy.optionEnableAutoFeed = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Auto-Feed", false)
+badguy.optionEnableAutoUnpause = Menu.AddOptionBool({"Utility", "Bad Guy"}, "AutoUnpause", false)
 badguy.optionEnableAutoLaugh = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Auto Laugh", false)
 badguy.optionSliderAutoLaugh = Menu.AddOptionSlider({"Utility", "Bad Guy"}, "Laugh delay", 15,100,15)
 badguy.optionToxicFlame = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Toxic Flame", false)
@@ -23,6 +24,7 @@ local lastlaugh = nil
 local laughed = false
 local aliveHeroes = {}
 local myHero = nil
+local unpauseTick = 0
 local needInit = true
 local base = nil
 function badguy.Init()
@@ -36,6 +38,7 @@ function badguy.Init()
 		base = radiant
 	end
 	needInit = false
+	unpauseTick = 0
 end
 function badguy.OnGameStart()
 	aliveHeroes = {}
@@ -53,6 +56,9 @@ function badguy.OnUpdate()
 	if needInit then
 		badguy.Init()
 	end
+	if Menu.IsEnabled(badguy.optionEnableAutoUnpause) then
+		badguy.autoUnpause()
+	end
 	if Menu.IsEnabled(badguy.optionEnableAutoFeed) then
 		badguy.autofeed()
 	end
@@ -62,7 +68,13 @@ function badguy.OnUpdate()
 	if Menu.IsEnabled(badguy.optionToxicFlame) then
 		badguy.toxicFlame()
 	end	
-end	
+end
+function badguy.autoUnpause()
+	if GameRules.IsPaused() and os.clock() >= unpauseTick then
+		Engine.ExecuteCommand("dota_pause")
+		unpauseTick = unpauseTick + 0.1 + NetChannel.GetLatency(Enum.Flow.FLOW_OUTGOING)
+	end
+end
 function badguy.autofeed()
 	if Entity.IsAlive(myHero) then
 		Player.PrepareUnitOrders(Players.GetLocal(),Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION,nil,base,nil,Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY,myHero)
