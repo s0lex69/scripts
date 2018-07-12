@@ -23,7 +23,7 @@ function ptswitch.OnUpdate()
 		if pt then
 			if PowerTreads.GetStats(pt) ~= lastStat then
 				Ability.CastNoTarget(pt)
-				nextTick = nextTick + 0.1
+				nextTick = nextTick + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 			end
 			if PowerTreads.GetStats(pt) == lastStat then
 				lastStat = nil
@@ -47,7 +47,7 @@ function ptswitch.OnPrepareUnitOrders(orders)
 			Ability.CastNoTarget(pt)
 			Ability.CastNoTarget(pt)
 		end
-		nextTick = GameRules.GetGameTime() + Ability.GetCastPoint(orders.ability) + 0.25
+		nextTick = GameRules.GetGameTime() + Ability.GetCastPoint(orders.ability) + 0.25 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 	end
 end
 return ptswitch
