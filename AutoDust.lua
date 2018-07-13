@@ -12,6 +12,7 @@ local pos = {}
 AutoDust.optionEnable = Menu.AddOptionBool({"Utility", "Auto Dust"}, "Enable", false)
 function AutoDust.Init( ... )
 	myHero = Heroes.GetLocal()
+	if not myHero then return end
 	riki = nil
 	treant = nil
 	local heroes = Heroes.GetAll()
