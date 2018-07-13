@@ -8,15 +8,16 @@ local needInit = true
 local myHero
 local riki = nil
 local treant = nil
+local dust
 local pos = {}
 AutoDust.optionEnable = Menu.AddOptionBool({"Utility", "Auto Dust"}, "Enable", false)
-function AutoDust.Init()
+function AutoDust.Init( ... )
 	myHero = Heroes.GetLocal()
 	riki = nil
 	treant = nil
-	needInit = false
-	for i = 1, Heroes.Count() do
-		local hero = Heroes.Get(i)
+	local heroes = Heroes.GetAll()
+	for i = 1, #heroes do
+		local hero = heroes[i]
 		local heroName = NPC.GetUnitName(hero)
 		if heroName == "npc_dota_hero_riki" and not Entity.IsSameTeam(hero,myHero) then
 			riki = hero
@@ -27,15 +28,12 @@ function AutoDust.Init()
 	end
 end
 function AutoDust.OnGameStart( ... )
-	needInit = true
+	AutoDust.Init()
 end
 function AutoDust.OnUpdate()
-	if not Heroes.GetLocal() or not Menu.IsEnabled(AutoDust.optionEnable) then return end
-	if needInit then
-		AutoDust.Init()
-	end
+	if not Menu.IsEnabled(AutoDust.optionEnable) then return end
 	if not myHero then return end
-	local dust = NPC.GetItem(myHero, "item_dust")
+	dust = NPC.GetItem(myHero, "item_dust")
 	if not dust then return end
 	if riki then
 		if NPC.IsVisible(riki) and NPC.IsEntityInRange(riki,myHero,950) then
@@ -74,7 +72,6 @@ function AutoDust.OnUpdate()
 end
 function AutoDust.OnParticleCreate(particle)
 	if not myHero or not Menu.IsEnabled(AutoDust.optionEnable) then return end
-	local dust = NPC.GetItem(myHero, "item_dust")
 	--Log.Write(tostring(particle.name))
 	if (particle.name == "nyx_assassin_vendetta_start" or particle.name == "glimmer_cape_initial_flash" or particle.name == "sandking_sandstorm") and (not particle.entity or particle.entity == 0 or not Entity.IsSameTeam(myHero,particle.entity)) then
 		index = particle.index
@@ -88,7 +85,6 @@ function AutoDust.OnParticleUpdate(particle)
 end
 function AutoDust.OnModifierCreate(ent,mod)
 	if not myHero or not Menu.IsEnabled(AutoDust.optionEnable) then return end
-	local dust = NPC.GetItem(myHero, "item_dust")
 	if not dust then return end
 	if Modifier.GetName(mod) == "modifier_item_invisibility_edge_windwalk" and NPC.GetUnitName(ent) == "npc_dota_hero_invoker" then
 		if not NPC.HasItem(ent, "item_invis_sword") or Ability.IsReady(NPC.GetItem(ent, "item_invis_sword")) then
@@ -104,4 +100,5 @@ function AutoDust.OnModifierCreate(ent,mod)
 		end
 	end
 end
+AutoDust.Init()
 return AutoDust
