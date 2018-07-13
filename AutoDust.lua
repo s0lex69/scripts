@@ -4,7 +4,6 @@
 --]]
 local AutoDust = {}
 local index
-local needInit = true 
 local myHero
 local riki = nil
 local treant = nil
