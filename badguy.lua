@@ -25,7 +25,6 @@ local laughed = false
 local aliveHeroes = {}
 local myHero = nil
 local unpauseTick = 0
-local needInit = true
 local base = nil
 function badguy.Init()
 	myHero = Heroes.GetLocal()
@@ -37,14 +36,13 @@ function badguy.Init()
 	elseif myTeam == 3 then
 		base = radiant
 	end
-	needInit = false
 	unpauseTick = 0
 end
 function badguy.OnGameStart()
 	aliveHeroes = {}
 	lastlaugh = nil
 	laughed = false
-	needInit = true
+	badguy.Init()
 end
 function badguy.OnGameEnd()
 	aliveHeroes = {}
@@ -52,10 +50,7 @@ function badguy.OnGameEnd()
 	laughed = false
 end
 function badguy.OnUpdate()
-	if not Heroes.GetLocal() or not Menu.IsEnabled(badguy.optionEnable) then lastlaugh = nil aliveHeroes = {} return end
-	if needInit then
-		badguy.Init()
-	end
+	if not myHero or not Menu.IsEnabled(badguy.optionEnable) then lastlaugh = nil aliveHeroes = {} return end
 	if Menu.IsEnabled(badguy.optionEnableAutoUnpause) then
 		badguy.autoUnpause()
 	end
@@ -119,4 +114,5 @@ function badguy.toxicFlame()
 		end	
 	end	
 end
+badguy.Init()
 return badguy
