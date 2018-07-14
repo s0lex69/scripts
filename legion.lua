@@ -30,14 +30,12 @@ local myHero
 local needInit = true
 function LegionCommander.Init()
 	myHero = Heroes.GetLocal()
-	needInit = false
 end
 function LegionCommander.OnGameStart()
-	needInit = true
+	LegionCommander.Init()
 end
 function LegionCommander.OnUpdate()
   if not Menu.IsEnabled(LegionCommander.optionEnable) or not Engine.IsInGame() then return end
-  LegionCommander.Init()
   if not myHero then return end
   if NPC.GetUnitName(myHero) ~= "npc_dota_hero_legion_commander" then return end
   local enemy = Input.GetNearestHeroToCursor(Entity.GetTeamNum(myHero), Enum.TeamType.TEAM_ENEMY)
@@ -375,4 +373,5 @@ function LegionCommander.GenericAttackIssuer(attackType, target, position, npc)
     end
   end
 end
+LegionCommander.Init()
 return LegionCommander

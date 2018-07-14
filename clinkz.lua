@@ -21,19 +21,14 @@ clinkz.optionEnablePoopPike = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Po
 local LockTarget = false
 local enemy = nil
 local myHero
-local needInit = true
 function clinkz.Init()
     myHero = Heroes.GetLocal()
-    needInit = false
 end
 function clinkz.OnGameStart()
-  needInit = true
+  clnikz.Init()
 end
 function clinkz.OnUpdate()
-  if not Menu.IsEnabled(clinkz.optionEnable) or not Engine.IsInGame() then return end
-  if needInit then
-    clinkz.Init()
-  end
+  if not myHero or not Menu.IsEnabled(clinkz.optionEnable) or not Engine.IsInGame() then return end
   if NPC.GetUnitName(myHero) ~= "npc_dota_hero_clinkz" then return end
   if LockTarget == false then
     enemy = Input.GetNearestHeroToCursor(Entity.GetTeamNum(myHero), Enum.TeamType.TEAM_ENEMY)
@@ -214,4 +209,5 @@ function clinkz.heroCanCastItems()
 
   return true
 end
+clinkz.Init()
 return clinkz

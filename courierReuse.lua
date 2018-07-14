@@ -11,27 +11,26 @@ local myTeam
 local bReuse
 local x,y,font
 function courierReuse.OnGameStart()
-	needInit = true
+	courierReuse.Init()
 end
 function courierReuse.Init()
 	myHero = Heroes.GetLocal()
 	bReuse = false
 	myTeam = Entity.GetTeamNum(myHero)
-	needInit = false
 	x,y = Renderer.GetScreenSize()
 	x = x * 0.8785
 	y = y * 0.879
 	font = Renderer.LoadFont("Tahoma", 18, Enum.FontWeight.BOLD)
 end
 function courierReuse.OnDraw()
-	if not Heroes.GetLocal() then return end
+	if not myHero then return end
 	if bReuse then
 		Renderer.SetDrawColor(0,255,0)
 		Renderer.DrawText(font,x,y,"сReuse")
 	end
 end
 function courierReuse.OnUpdate()
-  	if not Engine.IsInGame() or not Heroes.GetLocal() then
+  	if not Engine.IsInGame() or not myHero then
     	for i = 0, 10 do
      	 	if courierReuse.players[i] then
         		Menu.RemoveOption(courierReuse.players[i]) courierReuse.players[i] = nil
@@ -39,10 +38,6 @@ function courierReuse.OnUpdate()
     	end
   	end
   	if not Menu.IsEnabled(courierReuse.OptionEnabled) then return end
-  	if needInit then
-  		courierReuse.Init()
-  	end
-  	if not myHero then return end
   	if Menu.IsKeyDownOnce(courierReuse.optionKey) then
   		if bReuse then
   			bReuse = false
@@ -105,4 +100,5 @@ function courierReuse.OnUpdate()
     	end
   	end
 end
+courierReuse.Init()
 return courierReuse
