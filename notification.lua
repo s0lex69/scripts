@@ -152,7 +152,6 @@ local alertTime = {}
 local myHero
 local myTeam
 local x,y,x1,y1,y2,x3,y3
-local needInit = true
 local language
 local nextTick = 0
 function notification.Init()
@@ -166,7 +165,6 @@ function notification.Init()
 	x = x * 0.9
 	y = y * 0.04
 	y2 = 25
-	needInit = false
 	language = Menu.GetValue(notification.optionLanguage)
 	notification.roshalive = false
 end
@@ -226,7 +224,7 @@ function notification.OnGameStart()
     nextTick = 0
     time = 0
 	alertTime = {}
-	needInit = true
+	notification.Init()
 end
 function notification.OnGameEnd()
 	alertTime = {}
@@ -277,9 +275,6 @@ function notification.OnUnitAnimation(animation)
 end
 function notification.OnDraw()
   	if not Menu.IsEnabled(notification.optionEnable) or not Heroes.GetLocal() then return end
-   	if needInit then
- 		notification.Init()
- 	end	
   	if notification.cachedIcons[1] == nil then
   		notification.cachedIcons[1] = Renderer.LoadImage("resource/flash3/images/items/smoke_of_deceit.png")
   	elseif notification.cachedIcons[2] == nil then
@@ -585,4 +580,5 @@ function notification.Round(num, numDecimalPlaces)
 	local mult = 10^(numDecimalPlaces or 0)
 	return math.floor(num * mult + 0.5) / mult
 end
+notification.Init()
 return notification

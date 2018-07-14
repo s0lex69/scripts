@@ -96,7 +96,7 @@ function clinkz.Combo(enemy)
             Ability.CastTarget(solar, enemy)
           end
         end
-        Player.AttackTarget(Players.GetLocal(), Heroes.GetLocal(), enemy)
+        Player.AttackTarget(Players.GetLocal(), myHero, enemy)
       end
     else
       LockTarget = false

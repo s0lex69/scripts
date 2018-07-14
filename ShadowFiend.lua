@@ -24,17 +24,15 @@ local lastAttackTime2 = 0
 ShadowFiend.Draw = false
 local LockTarget = false
 local enemy = nil
-local needInit = true
 local myHero
 function ShadowFiend.Init()
   myHero = Heroes.GetLocal()
-  needInit = false
+end
+function ShadowFiend.OnGameStart( ... )
+	ShadowFiend.Init()
 end
 function ShadowFiend.OnUpdate()
-  if not Menu.IsEnabled(ShadowFiend.optionEnable) or not Engine.IsInGame() or not Heroes.GetLocal() then return end
-  if needInit then
-    ShadowFiend.Init()
-  end
+  if not Menu.IsEnabled(ShadowFiend.optionEnable) or not Engine.IsInGame() or not myHero then return end
   if LockTarget == false then
     enemy = Input.GetNearestHeroToCursor(Entity.GetTeamNum(myHero), Enum.TeamType.TEAM_ENEMY)
   end
@@ -429,4 +427,5 @@ function ShadowFiend.GetMoveSpeed(enemy)
 
   return base_speed + bonus_speed
 end
+ShadowFiend.Init()
 return ShadowFiend

@@ -6,7 +6,6 @@ local toggled1 = false
 local base = nil
 local myHero
 local myTeam
-local needInit = true
 local dieTime
 local x,y
 function wisp.Init()
@@ -20,13 +19,12 @@ function wisp.Init()
 	x,y = Renderer.GetScreenSize()
 	x = x * 0.59
 	y = y * 0.8426
-	needInit = false
 end
 function wisp.OnGameStart()
-	needInit = true
+	wisp.Init()
 end
 function wisp.OnUpdate() 
-	if not Heroes.GetLocal() or not Menu.IsEnabled(wisp.optionEnable) or not myHero then return end
+	if not Menu.IsEnabled(wisp.optionEnable) or not myHero then return end
 	if NPC.GetUnitName(myHero) ~= "npc_dota_hero_wisp" then return end
 	if Menu.IsKeyDownOnce(wisp.toggleKey) then
 		if toggled1 == false then
@@ -56,11 +54,8 @@ function wisp.OnUpdate()
 	end
 end
 function wisp.OnDraw()
-	if not Menu.IsEnabled(wisp.optionEnable) or not Heroes.GetLocal() then return end
-	if NPC.GetUnitName(Heroes.GetLocal()) ~= "npc_dota_hero_wisp" then return end
-	if needInit then
-		wisp.Init()
-	end
+	if not Menu.IsEnabled(wisp.optionEnable) or not myHero then return end
+	if NPC.GetUnitName(myHero) ~= "npc_dota_hero_wisp" then return end
 	if toggled1 then
 		Renderer.SetDrawColor(90, 255, 100)
 		Renderer.DrawText(font,x,y, "[Auto-TP: ON]")
@@ -69,4 +64,5 @@ function wisp.OnDraw()
 		Renderer.DrawText(font, x, y, "[Auto-TP: OFF]")
 	end	
 end
+wisp.Init()
 return wisp
