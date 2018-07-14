@@ -1,22 +1,17 @@
 local ptswitch = {}
 ptswitch.optionEnable = Menu.AddOptionBool({"Utility"}, "PT Switcher", false)
-local needInit = true
 local myHero
 local lastStat
 local nextTick = 0
 function ptswitch.Init()
 	myHero = Heroes.GetLocal()
-	needInit = false
 	nextTick = 0
-end 
+end
 function ptswitch.OnGameStart()
-	needInit = true
+	ptswitch.Init()
 end
 function ptswitch.OnUpdate()
-	if not Menu.IsEnabled(ptswitch.optionEnable) or not Heroes.GetLocal() or not Engine.IsInGame() then return end
-	if needInit then
-		ptswitch.Init()
-	end
+	if not Menu.IsEnabled(ptswitch.optionEnable) then return end
 	if not myHero then return end
 	if lastStat and GameRules.GetGameTime() >= nextTick and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVISIBLE) and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
 		local pt = NPC.GetItem(myHero, "item_power_treads", true)
@@ -50,4 +45,5 @@ function ptswitch.OnPrepareUnitOrders(orders)
 		nextTick = GameRules.GetGameTime() + Ability.GetCastPoint(orders.ability) + 0.25 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 	end
 end
+ptswitch.Init()
 return ptswitch
