@@ -15,6 +15,7 @@ function courierReuse.OnGameStart()
 end
 function courierReuse.Init()
 	myHero = Heroes.GetLocal()
+	if not myHero then return end
 	bReuse = false
 	myTeam = Entity.GetTeamNum(myHero)
 	x,y = Renderer.GetScreenSize()
