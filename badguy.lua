@@ -28,6 +28,7 @@ local unpauseTick = 0
 local base = nil
 function badguy.Init()
 	myHero = Heroes.GetLocal()
+	if not myHero then return end
 	myTeam = Entity.GetTeamNum(myHero)
 	local radiant = Vector(-7317.406250, -6815.406250, 512.000000)
 	local dire = Vector(7264.000000, 6560.000000, 512.000000)

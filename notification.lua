@@ -156,6 +156,7 @@ local language
 local nextTick = 0
 function notification.Init()
 	myHero = Heroes.GetLocal()
+	if not myHero then return end
 	myTeam = Entity.GetTeamNum(myHero)
 	x,y = Renderer.GetScreenSize()
 	x1 = x * 0.495
