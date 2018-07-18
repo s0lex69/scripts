@@ -1,5 +1,6 @@
 local clinkz = {}
 clinkz.optionEnable = Menu.AddOptionBool({"Hero Specific", "Clinkz"}, "Enable", false)
+Menu.AddMenuIcon({"Hero Specific", "Clinkz"}, "panorama/images/heroes/icons/npc_dota_hero_clinkz_png.vtex_c")
 clinkz.optionKey = Menu.AddKeyOption({"Hero Specific", "Clinkz"}, "Combo Key", Enum.ButtonCode.KEY_Z)
 clinkz.optionEnableLockTarget = Menu.AddOptionBool({"Hero Specific", "Clinkz"}, "Target Locker", false)
 clinkz.optionEnableBlood = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Bloodthorn", false)

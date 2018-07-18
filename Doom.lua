@@ -1,6 +1,7 @@
 local Doom = {}
 
 Doom.optionEnable = Menu.AddOptionBool({"Hero Specific","Doom"},"Enabled",false)
+Menu.AddMenuIcon({"Hero Specific", "Doom"}, "panorama/images/heroes/icons/npc_dota_hero_doom_bringer_png.vtex_c")
 Doom.optionAutoDevour = Menu.AddOptionBool({"Hero Specific", "Doom"}, "Auto Devour", false)
 Doom.optionAutoDoom = Menu.AddOptionBool({"Hero Specific", "Doom"}, "Auto Doom", false)
 Doom.optionToggleKey = Menu.AddKeyOption({"Hero Specific", "Doom"}, "Auto Toggle Key", Enum.ButtonCode.KEY_S)

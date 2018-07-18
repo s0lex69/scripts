@@ -1,6 +1,7 @@
 local Oracle = {}
 
 Oracle.optionEnable = Menu.AddOptionBool({"Hero Specific","Oracle"}, "Enabled", false)
+Menu.AddMenuIcon({"Hero Specific", "Oracle"}, "panorama/images/heroes/icons/npc_dota_hero_oracle_png.vtex_c")
 Oracle.optionKey = Menu.AddKeyOption({"Hero Specific","Oracle"}, "Non-Ult Healing Key", Enum.ButtonCode.KEY_D)
 Oracle.optionKey2 = Menu.AddKeyOption({"Hero Specific","Oracle"}, "Ult Healing Key", Enum.ButtonCode.KEY_F)
 --Items Toggle Menu--

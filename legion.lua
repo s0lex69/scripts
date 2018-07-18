@@ -1,5 +1,6 @@
 local LegionCommander = {}
 LegionCommander.optionEnable = Menu.AddOptionBool({"Hero Specific", "Legion Commander"}, "Enable", false)
+Menu.AddMenuIcon({"Hero Specific", "Legion Commander"}, "panorama/images/heroes/icons/npc_dota_hero_legion_commander_png.vtex_c")
 LegionCommander.optionKey = Menu.AddKeyOption({"Hero Specific", "Legion Commander"}, "Combo Key", Enum.ButtonCode.KEY_Z)
 LegionCommander.optionEnablePressTheAttack = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Combo"}, "Press the Attack", false)
 LegionCommander.optionEnableBlademail = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Combo"}, "Blade Mail", false)

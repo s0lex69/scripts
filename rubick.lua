@@ -1,6 +1,7 @@
 local Rubick = {}
 
 Rubick.option = Menu.AddOptionBool({ "Hero Specific", "Rubick", "Advanced"}, "Enable", false)
+Menu.AddMenuIcon({"Hero Specific", "Rubick"}, "panorama/images/heroes/icons/npc_dota_hero_rubick_png.vtex_c")
 Rubick.boxSizeOption = Menu.AddOptionSlider({ "Hero Specific", "Rubick","Advanced" }, "Display Size", 12, 64, 12)
 Rubick.optionKey = Menu.AddKeyOption({"Hero Specific", "Rubick", "Advanced"}, "Key", Enum.ButtonCode.KEY_P)
 Rubick.needsInit = true

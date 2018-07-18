@@ -1,6 +1,7 @@
 local SkyWrathMage = {}
 
 SkyWrathMage.IsToggled = Menu.AddOptionBool({"Hero Specific", "SkyWrathMage"}, "Enabled", false)
+Menu.AddMenuIcon({"Hero Specific", "SkyWrathMage"}, "panorama/images/heroes/icons/npc_dota_hero_skywrath_mage_png.vtex_c")
 SkyWrathMage.IsTargetParticleEnabled = Menu.AddOptionBool({"Hero Specific", "SkyWrathMage"}, "Target indicator", false)
 SkyWrathMage.IsConcShotParticleEnabled = Menu.AddOptionBool({"Hero Specific", "SkyWrathMage"}, "Concussive shot indicator", false)
 SkyWrathMage.combokey = Menu.AddKeyOption({"Hero Specific", "SkyWrathMage"}, "Combo Key", Enum.ButtonCode.KEY_F)

@@ -1,5 +1,6 @@
 local ShadowFiend = {}
 ShadowFiend.optionEnable = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend"}, "Enable", false)
+Menu.AddMenuIcon({"Hero Specific", "Shadow Fiend"}, "panorama/images/heroes/icons/npc_dota_hero_nevermore_png.vtex_c")
 ShadowFiend.optionKey = Menu.AddKeyOption({"Hero Specific", "Shadow Fiend"}, "Auto Raze Key", Enum.ButtonCode.KEY_Z)
 ShadowFiend.optionEulKey = Menu.AddKeyOption({"Hero Specific", "Shadow Fiend"}, "Eul combo key", Enum.ButtonCode.KEY_F)
 ShadowFiend.optionEnableBlink = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend", "Eul Combo"}, "Blink", false)
