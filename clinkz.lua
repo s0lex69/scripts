@@ -26,7 +26,7 @@ function clinkz.Init()
     myHero = Heroes.GetLocal()
 end
 function clinkz.OnGameStart()
-  clnikz.Init()
+  clinkz.Init()
 end
 function clinkz.OnUpdate()
   if not myHero or not Menu.IsEnabled(clinkz.optionEnable) or not Engine.IsInGame() then return end
