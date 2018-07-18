@@ -9,6 +9,7 @@ local needInit = true
 local myHero
 local myTeam
 local bReuse
+local index_npc -- courier
 local x,y,font
 function courierReuse.OnGameStart()
 	courierReuse.Init()
@@ -16,6 +17,7 @@ end
 function courierReuse.Init()
 	myHero = Heroes.GetLocal()
 	if not myHero then return end
+	index_npc = nil
 	bReuse = false
 	myTeam = Entity.GetTeamNum(myHero)
 	x,y = Renderer.GetScreenSize()
@@ -73,7 +75,9 @@ function courierReuse.OnUpdate()
     	end
   	end
   	for i = 1, Couriers.Count() do
-    	local index_npc = Couriers.Get(i)
+  		if not index_npc then
+    		index_npc = Couriers.Get(i)
+    	end
     	if index_npc ~= nil then
       		if Entity.IsSameTeam(index_npc, myHero) and Entity.IsAlive(index_npc) then
         		local courierEnt = Courier.GetCourierStateEntity(index_npc)
