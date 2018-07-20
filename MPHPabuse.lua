@@ -89,7 +89,7 @@ local x,y
 local myHero
 MPHPAbuse.optionEnable = Menu.AddOptionBool({ "Utility", "MP/HP Abuse" }, "Enable", false)
 MPHPAbuse.optionToggleKey = Menu.AddKeyOption({"Utility", "MP/HP Abuse"}, "Toggle Key", Enum.ButtonCode.KEY_NONE)
-MPHPAbuse.threshold = Menu.AddOptionSlider({"Utility", "MP/HP Abuse"}, "HP % Threshold", 0, 100, 5)
+MPHPAbuse.threshold = Menu.AddOptionSlider({"Utility", "MP/HP Abuse"}, "HP Percent Threshold", 0, 100, 5)
 MPHPAbuse.font = Renderer.LoadFont("Tahoma", 18, Enum.FontWeight.BOLD)
 function MPHPAbuse.OnGameStart()
 	needInit = true
