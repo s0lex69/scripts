@@ -75,11 +75,11 @@ function courierReuse.OnUpdate()
     	end
   	end
   	for i = 1, Couriers.Count() do
-  		if not index_npc then
+  		if not index_npc and Entity.IsSameTeam(Couriers.Get(i)) then
     		index_npc = Couriers.Get(i)
     	end
     	if index_npc ~= nil then
-      		if Entity.IsSameTeam(index_npc, myHero) and Entity.IsAlive(index_npc) then
+      		if Entity.IsAlive(index_npc) then
         		local courierEnt = Courier.GetCourierStateEntity(index_npc)
         		local reuse = NPC.GetAbilityByIndex(index_npc, 4)
         		local reuse_2 = NPC.GetAbilityByIndex(index_npc, 3)
