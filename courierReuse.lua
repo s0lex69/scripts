@@ -1,109 +1,91 @@
 local courierReuse = {}
-
-courierReuse.OptionEnabled = Menu.AddOptionBool({"Utility", "Courier"}, "Enabled", false)
+courierReuse.optionEnable = Menu.AddOptionBool({"Utility", "Courier"}, "Enabled", false)
 courierReuse.optionKey = Menu.AddKeyOption({ "Utility", "Courier"}, "Toggle to reuse", Enum.ButtonCode.KEY_T)
 courierReuse.optionMuteFilter = Menu.AddOptionBool({"Utility", "Courier"}, "Mute Filter", false)
-courierReuse.players = {}
-courierReuse.muted = {}
-local needInit = true
-local myHero
-local myTeam
-local bReuse
-local index_npc -- courier
-local x,y,font
-function courierReuse.OnGameStart()
-	courierReuse.Init()
-end
-function courierReuse.Init()
+local players = {}
+local muted = {}
+local added = false
+local myHero, myTeam, courier, x, y, cReuse
+local font = Renderer.LoadFont("Tahoma", 18, Enum.FontWeight.BOLD)
+function courierReuse.Init( ... )
 	myHero = Heroes.GetLocal()
 	if not myHero then return end
-	index_npc = nil
-	bReuse = false
 	myTeam = Entity.GetTeamNum(myHero)
-	x,y = Renderer.GetScreenSize()
-	x = x * 0.8785
+	x, y = Renderer.GetScreenSize()
+	courier = nil
+	cReuse = false
+	added = false
+	x = x 0.8785
 	y = y * 0.879
-	font = Renderer.LoadFont("Tahoma", 18, Enum.FontWeight.BOLD)
+	for i = 1, 10 do
+		Menu.RemoveOption(players[i])
+	end
 end
-function courierReuse.OnDraw()
+function courierReuse.OnGameStart( ... )
+	courierReuse.Init()
+end
+function courierReuse.OnDraw( ... )
 	if not myHero then return end
-	if bReuse then
+	if cReuse then
 		Renderer.SetDrawColor(0,255,0)
 		Renderer.DrawText(font,x,y,"сReuse")
 	end
 end
-function courierReuse.OnUpdate()
-  	if not Engine.IsInGame() or not myHero then
-    	for i = 0, 10 do
-     	 	if courierReuse.players[i] then
-        		Menu.RemoveOption(courierReuse.players[i]) courierReuse.players[i] = nil
-      		end
-    	end
-  	end
-  	if not Menu.IsEnabled(courierReuse.OptionEnabled) then return end
-  	if Menu.IsKeyDownOnce(courierReuse.optionKey) then
-  		if bReuse then
-  			bReuse = false
-  		else
-  			bReuse = true	
-  		end
-  	end
-  	for i = 1, Players.Count() do
-    	local player = Players.Get(i)
-    	if Player.IsMuted(player) then
-     		courierReuse.muted[Player.GetPlayerID(player)] = Player.GetPlayerID(player)
-    	else
-      		courierReuse.muted[Player.GetPlayerID(player)] = nil
-    	end
-  	end
-  	for i = 1, Heroes.Count() do
-    	local hero = Heroes.Get(i)
-    	if courierReuse.muted[Hero.GetPlayerID(hero)] then
-      		courierReuse.muted[hero] = true
-    	else
-      		courierReuse.muted[hero] = false
-    	end
-    	if Entity.IsSameTeam(myHero, hero) and hero ~= myHero and not courierReuse.players[Hero.GetPlayerID(hero)] then
-      		courierReuse.players[Hero.GetPlayerID(hero)] = Menu.AddOptionBool({"Utility", "Courier"}, string.upper(string.sub(NPC.GetUnitName(hero), 15)), false)
-    	end
-    	if Entity.IsSameTeam(myHero, hero) and hero ~= myHero then
-      		if Menu.IsEnabled(courierReuse.players[Hero.GetPlayerID(hero)]) then
-        		courierReuse.muted[hero] = true
-      		else
-        		courierReuse.muted[hero] = false
-      		end
-    	end
-  	end
-  	for i = 1, Couriers.Count() do
-  		if not index_npc and Entity.IsSameTeam(Couriers.Get(i)) then
-    		index_npc = Couriers.Get(i)
-    	end
-    	if index_npc ~= nil then
-      		if Entity.IsAlive(index_npc) then
-        		local courierEnt = Courier.GetCourierStateEntity(index_npc)
-        		local reuse = NPC.GetAbilityByIndex(index_npc, 4)
-        		local reuse_2 = NPC.GetAbilityByIndex(index_npc, 3)
-        		local go_home = NPC.GetAbilityByIndex(index_npc, 0)
-        		if bReuse and courierEnt ~= myHero then
-        			local hasItem = false
-        			for i = 0, 8 do
-        				if NPC.GetItemByIndex(index_npc,i) and NPC.GetItemByIndex(index_npc,i) ~= 0 and Item.GetPlayerOwnerID(NPC.GetItemByIndex(index_npc,i)) == Hero.GetPlayerID(myHero) then
-        					hasItem = true
-        					break
-        				end
-        			end
-        			if hasItem and Entity.IsAlive(myHero) then        			
-          				Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET, myHero, Vector(0, 0, 0), reuse, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, index_npc)
-          			end
-        		end
-        		if courierEnt and courierReuse.players[Hero.GetPlayerID(courierEnt)] then
-          			if (Menu.IsEnabled(courierReuse.optionMuteFilter) and courierReuse.muted[Hero.GetPlayerID(courierEnt)] and Hero.GetPlayerID(courierEnt) == courierReuse.muted[Hero.GetPlayerID(courierEnt)] ) or Menu.IsEnabled(courierReuse.players[Hero.GetPlayerID(courierEnt)]) then
-            			Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET, myHero, Vector(0, 0, 0), go_home, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, index_npc)
-          			end
-        		end
-      		end
-    	end
-  	end
+function courierReuse.OnUpdate( ... )
+	if not myHero or not Menu.IsEnabled(courierReuse.optionEnable) then return end
+	if Menu.IsKeyDownOnce(courierReuse.optionKey) then
+		if cReuse then
+			cReuse = false
+		else
+			cReuse = true
+		end
+	end
+	if not added then
+		for i = 1, Heroes.Count() do
+			local hero = Heroes.Get(i)
+			if Entity.IsSameTeam(myHero, hero) and hero ~= myHero then
+				players[Hero.GetPlayerID] = Menu.AddOptionBool({"Utility", "Courier"}, string.upper(string.sub(NPC.GetUnitName(hero), 15)), false)
+			end
+		end
+	end
+	for i = 1, Players.Count() do
+		local player = Players.Get(i)
+		if Player.IsMuted(player) then
+			muted[Player.GetPlayerID(player)] = Player.GetPlayerID(player)
+		else
+			muted[Player.GetPlayerID(player)] = nil
+		end
+	end
+	if not courier then
+		for i = 1, Couriers.Count() do
+			local npc = Couriers.Get(i)
+			if Entity.IsSameTeam(npc) then
+				courier = npc
+			end
+		end
+	end
+	if courier and Entity.IsAlive(courier) then
+		local courierEnt = Courier.GetCourierStateEntity(courier)
+		local reuse = NPC.GetAbilityByIndex(courier, 4)
+		local go_home = NPC.GetAbilityByIndex(courier, 0)
+		if bReuse and courierEnt ~= myHero then
+			local hasItem = false
+			for i = 0, 8 do
+				if NPC.GetItemByIndex(courier,i) and NPC.GetItemByIndex(courier,i) ~= 0 and Item.GetPlayerOwnerID(NPC.GetItemByIndex(courier,i)) == Hero.GetPlayerID(myHero) then
+					hasItem = true
+					break
+				end
+			end
+			if hasItem and Entity.IsAlive(myHero) then
+				Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET, nil, Vector(0, 0, 0), reuse, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, courier)
+			end
+		end
+		if courierEnt and players[Hero.GetPlayerID(courierEnt)] then
+			if (Menu.IsEnabled(courierReuse.optionMuteFilter) and courierReuse.muted[Hero.GetPlayerID(courierEnt)] and Hero.GetPlayerID(courierEnt) == courierReuse.muted[Hero.GetPlayerID(courierEnt)] ) or Menu.IsEnabled(courierReuse.players[Hero.GetPlayerID(courierEnt)]) then
+				Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET, nil, Vector(0, 0, 0), go_home, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, courier)
+			end
+		end	
+	end	
 end
 courierReuse.Init()
 return courierReuse
