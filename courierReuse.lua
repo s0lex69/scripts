@@ -71,7 +71,7 @@ function courierReuse.OnUpdate( ... )
 		local courierEnt = Courier.GetCourierStateEntity(courier)
 		local reuse = NPC.GetAbilityByIndex(courier, 4)
 		local go_home = NPC.GetAbilityByIndex(courier, 0)
-		if bReuse and courierEnt ~= myHero then
+		if сReuse and courierEnt ~= myHero then
 			local hasItem = false
 			for i = 0, 8 do
 				if NPC.GetItemByIndex(courier,i) and NPC.GetItemByIndex(courier,i) ~= 0 and Item.GetPlayerOwnerID(NPC.GetItemByIndex(courier,i)) == Hero.GetPlayerID(myHero) then
