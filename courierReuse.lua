@@ -5,7 +5,8 @@ courierReuse.optionMuteFilter = Menu.AddOptionBool({"Utility", "Courier"}, "Mute
 local players = {}
 local muted = {}
 local added = false
-local myHero, myTeam, courier, x, y, cReuse
+local myHero, myTeam, courier, x, y
+local bReuse = false
 local font = Renderer.LoadFont("Tahoma", 18, Enum.FontWeight.BOLD)
 function courierReuse.Init( ... )
 	myHero = Heroes.GetLocal()
@@ -28,7 +29,7 @@ function courierReuse.OnGameStart( ... )
 end
 function courierReuse.OnDraw( ... )
 	if not myHero then return end
-	if cReuse then
+	if bReuse then
 		Renderer.SetDrawColor(0,255,0)
 		Renderer.DrawText(font,x,y,"сReuse")
 	end
@@ -36,10 +37,10 @@ end
 function courierReuse.OnUpdate( ... )
 	if not myHero or not Menu.IsEnabled(courierReuse.optionEnable) then return end
 	if Menu.IsKeyDownOnce(courierReuse.optionKey) then
-		if cReuse then
-			cReuse = false
+		if bReuse then
+			bReuse = false
 		else
-			cReuse = true
+			bReuse = true
 		end
 	end
 	if not added then
@@ -71,7 +72,7 @@ function courierReuse.OnUpdate( ... )
 		local courierEnt = Courier.GetCourierStateEntity(courier)
 		local reuse = NPC.GetAbilityByIndex(courier, 4)
 		local go_home = NPC.GetAbilityByIndex(courier, 0)
-		if сReuse and courierEnt ~= myHero then
+		if bReuse and courierEnt ~= myHero then
 			local hasItem = false
 			for i = 0, 8 do
 				if NPC.GetItemByIndex(courier,i) and NPC.GetItemByIndex(courier,i) ~= 0 and Item.GetPlayerOwnerID(NPC.GetItemByIndex(courier,i)) == Hero.GetPlayerID(myHero) then
