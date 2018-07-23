@@ -124,7 +124,7 @@ function AutoStack.OnModifierDestroy(ent, mod)
 end
 function Player.AttackMove(vec, npc)
 	local unit
-	local table = NPCs.InRadius(vec,150,4, Enum.TeamType.TEAM_BOTH)
+	local table = NPCs.InRadius(vec,350,4, Enum.TeamType.TEAM_BOTH)
 	if table then
 		for i, k in pairs(table) do
 			if Entity.GetClassName(k) == "C_DOTA_BaseNPC_Creep_Neutral" and not NPC.IsWaitingToSpawn(k) and Entity.IsAlive(k) and not unit then
