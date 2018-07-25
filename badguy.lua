@@ -1,6 +1,7 @@
 local badguy = {}
 badguy.optionEnable = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Enable", false)
 badguy.optionEnableAutoFeed = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Auto-Feed", false)
+badguy.optionCourierLock = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Lock Courier", false)
 badguy.optionEnableAutoUnpause = Menu.AddOptionBool({"Utility", "Bad Guy"}, "AutoUnpause", false)
 badguy.optionEnableAutoLaugh = Menu.AddOptionBool({"Utility", "Bad Guy"}, "Auto Laugh", false)
 badguy.optionSliderAutoLaugh = Menu.AddOptionSlider({"Utility", "Bad Guy"}, "Laugh delay", 15,100,15)
@@ -24,19 +25,27 @@ local lastlaugh = nil
 local laughed = false
 local aliveHeroes = {}
 local myHero = nil
+local myPlayer
 local unpauseTick = 0
 local base = nil
+local feedBase
+local courier
 function badguy.Init()
 	myHero = Heroes.GetLocal()
+	myPlayer = Players.GetLocal()
+	courier = nil
 	if not myHero then return end
 	myTeam = Entity.GetTeamNum(myHero)
 	local radiant = Vector(-7317.406250, -6815.406250, 512.000000)
 	local dire = Vector(7264.000000, 6560.000000, 512.000000)
 	if myTeam == 2 then
-		base = dire
-	elseif myTeam == 3 then
 		base = radiant
+		feedBase = dire
+	elseif myTeam == 3 then
+		base = dire
+		feedBase = radiant
 	end
+	needInit = false
 	unpauseTick = 0
 end
 function badguy.OnGameStart()
@@ -52,6 +61,9 @@ function badguy.OnGameEnd()
 end
 function badguy.OnUpdate()
 	if not myHero or not Menu.IsEnabled(badguy.optionEnable) then lastlaugh = nil aliveHeroes = {} return end
+	if Menu.IsEnabled(badguy.optionCourierLock) then
+		badguy.lockCour()
+	end	
 	if Menu.IsEnabled(badguy.optionEnableAutoUnpause) then
 		badguy.autoUnpause()
 	end
@@ -65,6 +77,21 @@ function badguy.OnUpdate()
 		badguy.toxicFlame()
 	end	
 end
+function badguy.lockCour( ... )
+	if not courier then
+		for i = 1, Couriers.Count() do
+			local npc = Couriers.Get(i)
+			if Entity.IsSameTeam(npc, myHero) then
+				courier = npc
+			end
+		end
+	end
+	if courier and NPC.IsCourier(courier) then
+		if not NPC.IsPositionInRange(courier, base, 250) then
+			Player.PrepareUnitOrders(myPlayer,Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION,nil,base,nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, courier)
+		end
+	end
+end
 function badguy.autoUnpause()
 	if GameRules.IsPaused() and os.clock() >= unpauseTick then
 		Engine.ExecuteCommand("dota_pause")
@@ -73,7 +100,7 @@ function badguy.autoUnpause()
 end
 function badguy.autofeed()
 	if Entity.IsAlive(myHero) then
-		Player.PrepareUnitOrders(Players.GetLocal(),Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION,nil,base,nil,Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY,myHero)
+		Player.PrepareUnitOrders(myPlayer,Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION,nil,feedBase,nil,Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY,myHero)
 	end
 end
 function badguy.autolaugh()
