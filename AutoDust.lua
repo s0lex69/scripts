@@ -91,7 +91,7 @@ function AutoDust.OnModifierCreate(ent,mod)
 			return
 		end
 	end
-	if Entity.IsSameTeam(myHero, ent) or NPC.HasModifier(ent,"modifier_bounty_hunter_track") or NPC.HasModifier(ent, "modifier_bloodseeker_thirst_vision") or NPC.HasModifier(ent, "modifier_slardar_amplify_damage") or NPC.HasModifier(ent, "modifier_item_dustofappearance") then return end
+	if Entity.IsSameTeam(myHero, ent) or ent == myHero or NPC.HasModifier(ent,"modifier_bounty_hunter_track") or NPC.HasModifier(ent, "modifier_bloodseeker_thirst_vision") or NPC.HasModifier(ent, "modifier_slardar_amplify_damage") or NPC.HasModifier(ent, "modifier_item_dustofappearance") then return end
 	--Log.Write(Modifier.GetName(mod))
 	if (Modifier.GetName(mod) == "modifier_item_invisibility_edge_windwalk" or Modifier.GetName(mod) == "modifier_item_shadow_amulet_fade" or Modifier.GetName(mod) == "modifier_rune_invis" or Modifier.GetName(mod) == "modifier_oracle_false_promise_invis" or Modifier.GetName(mod) == "modifier_mirana_moonlight_shadow" or Modifier.GetName(mod) == "modifier_clinkz_wind_walk" or Modifier.GetName(mod) == "modifier_item_silver_edge_windwalk" or Modifier.GetName(mod) == "modifier_bounty_hunter_wind_walk" or Modifier.GetName(mod) == "modifier_invoker_ghost_walk_self" or Modifier.GetName(mod) == "modifier_windrunner_windrun_invis") and Entity.GetAbsOrigin(ent) and NPC.IsPositionInRange(myHero, Entity.GetAbsOrigin(ent), 950) then
 		if Ability.IsReady(dust) then
