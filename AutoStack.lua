@@ -32,6 +32,8 @@ local moving = {}
 local pulling = {}
 local aggring = {}
 local saving = {}
+local basing = {}
+local base
 local needClear = false
 local checkTick = nil
 local toggled = Config.ReadString("AutoStack", "enable", "false")
@@ -40,6 +42,12 @@ function AutoStack.Init()
 	if not myHero then return end
 	myPlayer = Players.GetLocal()
 	myTeam = Entity.GetTeamNum(myHero)
+	if myTeam == 2 then
+		base = Vector(-7317.406250, -6815.406250, 512.000000)
+	else
+		base = Vector(7264.000000, 6560.000000, 512.000000)
+	end	
+	basing = {}
 	saving = {}
 	x, y = Renderer.GetScreenSize()
 	x = x * 0.59
@@ -56,7 +64,7 @@ function AutoStack.OnGameStart()
 end
 function AutoStack.OnModifierCreate(ent,mod)
 	if not Menu.IsEnabled(AutoStack.optionEnable) or not myHero then return end
-	if Entity.IsNPC(ent) and (Modifier.GetName(mod) == "modifier_illusion" or Modifier.GetName(mod) == "modifier_dominated") then
+	if Entity.IsNPC(ent) and (Modifier.GetName(mod) == "modifier_illusion" or Modifier.GetName(mod) == "modifier_dominated" or Modifier.GetName(mod) == "modifier_demonic_conversion" or Modifier.GetName(mod) == "modifier_chen_holy_persuasion") then
 		if Modifier.GetName(mod) == "modifier_illusion" then
 			if Modifier.GetDieTime(mod) - GameRules.GetGameTime() <= 10 then return end
 		end
@@ -69,7 +77,7 @@ function AutoStack.CheckNPC()
 	local table = NPCs.GetAll()
 	for i = 1, #table do
 		if Entity.GetOwner(table[i]) == myHero or Entity.GetOwner(table[i]) == myPlayer then
-			if NPC.HasModifier(table[i], "modifier_illusion") or NPC.HasModifier(table[i], "modifier_dominated") and Entity.IsAlive(table[i]) then
+			if NPC.HasModifier(table[i], "modifier_illusion") or NPC.HasModifier(table[i], "modifier_dominated") or NPC.HasModifier(table[i], "modifier_demonic_conversion") or NPC.HasModifier(table[i], "modifier_chen_holy_persuasion") and Entity.IsAlive(table[i]) then
 				AutoStack.FindNearestCamp(table[i])
 			end
 		end
@@ -78,6 +86,11 @@ end
 function AutoStack.FindNearestCamp(ent)
 	local nearestCamp
 	local campLength
+	for b, n in pairs(camp) do
+		if n.ent == ent then
+			return
+		end
+	end
 	for i, k in pairs(camp) do
 		if not k.ent and k.isEnabled == 1 then
 			local tempVec = k.pos:__sub(Entity.GetAbsOrigin(ent))
@@ -103,12 +116,12 @@ function AutoStack.FindNearestCamp(ent)
 		moving[ent] = nearestCamp.pos
 	end
 	--Log.Write("1")
-	--Log.Write(tostring(nearestCamp.index))
+	--Log.Write("nearestCamp for "..NPC.GetUnitName(ent))
 	--return nearestCamp
 end
 function AutoStack.OnModifierDestroy(ent, mod)
 	if not Menu.IsEnabled(AutoStack.optionEnable) then return end
-	if Modifier.GetName(mod) == "modifier_illusion" or Modifier.GetName(mod) == "modifier_dominated"  then
+	if Modifier.GetName(mod) == "modifier_illusion" or Modifier.GetName(mod) == "modifier_dominated" or Modifier.GetName(mod) == "modifier_demonic_conversion" or Modifier.GetName(mod) == "modifier_chen_holy_persuasion" then
 		if moving[ent] or aggring[ent] then
 			moving[ent] = nil
 			aggring[ent] = nil
@@ -173,11 +186,11 @@ function AutoStack.OnDraw( ... )
 					if camp[i].isEnabled == 1 then
 						camp[i].isEnabled = 0
 						Config.WriteInt("AutoStack", i, 0)
-						AutoStack.Init()
+						AutoStack.CheckNPC()
 					else	
 						camp[i].isEnabled = 1
 						Config.WriteInt("AutoStack", i, 1)
-						AutoStack.Init()
+						AutoStack.CheckNPC()
 					end
 				end
 			end
@@ -196,11 +209,26 @@ function AutoStack.OnUpdate()
 		checkTick = nil
 	end
 	time = time%60
+	for i, k in pairs(basing) do
+		if k then
+			if GameRules.GetGameTime() >= k or not Entity.IsEntity(i) or not Entity.IsAlive(i) then
+				k = nil
+				basing[i] = nil
+			else
+				if not NPC.IsRunning(i) and Entity.IsAlive(i) then
+					Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, nil, base, nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, i)
+				end	
+			end
+		end
+	end
 	for i = 1, #camp do
 		local k = camp[i]
 		if k.ent and Entity.IsNPC(k.ent) and Entity.IsAlive(k.ent) then
 			local creepsOnCamp = NPCs.InRadius(k.campPos,250,4, Enum.TeamType.TEAM_BOTH)
 			local length = (k.pos:__sub(k.campPos):Length() - NPC.GetAttackRange(k.ent) + 25)/NPC.GetMoveSpeed(k.ent)
+			if Entity.GetHeroesInRadius(k.ent, 1000, Enum.TeamType.TEAM_ENEMY) then
+				basing[k.ent] = GameRules.GetGameTime() + 30.00
+			end
  			if (NPC.IsRanged(k.ent) and NPC.IsPositionInRange(k.ent, k.campPos, NPC.GetAttackRange(k.ent))) or length < 0 then
 				length = 0
 			end
@@ -217,7 +245,7 @@ function AutoStack.OnUpdate()
 			else
 				creepsCount = 0
 			end
-			if time >= k.time - 1/NPC.GetAttacksPerSecond(k.ent) - creepsCount - length and time <= k.time + 15 then
+			if time >= k.time - 1/NPC.GetAttacksPerSecond(k.ent) - creepsCount - length and not basing[k.ent] then
 				if not NPC.IsAttacking(k.ent) and not aggring[k.ent] then
 					--Log.Write(i)
 					Player.AttackMove(k.campPos, k.ent)
@@ -240,7 +268,7 @@ function AutoStack.OnUpdate()
 		needClear = false
 	end
 	for i = 1, #camp do
-		if camp[i].ent and Entity.IsEntity(camp[i].ent) and Entity.IsAlive(camp[i].ent) then
+		if camp[i].ent and Entity.IsEntity(camp[i].ent) and Entity.IsAlive(camp[i].ent) and not basing[camp[i].ent] then
 			--Log.Write(tostring(pulling[camp[i].ent]))
 			if time < 40 and time > 2 and not aggring[camp[i].ent] and not pulling[camp[i].ent] and not NPC.IsRunning(camp[i].ent) and not NPC.IsPositionInRange(camp[i].ent ,camp[i].savePos, 50) then
 				Player.MovePos(camp[i].savePos, camp[i].ent)
