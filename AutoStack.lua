@@ -1,5 +1,6 @@
 local AutoStack = {}
 AutoStack.optionEnable = Menu.AddOptionBool({"Utility", "Auto Stack"}, "Enable", false)
+AutoStack.optionAutoBase = Menu.AddOptionBool({"Utility", "Auto Stack"}, "Auto Base", false)
 AutoStack.keyCampController = Menu.AddKeyOption({"Utility", "Auto Stack"}, "Camp Controller Key", Enum.ButtonCode.KEY_LALT)
 AutoStack.toggleKey = Menu.AddKeyOption({"Utility", "Auto Stack"}, "Toggle Key", Enum.ButtonCode.KEY_M)
 local myHero, myPlayer,myTeam
@@ -197,6 +198,11 @@ function AutoStack.OnDraw( ... )
 		end
 	end
 end
+function AutoStack.OnMenuOptionChange(option, oldValue, newValue)
+	if option == AutoStack.optionAutoBase and newValue == false then
+		basing = {}
+	end
+end
 function AutoStack.OnUpdate()
 	if not Menu.IsEnabled(AutoStack.optionEnable) or not myHero or toggled == "false" then return end
 	if GameRules.GetGameStartTime() < 1 then return end
@@ -209,15 +215,17 @@ function AutoStack.OnUpdate()
 		checkTick = nil
 	end
 	time = time%60
-	for i, k in pairs(basing) do
-		if k then
-			if GameRules.GetGameTime() >= k or not Entity.IsEntity(i) or not Entity.IsAlive(i) then
-				k = nil
-				basing[i] = nil
-			else
-				if not NPC.IsRunning(i) and Entity.IsAlive(i) then
-					Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, nil, base, nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, i)
-				end	
+	if Menu.IsEnabled(AutoStack.optionAutoBase) then
+		for i, k in pairs(basing) do
+			if k then
+				if GameRules.GetGameTime() >= k or not Entity.IsEntity(i) or not Entity.IsAlive(i) then
+					k = nil
+					basing[i] = nil
+				else
+					if not NPC.IsRunning(i) and Entity.IsAlive(i) then
+						Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, nil, base, nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, i)
+					end	
+				end
 			end
 		end
 	end
@@ -226,8 +234,10 @@ function AutoStack.OnUpdate()
 		if k.ent and Entity.IsNPC(k.ent) and Entity.IsAlive(k.ent) then
 			local creepsOnCamp = NPCs.InRadius(k.campPos,250,4, Enum.TeamType.TEAM_BOTH)
 			local length = (k.pos:__sub(k.campPos):Length() - NPC.GetAttackRange(k.ent) + 25)/NPC.GetMoveSpeed(k.ent)
-			if Entity.GetHeroesInRadius(k.ent, 1000, Enum.TeamType.TEAM_ENEMY) then
-				basing[k.ent] = GameRules.GetGameTime() + 30.00
+			if Menu.IsEnabled(AutoStack.optionAutoBase) then
+				if Entity.GetHeroesInRadius(k.ent, 1000, Enum.TeamType.TEAM_ENEMY) then
+					basing[k.ent] = GameRules.GetGameTime() + 30.00
+				end
 			end
  			if (NPC.IsRanged(k.ent) and NPC.IsPositionInRange(k.ent, k.campPos, NPC.GetAttackRange(k.ent))) or length < 0 then
 				length = 0
