@@ -3,6 +3,7 @@ ptswitch.optionEnable = Menu.AddOptionBool({"Utility"}, "PT Switcher", false)
 local myHero
 local lastStat
 local nextTick = 0
+local changed = true
 function ptswitch.Init()
 	myHero = Heroes.GetLocal()
 	nextTick = 0
@@ -13,12 +14,13 @@ end
 function ptswitch.OnUpdate()
 	if not Menu.IsEnabled(ptswitch.optionEnable) then return end
 	if not myHero then return end
-	if lastStat and GameRules.GetGameTime() >= nextTick and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVISIBLE) and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+	if lastStat and GameRules.GetGameTime() >= nextTick and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVISIBLE) and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) and not NPC.IsChannellingAbility(myHero) then
 		local pt = NPC.GetItem(myHero, "item_power_treads", true)
 		if pt then
-			if PowerTreads.GetStats(pt) ~= lastStat then
+			if PowerTreads.GetStats(pt) ~= lastStat and not changed then
 				Ability.CastNoTarget(pt)
 				nextTick = nextTick + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+				changed = true
 			end
 			if PowerTreads.GetStats(pt) == lastStat then
 				lastStat = nil
@@ -33,15 +35,18 @@ function ptswitch.OnPrepareUnitOrders(orders)
 	if not orders.ability or not Entity.IsAbility(orders.ability) then return end
 	if Ability.GetManaCost(orders.ability) < 1 then return end
 	local pt = NPC.GetItem(myHero, "item_power_treads", true)
-	if pt then
+	if pt and not NPC.IsChannellingAbility(myHero) then
 		if NPC.IsStunned(myHero) then return end
-		lastStat = PowerTreads.GetStats(pt)
+		if changed then
+			lastStat = PowerTreads.GetStats(pt)
+		end
 		if PowerTreads.GetStats(pt) == 0 then
 			Ability.CastNoTarget(pt)
 		elseif PowerTreads.GetStats(pt) == 2 then
 			Ability.CastNoTarget(pt)
 			Ability.CastNoTarget(pt)
 		end
+		changed = false
 		nextTick = GameRules.GetGameTime() + Ability.GetCastPoint(orders.ability) + 0.25 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 	end
 end
