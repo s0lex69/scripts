@@ -187,7 +187,7 @@ function Tusk.Combo(enemy)
 		Ability.CastTarget(punch, enemy)
 		return
 	end	
-	if not NPC.IsAttacking(myHero) and Menu.IsEnabled(punchEnable) and not Ability.IsCastable(punch, myMana then
+	if not NPC.IsAttacking(myHero) and Menu.IsEnabled(punchEnable) and not Ability.IsCastable(punch, myMana) then
 		Player.AttackTarget(myPlayer, myHero, enemy, true)
 	elseif not NPC.IsAttacking(myHero) and not Menu.IsEnabled(punchEnable) then
 		Player.AttackTarget(myPlayer, myHero, enemy, true)	
