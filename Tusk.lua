@@ -76,11 +76,24 @@ function Tusk.PosPrediction(ent, speed)
 	if not speed then
 		speed = NPC.GetMoveSpeed(ent)
 	end
+	if speed == 0 then
+		if Entity.GetAbsOrigin(myHero):__sub(Vector(96.000000, 7456.000000, 384.000000)):Length() < Entity.GetAbsOrigin(ent):__sub(Vector(96.000000, 7456.000000, 384.000000)):Length() then
+			pos = pos + Vector(0,-250,0)
+		else
+			pos = pos + Vector(0,250,0)
+		end
+		if Entity.GetAbsOrigin(myHero):__sub(Vector(-7317.406250, -6815.406250, 512.000000)):Length() < Entity.GetAbsOrigin(ent):__sub(Vector(-7317.406250, -6815.406250, 512.000000)):Length() then
+			pos = pos + Vector(250,0,0)
+		else
+			pos = pos + Vector(-250,0,0)
+		end
+	end	
 	if speed <= 350 then
-		return pos + dir:Scaled(speed*1.5)
+		pos = pos + dir:Scaled(speed*1.5)
 	else
-		return pos + dir:Scaled(speed)
+		pos = pos + dir:Scaled(speed)
 	end	 
+	return pos
 end
 function Tusk.Combo(enemy)
 	local myMana = NPC.GetMana(myHero)
@@ -116,17 +129,9 @@ function Tusk.Combo(enemy)
 	end
 	if Menu.IsEnabled(shardEnable) and Ability.GetLevel(shard) > 0 and Ability.IsCastable(shard, myMana) and not NPC.IsTurning(enemy) and not NPC.HasModifier(myHero, "modifier_tusk_snowball_movement") then
 		if NPC.HasModifier(enemy, "modifier_stunned") and Modifier.GetDieTime(NPC.GetModifier(enemy,"modifier_stunned")) > (Entity.GetAbsOrigin(myHero):__sub(Entity.GetAbsOrigin(enemy))):Length()/snowballspeed then
-			if Entity.GetAbsOrigin(myHero):__sub(Vector(-7317.406250, -6815.406250, 512.000000)):Length() < Entity.GetAbsOrigin(enemy):__sub(Vector(-7317.406250, -6815.406250, 512.000000)):Length() then
-				Ability.CastPosition(shard, Entity.GetAbsOrigin(enemy) + Vector(250,0,0))
-			else
-				Ability.CastPosition(shard, Entity.GetAbsOrigin(enemy) + Vector(-250,0,0))
-			end
+			Ability.CastPosition(shard, Tusk.PosPrediction(enemy, 0))
 		elseif not NPC.IsRunning(enemy) or NPC.IsEntityInRange(myHero, enemy, 300) then
-			if Entity.GetAbsOrigin(myHero):__sub(Vector(-7317.406250, -6815.406250, 512.000000)):Length() < Entity.GetAbsOrigin(enemy):__sub(Vector(-7317.406250, -6815.406250, 512.000000)):Length() then
-				Ability.CastPosition(shard, Entity.GetAbsOrigin(enemy) + Vector(250,0,0))
-			else	
-				Ability.CastPosition(shard, Entity.GetAbsOrigin(enemy) + Vector(-250,0,0))
-			end
+			Ability.CastPosition(shard, Tusk.PosPrediction(enemy, 0))
 		else
 			Ability.CastPosition(shard, Tusk.PosPrediction(enemy))
 		end
