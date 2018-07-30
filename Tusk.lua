@@ -28,11 +28,13 @@ local enemy
 local nextTick
 local added = false
 local shard, snowball, launch_snowball, snowballspeed,sigil, punch
+local urn, vessel, solar, courage, armlet, mjolnir, bloodthorn, orchid, bkb, abyssal, halberd
 function Tusk.Init( ... )
 	myHero = Heroes.GetLocal()
 	myPlayer = Players.GetLocal()
 	added = false
 	nextTick = 0
+	Tusk.ClearVar()
 	if not myHero then return end
 	if NPC.GetUnitName(myHero) ~= "npc_dota_hero_tusk" then
 		myHero = nil
@@ -49,12 +51,58 @@ end
 function Tusk.OnGameStart( ... )
 	Tusk.Init()
 end
+function Tusk.ClearVar( ... )
+	urn = nil
+	vessel = nil
+	solar = nil
+	courage = nil 
+	armlet = nil
+	mjolnir = nil 
+	bloodthorn = nil
+	orchid = nil
+	bkb = nil 
+	abyssal = nil
+	halberd = nil
+end
 function Tusk.OnUpdate( ... )
 	if not myHero or not Menu.IsEnabled(optionEnable) then return end
-	if Ability.GetLevel(NPC.GetAbility(myHero, "special_bonus_unique_tusk_3")) > 0 and not added then
+	if not added and Ability.GetLevel(NPC.GetAbility(myHero, "special_bonus_unique_tusk_3")) > 0 then
 		snowballspeed = snowballspeed + 300
 		added = true
 	end
+	Tusk.ClearVar()
+	for i = 0, 5 do
+		item = NPC.GetItemByIndex(myHero, i)
+		if item and item ~= 0 then
+			if Ability.GetName(item) then
+				local name = Ability.GetName(item)
+				if name == "item_urn_of_shadows" then
+					urn = item
+				elseif name == "item_spirit_vessel" then
+					vessel = item
+				elseif name == "item_mjollnir" then
+					mjolnir = item
+				elseif name == "item_heavens_halberd" then
+					halberd = item
+				elseif name == "item_abyssal_blade" then
+					abyssal = item
+				elseif name == "item_orchid" then
+					orchid = item
+				elseif name == "item_armlet" then
+					armlet = item
+				elseif name == "item_bloodthorn" then
+					bloodthorn = item
+				elseif name == "item_black_king_bar" then
+					bkb = item
+				elseif name == "item_medallion_of_courage" then
+					courage = item
+				elseif name == "item_solar_crest" then
+					solar = item
+				end	
+			end
+		end
+	end
+	
 	if Menu.IsKeyDown(comboKey) then
 		if not enemy then
 			enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
@@ -97,17 +145,6 @@ function Tusk.PosPrediction(ent, speed)
 end
 function Tusk.Combo(enemy)
 	local myMana = NPC.GetMana(myHero)
-	local urn = NPC.GetItem(myHero, "item_urn_of_shadows", true)
-	local vessel = NPC.GetItem(myHero, "item_spirit_vessel", true)
-	local mjolnir = NPC.GetItem(myHero, "item_mjollnir", true)
-	local halberd = NPC.GetItem(myHero, "item_heavens_halberd", true)
-	local abyssal = NPC.GetItem(myHero, "item_abyssal_blade", true)
-	local orchid = NPC.GetItem(myHero, "item_orchid", true)
-	local armlet = NPC.GetItem(myHero, "item_armlet", true)
-	local bloodthorn = NPC.GetItem(myHero, "item_bloodthorn", true)
-	local bkb = NPC.GetItem(myHero, "item_black_king_bar", true)
-	local courage = NPC.GetItem(myHero, "item_medallion_of_courage", true)
-	local solar = NPC.GetItem(myHero, "item_solar_crest", true)
 	if not enemy or not NPC.IsEntityInRange(myHero, enemy, comboRadius) then
 		enemy = nil
 		return
