@@ -5,11 +5,12 @@ courierReuse.optionMuteFilter = Menu.AddOptionBool({"Utility", "Courier"}, "Mute
 local players = {}
 local muted = {}
 local added = false
-local myHero, myTeam, courier, x, y
+local myHero, myPlayer, myTeam, courier, x, y
 local bReuse = false
 local font = Renderer.LoadFont("Tahoma", 18, Enum.FontWeight.BOLD)
 function courierReuse.Init( ... )
 	myHero = Heroes.GetLocal()
+	myPlayer = Players.GetLocal()
 	if not myHero then return end
 	myTeam = Entity.GetTeamNum(myHero)
 	x, y = Renderer.GetScreenSize()
@@ -71,22 +72,32 @@ function courierReuse.OnUpdate( ... )
 	if courier and Entity.IsAlive(courier) then
 		local courierEnt = Courier.GetCourierStateEntity(courier)
 		local reuse = NPC.GetAbilityByIndex(courier, 4)
+		local reuse2 = NPC.GetAbilityByIndex(courier, 3)
 		local go_home = NPC.GetAbilityByIndex(courier, 0)
 		if bReuse and courierEnt ~= myHero then
 			local hasItem = false
+			local pickItem = false
 			for i = 0, 8 do
 				if NPC.GetItemByIndex(courier,i) and NPC.GetItemByIndex(courier,i) ~= 0 and Item.GetPlayerOwnerID(NPC.GetItemByIndex(courier,i)) == Hero.GetPlayerID(myHero) then
 					hasItem = true
+					break	
+				end
+			end
+			for i = 9, 15 do
+				if NPC.GetItemByIndex(myHero, i) and NPC.GetItemByIndex(myHero, i) ~= 0 and Item.GetPlayerOwnerID(NPC.GetItemByIndex(myHero, i)) == Hero.GetPlayerID(myHero) then
+					pickItem = true
 					break
 				end
 			end
-			if hasItem and Entity.IsAlive(myHero) then
-				Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET, nil, Vector(0, 0, 0), reuse, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, courier)
+			if pickItem and Entity.IsAlive(myHero) and NPC.HasInventorySlotFree(courier) and NPC.HasInventorySlotFree(myHero) then
+				Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET, nil, Vector(0,0,0), reuse2, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, courier)
+			elseif hasItem and Entity.IsAlive(myHero) then
+				Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET, nil, Vector(0, 0, 0), reuse, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, courier)
 			end
 		end
 		if courierEnt and players[Hero.GetPlayerID(courierEnt)] then
 			if (Menu.IsEnabled(courierReuse.optionMuteFilter) and muted[Hero.GetPlayerID(courierEnt)] and Hero.GetPlayerID(courierEnt) == muted[Hero.GetPlayerID(courierEnt)] ) or Menu.IsEnabled(players[Hero.GetPlayerID(courierEnt)]) then
-				Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET, nil, Vector(0, 0, 0), go_home, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, courier)
+				Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET, nil, Vector(0, 0, 0), go_home, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, courier)
 			end
 		end	
 	end	
