@@ -6,6 +6,7 @@ local nextTick = 0
 local changed = true
 function ptswitch.Init()
 	myHero = Heroes.GetLocal()
+	changed = true
 	nextTick = 0
 end
 function ptswitch.OnGameStart()
@@ -19,11 +20,11 @@ function ptswitch.OnUpdate()
 		if pt then
 			if PowerTreads.GetStats(pt) ~= lastStat and not changed then
 				Ability.CastNoTarget(pt)
-				nextTick = nextTick + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
-				changed = true
+				nextTick = nextTick + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)				
 			end
 			if PowerTreads.GetStats(pt) == lastStat then
 				lastStat = nil
+				changed = true
 			end
 		end
 	end
