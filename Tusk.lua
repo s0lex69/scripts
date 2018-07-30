@@ -1,7 +1,3 @@
---[[
-TO DO:
-	Prediction optimization
---]]
 local Tusk = {}
 local optionEnable = Menu.AddOptionBool({"Hero Specific", "Tusk"}, "Enable", false)
 Menu.AddMenuIcon({"Hero Specific", "Tusk"}, "panorama/images/heroes/icons/npc_dota_hero_tusk_png.vtex_c")
@@ -112,38 +108,23 @@ function Tusk.OnUpdate( ... )
 end
 function Tusk.PosPrediction(ent, speed)
 	local pos = Entity.GetAbsOrigin(ent)
-	local myDir = Entity.GetRotation(myHero):GetForward():Normalized()
-	local dir = Entity.GetRotation(ent):GetForward():Normalized()
-	if myDir:__sub(dir):GetX() < 0.7 then
-		dir:SetX(dir:GetX() - 0.7)
-	elseif myDir:__sub(dir):GetX() > -0.7 then
-		dir:SetX(dir:GetX() + 0.7)
-	end
+	local dir = Entity.GetRotation(myHero):GetForward():Normalized()
 	if not speed then
 		speed = NPC.GetMoveSpeed(ent)
 	end
 	if speed == 0 then
-		if Entity.GetAbsOrigin(myHero):__sub(Vector(96.000000, 7456.000000, 384.000000)):Length() < Entity.GetAbsOrigin(ent):__sub(Vector(96.000000, 7456.000000, 384.000000)):Length() then
-			pos = pos + Vector(0,-250,0)
-		else
-			pos = pos + Vector(0,250,0)
-		end
-		if Entity.GetAbsOrigin(myHero):__sub(Vector(-7317.406250, -6815.406250, 512.000000)):Length() < Entity.GetAbsOrigin(ent):__sub(Vector(-7317.406250, -6815.406250, 512.000000)):Length() then
-			pos = pos + Vector(250,0,0)
-		else
-			pos = pos + Vector(-250,0,0)
-		end
+		pos = pos + dir:Scaled(100)
 	end	
 	if speed <= 350 then
-		pos = pos + dir:Scaled(speed*1.5)
+		pos = pos + dir:Scaled(speed*1.2)
 	else
-		pos = pos + dir:Scaled(speed)
+		pos = pos + dir:Scaled(speed*1.3)
 	end	 
 	return pos
 end
 function Tusk.Combo(enemy)
 	local myMana = NPC.GetMana(myHero)
-	if not enemy or not NPC.IsEntityInRange(myHero, enemy, comboRadius) then
+	if not enemy or not NPC.IsEntityInRange(myHero, enemy, Menu.GetValue(comboRadius)) then
 		enemy = nil
 		return
 	end
@@ -152,20 +133,35 @@ function Tusk.Combo(enemy)
 	end
 	if Menu.IsEnabled(pickTeam) and (NPC.HasModifier(myHero, "modifier_tusk_snowball_movement") or NPC.HasModifier(myHero, "modifier_tusk_snowball_visible") or NPC.HasModifier(myHero, "modifier_tusk_snowball_movement_friendly")) and Entity.GetHeroesInRadius(myHero, 350, Enum.TeamType.TEAM_FRIEND) then
 		for i, k in pairs(Entity.GetHeroesInRadius(myHero, 350, Enum.TeamType.TEAM_FRIEND)) do
-			Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_TARGET, k, Vector(0,0,0), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
+			if not NPC.HasModifier(k, "modifier_tusk_snowball_movement_friendly") then
+				Player.AttackTarget(myPlayer, myHero, k, false)
+			end
 		end
 	end
 	if Menu.IsEnabled(snowballEnable) and Ability.GetLevel(snowball) > 0 and Ability.IsCastable(snowball, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
 		Ability.CastTarget(snowball, enemy)
-		if Ability.IsCastable(launch_snowball, 0) then
+		local tempTable = Entity.GetHeroesInRadius(myHero, 350, Enum.TeamType.TEAM_FRIEND)
+		if not Menu.IsEnabled(pickTeam) then
+			tempTable = nil
+		else
+			if tempTable then
+				for i, k in pairs(tempTable) do
+					if not NPC.HasModifier(k, "modifier_tusk_snowball_movement_friendly") then
+						Player.AttackTarget(myPlayer, myHero, k, false)
+					end
+				end
+				tempTable = nil
+			end	
+		end
+		if Ability.IsCastable(launch_snowball, 0) and not tempTable then
 			Ability.CastNoTarget(launch_snowball)
 		end
 		return
 	end
-	if Menu.IsEnabled(shardEnable) and Ability.GetLevel(shard) > 0 and Ability.IsCastable(shard, myMana) and not NPC.IsTurning(enemy) and not NPC.HasModifier(myHero, "modifier_tusk_snowball_movement") then
+	if Menu.IsEnabled(shardEnable) and Ability.GetLevel(shard) > 0 and Ability.IsCastable(shard, myMana) and not NPC.IsTurning(enemy) then
 		if NPC.HasModifier(enemy, "modifier_stunned") and Modifier.GetDieTime(NPC.GetModifier(enemy,"modifier_stunned")) > (Entity.GetAbsOrigin(myHero):__sub(Entity.GetAbsOrigin(enemy))):Length()/snowballspeed then
 			Ability.CastPosition(shard, Tusk.PosPrediction(enemy, 0))
-		elseif not NPC.IsRunning(enemy) or NPC.IsEntityInRange(myHero, enemy, 300) then
+		elseif not NPC.IsRunning(enemy) then
 			Ability.CastPosition(shard, Tusk.PosPrediction(enemy, 0))
 		else
 			Ability.CastPosition(shard, Tusk.PosPrediction(enemy))
@@ -228,9 +224,9 @@ function Tusk.Combo(enemy)
 		return
 	end	
 	if not NPC.IsAttacking(myHero) and Menu.IsEnabled(punchEnable) and not Ability.IsCastable(punch, myMana) then
-		Player.AttackTarget(myPlayer, myHero, enemy, true)
+		Player.AttackTarget(myPlayer, myHero, enemy, false)
 	elseif not NPC.IsAttacking(myHero) and not Menu.IsEnabled(punchEnable) then
-		Player.AttackTarget(myPlayer, myHero, enemy, true)	
+		Player.AttackTarget(myPlayer, myHero, enemy, false)	
 	end
 end
 Tusk.Init()
