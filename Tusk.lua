@@ -74,32 +74,30 @@ function Tusk.OnUpdate( ... )
 	for i = 0, 5 do
 		item = NPC.GetItemByIndex(myHero, i)
 		if item and item ~= 0 then
-			if Ability.GetName(item) then
-				local name = Ability.GetName(item)
-				if name == "item_urn_of_shadows" then
-					urn = item
-				elseif name == "item_spirit_vessel" then
-					vessel = item
-				elseif name == "item_mjollnir" then
-					mjolnir = item
-				elseif name == "item_heavens_halberd" then
-					halberd = item
-				elseif name == "item_abyssal_blade" then
-					abyssal = item
-				elseif name == "item_orchid" then
-					orchid = item
-				elseif name == "item_armlet" then
-					armlet = item
-				elseif name == "item_bloodthorn" then
-					bloodthorn = item
-				elseif name == "item_black_king_bar" then
-					bkb = item
-				elseif name == "item_medallion_of_courage" then
-					courage = item
-				elseif name == "item_solar_crest" then
-					solar = item
-				end	
-			end
+			local name = Ability.GetName(item)
+			if name == "item_urn_of_shadows" then
+				urn = item
+			elseif name == "item_spirit_vessel" then
+				vessel = item
+			elseif name == "item_mjollnir" then
+				mjolnir = item
+			elseif name == "item_heavens_halberd" then
+				halberd = item
+			elseif name == "item_abyssal_blade" then
+				abyssal = item
+			elseif name == "item_orchid" then
+				orchid = item
+			elseif name == "item_armlet" then
+				armlet = item
+			elseif name == "item_bloodthorn" then
+				bloodthorn = item
+			elseif name == "item_black_king_bar" then
+				bkb = item
+			elseif name == "item_medallion_of_courage" then
+				courage = item
+			elseif name == "item_solar_crest" then
+				solar = item
+			end	
 		end
 	end
 	
