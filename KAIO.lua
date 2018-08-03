@@ -2,117 +2,155 @@ local AllInOne = {}
 local myHero, myPlayer, myTeam, myMana, attackRange
 local enemy
 local comboHero
-local q,w,e,r
+local q,w,e,r,f
 local razeShortPos, razeMidPos, razeLongPos
+local snowball_speed
 local nextTick = 0
+local added = false
 local ebladeCasted = {}
 --items
 local urn, vessel, hex, halberd, mjolnir, bkb, nullifier, solar, courage, force, pike, eul, orchid, bloodthorn, diffusal, armlet, lotus, satanic, blademail, blink, abyssal, eblade, phase
 
-AllInOne.optionClinkzEnable = Menu.AddOptionBool({"Hero Specific", "Clinkz"}, "Enable", false)
+AllInOne.optionClinkzEnable = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz"}, "Enable", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnable, "panorama/images/items/branches_png.vtex_c")
-Menu.AddMenuIcon({"Hero Specific", "Clinkz"}, "panorama/images/heroes/icons/npc_dota_hero_clinkz_png.vtex_c")
-AllInOne.optionClinkzComboKey = Menu.AddKeyOption({"Hero Specific", "Clinkz"}, "Combo Key", Enum.ButtonCode.KEY_Z)
-AllInOne.optionClinkzEnableBkb = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Black King Bar", false)
+Menu.AddMenuIcon({"KAIO","Hero Specific", "Clinkz"}, "panorama/images/heroes/icons/npc_dota_hero_clinkz_png.vtex_c")
+AllInOne.optionClinkzComboKey = Menu.AddKeyOption({"KAIO","Hero Specific", "Clinkz"}, "Combo Key", Enum.ButtonCode.KEY_Z)
+AllInOne.optionClinkzEnableBkb = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz", "Combo"}, "Black King Bar", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnableBkb, "panorama/images/items/black_king_bar_png.vtex_c")
-AllInOne.optionClinkzEnableBlood = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Bloodthorn", false)
+AllInOne.optionClinkzEnableBlood = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz", "Combo"}, "Bloodthorn", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnableBlood, "panorama/images/items/bloodthorn_png.vtex_c")
-AllInOne.optionClinkzEnableCourage = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Medallion of Courage", false)
+AllInOne.optionClinkzEnableCourage = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz", "Combo"}, "Medallion of Courage", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnableCourage, "panorama/images/items/medallion_of_courage_png.vtex_c")
-AllInOne.optionClinkzEnableDiffusal = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Diffusal Blade", false)
+AllInOne.optionClinkzEnableDiffusal = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz", "Combo"}, "Diffusal Blade", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnableDiffusal, "panorama/images/items/diffusal_blade_png.vtex_c")
-AllInOne.optionClinkzEnableHex = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Hex", false)
+AllInOne.optionClinkzEnableHex = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz", "Combo"}, "Hex", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnableHex, "panorama/images/items/sheepstick_png.vtex_c")
-AllInOne.optionClinkzEnableNullifier = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Nullifier", false)
+AllInOne.optionClinkzEnableNullifier = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz", "Combo"}, "Nullifier", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnableNullifier, "panorama/images/items/nullifier_png.vtex_c")
-AllInOne.optionClinkzEnableOrchid = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Orchid", false)
+AllInOne.optionClinkzEnableOrchid = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz", "Combo"}, "Orchid", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnableOrchid, "panorama/images/items/orchid_png.vtex_c")
-AllInOne.optionClinkzEnableSolar = Menu.AddOptionBool({"Hero Specific", "Clinkz", "Combo"}, "Solar Crest", false)
+AllInOne.optionClinkzEnableSolar = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz", "Combo"}, "Solar Crest", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnableSolar, "panorama/images/items/solar_crest_png.vtex_c")
-AllInOne.optionLegionEnable = Menu.AddOptionBool({"Hero Specific", "Legion Commander"}, "Enable", false)
+AllInOne.optionLegionEnable = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander"}, "Enable", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnable, "panorama/images/items/branches_png.vtex_c")
-AllInOne.optionLegionOnlyWithDuel = Menu.AddOptionBool({"Hero Specific", "Legion Commander"}, "Combo only when duel ready", false)
+AllInOne.optionLegionOnlyWithDuel = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander"}, "Combo only when duel ready", false)
 Menu.AddOptionIcon(AllInOne.optionLegionOnlyWithDuel, "panorama/images/spellicons/legion_commander_duel_png.vtex_c")
-Menu.AddMenuIcon({"Hero Specific", "Legion Commander"}, "panorama/images/heroes/icons/npc_dota_hero_legion_commander_png.vtex_c")
-AllInOne.optionLegionComboKey = Menu.AddKeyOption({"Hero Specific", "Legion Commander"}, "Combo Key", Enum.ButtonCode.KEY_Z)
-AllInOne.optionLegionEnablePressTheAttack = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Skills"}, "Press The Attack", false)
+Menu.AddMenuIcon({"KAIO","Hero Specific", "Legion Commander"}, "panorama/images/heroes/icons/npc_dota_hero_legion_commander_png.vtex_c")
+AllInOne.optionLegionComboKey = Menu.AddKeyOption({"KAIO","Hero Specific", "Legion Commander"}, "Combo Key", Enum.ButtonCode.KEY_Z)
+AllInOne.optionLegionEnablePressTheAttack = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Skills"}, "Press The Attack", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnablePressTheAttack, "panorama/images/spellicons/legion_commander_press_the_attack_png.vtex_c")
-AllInOne.optionLegionEnableDuel = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Skills"}, "Duel", false)
+AllInOne.optionLegionEnableDuel = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Skills"}, "Duel", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableDuel, "panorama/images/spellicons/legion_commander_duel_png.vtex_c")
-AllInOne.optionLegionEnableAbyssalWithDuel = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Items"}, "Abbysal Blade In Duel", false)
+AllInOne.optionLegionEnableAbyssalWithDuel = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Items"}, "Abbysal Blade In Duel", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableAbyssalWithDuel, "panorama/images/items/abyssal_blade_png.vtex_c")
-AllInOne.optionLegionEnableAbyssalWthDuel = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Items"}, "Abbysal Without Duel", false)
+AllInOne.optionLegionEnableAbyssalWthDuel = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Items"}, "Abbysal Without Duel", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableAbyssalWthDuel, "panorama/images/items/abyssal_blade_png.vtex_c")
-AllInOne.optionLegionEnableArmlet = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Items"}, "Armlet of Mordiggian", false)
+AllInOne.optionLegionEnableArmlet = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Items"}, "Armlet of Mordiggian", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableArmlet, "panorama/images/items/armlet_png.vtex_c")
-AllInOne.optionLegionEnableBkb = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Items"}, "Black King Bar", false)
+AllInOne.optionLegionEnableBkb = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Items"}, "Black King Bar", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableBkb, "panorama/images/items/black_king_bar_png.vtex_c")
-AllInOne.optionLegionEnableBlademail = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Items"}, "Blade Mail", false)
+AllInOne.optionLegionEnableBlademail = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Items"}, "Blade Mail", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableBlademail, "panorama/images/items/blade_mail_png.vtex_c")
-AllInOne.optionLegionEnableBlink = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Items"}, "Blink Dagger", false)
+AllInOne.optionLegionEnableBlink = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Items"}, "Blink Dagger", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableBlink, "panorama/images/items/blink_png.vtex_c")
-AllInOne.optionLegionEnableBlood = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Items"}, "Bloodthorn", false)
+AllInOne.optionLegionEnableBlood = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Items"}, "Bloodthorn", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableBlood, "panorama/images/items/bloodthorn_png.vtex_c")
-AllInOne.optionLegionEnableCourage = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Items"}, "Medallion of Courage", false)
+AllInOne.optionLegionEnableCourage = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Items"}, "Medallion of Courage", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableCourage, "panorama/images/items/medallion_of_courage_png.vtex_c")
-AllInOne.optionLegionEnableHalberd = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Items"}, "Heavens Halberd", false)
+AllInOne.optionLegionEnableHalberd = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Items"}, "Heavens Halberd", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableHalberd, "panorama/images/items/heavens_halberd_png.vtex_c")
-AllInOne.optionLegionEnableLotus = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Items"}, "Lotus Orb", false)
+AllInOne.optionLegionEnableLotus = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Items"}, "Lotus Orb", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableLotus, "panorama/images/items/lotus_orb_png.vtex_c")
-AllInOne.optionLegionEnableMjolnir = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Items"}, "Mjolnir", false)
+AllInOne.optionLegionEnableMjolnir = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Items"}, "Mjolnir", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableMjolnir, "panorama/images/items/mjollnir_png.vtex_c")
-AllInOne.optionLegionEnableOrchid = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Items"}, "Orchid", false)
+AllInOne.optionLegionEnableOrchid = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Items"}, "Orchid", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableOrchid, "panorama/images/items/orchid_png.vtex_c")
-AllInOne.optionLegionEnableSatanic = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Items"}, "Satanic", false)
+AllInOne.optionLegionEnableSatanic = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Items"}, "Satanic", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableSatanic, "panorama/images/items/satanic_png.vtex_c")
-AllInOne.optionLegionSatanicThreshold = Menu.AddOptionSlider({"Hero Specific", "Legion Commander", "Items"}, "HP Percent for satanic use", 1, 100, 15)
-AllInOne.optionLegionEnableSolar = Menu.AddOptionBool({"Hero Specific", "Legion Commander", "Items"}, "Solar Crest", false)
+AllInOne.optionLegionSatanicThreshold = Menu.AddOptionSlider({"KAIO","Hero Specific", "Legion Commander", "Items"}, "HP Percent for satanic use", 1, 100, 15)
+AllInOne.optionLegionEnableSolar = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Items"}, "Solar Crest", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableSolar, "panorama/images/items/solar_crest_png.vtex_c")
 AllInOne.optionLegionBlinkRange = Menu.AddOptionSlider({"Hero Specific", "Legion Commander"}, "Minimum Blink Range", 200, 1150, 300)
-AllInOne.optionSfEnable = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend"}, "Enable", false)
-Menu.AddMenuIcon({"Hero Specific", "Shadow Fiend"}, "panorama/images/heroes/icons/npc_dota_hero_nevermore_png.vtex_c")
+AllInOne.optionSfEnable = Menu.AddOptionBool({"KAIO","Hero Specific", "Shadow Fiend"}, "Enable", false)
+Menu.AddMenuIcon({"KAIO","Hero Specific", "Shadow Fiend"}, "panorama/images/heroes/icons/npc_dota_hero_nevermore_png.vtex_c")
 Menu.AddOptionIcon(AllInOne.optionSfEnable, "panorama/images/items/branches_png.vtex_c")
-AllInOne.optionSfRazeKey = Menu.AddKeyOption({"Hero Specific", "Shadow Fiend"}, "Auto Raze Key", Enum.ButtonCode.KEY_Z)
-AllInOne.optionSfDrawRazePos = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend"}, "Draw Raze Position", false)
-AllInOne.optionSfComboKey = Menu.AddKeyOption({"Hero Specific", "Shadow Fiend"}, "Eul combo key", Enum.ButtonCode.KEY_F)
-AllInOne.optionSfEnableBkb = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend", "Eul Combo"}, "Black King Bar", false)
+AllInOne.optionSfRazeKey = Menu.AddKeyOption({"KAIO","Hero Specific", "Shadow Fiend"}, "Auto Raze Key", Enum.ButtonCode.KEY_Z)
+AllInOne.optionSfDrawRazePos = Menu.AddOptionBool({"KAIO","Hero Specific", "Shadow Fiend"}, "Draw Raze Position", false)
+AllInOne.optionSfComboKey = Menu.AddKeyOption({"KAIO","Hero Specific", "Shadow Fiend"}, "Eul combo key", Enum.ButtonCode.KEY_F)
+AllInOne.optionSfEnableBkb = Menu.AddOptionBool({"KAIO","Hero Specific", "Shadow Fiend", "Eul Combo"}, "Black King Bar", false)
 Menu.AddOptionIcon(AllInOne.optionSfEnableBkb, "panorama/images/items/black_king_bar_png.vtex_c")
-AllInOne.optionSfEnableBlink = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend", "Eul Combo"}, "Blink", false)
+AllInOne.optionSfEnableBlink = Menu.AddOptionBool({"KAIO","Hero Specific", "Shadow Fiend", "Eul Combo"}, "Blink", false)
 Menu.AddOptionIcon(AllInOne.optionSfEnableBlink, "panorama/images/items/blink_png.vtex_c")
-AllInOne.optionSfEnableBlood = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend", "Eul Combo"}, "Bloodthorn", false)
+AllInOne.optionSfEnableBlood = Menu.AddOptionBool({"KAIO","Hero Specific", "Shadow Fiend", "Eul Combo"}, "Bloodthorn", false)
 Menu.AddOptionIcon(AllInOne.optionSfEnableBlood, "panorama/images/items/bloodthorn_png.vtex_c")
-AllInOne.optionSfEnableDagon = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend", "Eul Combo"}, "Dagon", false)
+AllInOne.optionSfEnableDagon = Menu.AddOptionBool({"KAIO","Hero Specific", "Shadow Fiend", "Eul Combo"}, "Dagon", false)
 Menu.AddOptionIcon(AllInOne.optionSfEnableDagon, "panorama/images/items/dagon_5_png.vtex_c")
-AllInOne.optionSfEnableEthereal = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend", "Eul Combo"}, "Ethereal blade", false)
+AllInOne.optionSfEnableEthereal = Menu.AddOptionBool({"KAIO","Hero Specific", "Shadow Fiend", "Eul Combo"}, "Ethereal blade", false)
 Menu.AddOptionIcon(AllInOne.optionSfEnableEthereal, "panorama/images/items/ethereal_blade_png.vtex_c")
-AllInOne.optionSfEnableHex = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend", "Eul Combo"}, "Hex", false)
+AllInOne.optionSfEnableHex = Menu.AddOptionBool({"KAIO","Hero Specific", "Shadow Fiend", "Eul Combo"}, "Hex", false)
 Menu.AddOptionIcon(AllInOne.optionSfEnableHex, "panorama/images/items/sheepstick_png.vtex_c")
-AllInOne.optionSfEnableOrchid = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend", "Eul Combo"}, "Orchid", false)
+AllInOne.optionSfEnableOrchid = Menu.AddOptionBool({"KAIO","Hero Specific", "Shadow Fiend", "Eul Combo"}, "Orchid", false)
 Menu.AddOptionIcon(AllInOne.optionSfEnableOrchid, "panorama/images/items/orchid_png.vtex_c")
-AllInOne.optionSfEnablePhase = Menu.AddOptionBool({"Hero Specific", "Shadow Fiend", "Eul Combo"}, "Phase Boots", false)
+AllInOne.optionSfEnablePhase = Menu.AddOptionBool({"KAIO","Hero Specific", "Shadow Fiend", "Eul Combo"}, "Phase Boots", false)
 Menu.AddOptionIcon(AllInOne.optionSfEnablePhase, "panorama/images/items/phase_boots_png.vtex_c")
-AllInOne.optionEnablePoopLinken = Menu.AddOptionBool({"Utility", "KAIO Poop Linken"}, "Enable", false)
-Menu.AddMenuIcon({"Utility", "KAIO Poop Linken"}, "panorama/images/items/sphere_png.vtex_c")
+AllInOne.optionTuskEnable = Menu.AddOptionBool({"KAIO","Hero Specific" ,"Tusk"}, "Enable", false)
+Menu.AddMenuIcon({"KAIO", "Hero Specific", "Tusk"}, "panorama/images/heroes/icons/npc_dota_hero_tusk_png.vtex_c")
+Menu.AddOptionIcon(AllInOne.optionTuskEnable, "panorama/images/items/branches_png.vtex_c")
+AllInOne.optionTuskEnablePickTeam = Menu.AddOptionBool({"KAIO","Hero Specific", "Tusk"}, "Pick teammates to the snowball", false)
+AllInOne.optionTuskComboKey = Menu.AddKeyOption({"KAIO", "Hero Specific", "Tusk"}, "Combo Key", Enum.ButtonCode.KEY_Z)
+AllInOne.optionTuskEnableShard = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Skills"}, "Ice Shards", false)
+Menu.AddOptionIcon(AllInOne.optionTuskEnableShard, "panorama/images/spellicons/tusk_ice_shards_png.vtex_c")
+AllInOne.optionTuskEnableSnowball = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Skills"}, "Snowball", false)
+Menu.AddOptionIcon(AllInOne.optionTuskEnableSnowball, "panorama/images/spellicons/tusk_snowball_png.vtex_c")
+AllInOne.optionTuskEnableSigil = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Skills"}, "Frozen Sigil", false)
+Menu.AddOptionIcon(AllInOne.optionTuskEnableSigil, "panorama/images/spellicons/tusk_frozen_sigil_png.vtex_c")
+AllInOne.optionTuskEnablePunch = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Skills"}, "Walrus Punch", false)
+Menu.AddOptionIcon(AllInOne.optionTuskEnablePunch, "panorama/images/spellicons/tusk_walrus_punch_png.vtex_c")
+AllInOne.optionTuskEnableAbyssal = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Items"}, "Abyssal Blade", false)
+Menu.AddOptionIcon(AllInOne.optionTuskEnableAbyssal, "panorama/images/items/abyssal_blade_png.vtex_c")
+AllInOne.optionTuskEnableArmlet = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Items"}, "Armlet of Mordiggian", false)
+Menu.AddOptionIcon(AllInOne.optionTuskEnableArmlet, "panorama/images/items/armlet_png.vtex_c")
+AllInOne.optionTuskEnableBkb = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Items"}, "Black King Bar", false)
+Menu.AddOptionIcon(AllInOne.optionTuskEnableBkb, "panorama/images/items/black_king_bar_png.vtex_c")
+AllInOne.optionTuskEnableBlood = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Items"}, "Bloodthorn", false)
+Menu.AddOptionIcon(AllInOne.optionTuskEnableBlood, "panorama/images/items/bloodthorn_png.vtex_c")
+AllInOne.optionTuskEnableCourage = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Items"}, "Medallion of Courage", false)
+Menu.AddOptionIcon(AllInOne.optionTuskEnableCourage, "panorama/images/items/medallion_of_courage_png.vtex_c")
+AllInOne.optionTuskEnableHalberd = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Items"}, "Heavens Halberd", false)
+Menu.AddOptionIcon(AllInOne.optionTuskEnableHalberd, "panorama/images/items/heavens_halberd_png.vtex_c")
+AllInOne.optionTuskEnableMjolnir = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Items"}, "Mjolnir", false)
+Menu.AddOptionIcon(AllInOne.optionTuskEnableMjolnir, "panorama/images/items/mjollnir_png.vtex_c")
+AllInOne.optionTuskEnableOrchid = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Items"}, "Orchid", false)
+Menu.AddOptionIcon(AllInOne.optionTuskEnableOrchid, "panorama/images/items/orchid_png.vtex_c")
+AllInOne.optionTuskEnableSolar = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Items"}, "Solar Crest", false)
+Menu.AddOptionIcon(AllInOne.optionTuskEnableSolar, "panorama/images/items/solar_crest_png.vtex_c")
+AllInOne.optionTuskEnableUrn = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Items"}, "Urn of Shadows", false)
+Menu.AddOptionIcon(AllInOne.optionTuskEnableUrn, "panorama/images/items/urn_of_shadows_png.vtex_c")
+AllInOne.optionTuskEnableVessel = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Items"}, "Spirit Vessel", false)
+Menu.AddOptionIcon(AllInOne.optionTuskEnableVessel, "panorama/images/items/spirit_vessel_png.vtex_c")
+AllInOne.optionTuskComboRadius = Menu.AddOptionSlider({"KAIO", "Hero Specific", "Tusk"}, "Combo Radius", 200, 1250, 1000)
+AllInOne.optionEnablePoopLinken = Menu.AddOptionBool({"KAIO", "Poop Linken"}, "Enable", false)
+Menu.AddMenuIcon({"KAIO", "Poop Linken"}, "panorama/images/items/sphere_png.vtex_c")
 Menu.AddOptionIcon(AllInOne.optionEnablePoopLinken, "panorama/images/items/branches_png.vtex_c")
-AllInOne.optionEnablePoopAbyssal = Menu.AddOptionBool({"Utility", "KAIO Poop Linken"}, "Abyssal Blade", false)
+AllInOne.optionEnablePoopAbyssal = Menu.AddOptionBool({"KAIO", "Poop Linken"}, "Abyssal Blade", false)
 Menu.AddOptionIcon(AllInOne.optionEnablePoopAbyssal, "panorama/images/items/abyssal_blade_png.vtex_c")
-AllInOne.optionEnablePoopBlood = Menu.AddOptionBool({"Utility", "KAIO Poop Linken"}, "Bloodthorn", false)
+AllInOne.optionEnablePoopBlood = Menu.AddOptionBool({"KAIO", "Poop Linken"}, "Bloodthorn", false)
 Menu.AddOptionIcon(AllInOne.optionEnablePoopBlood, "panorama/images/items/bloodthorn_png.vtex_c")
-AllInOne.optionEnablePoopDagon = Menu.AddOptionBool({"Utility", "KAIO Poop Linken"}, "Dagon", false)
+AllInOne.optionEnablePoopDagon = Menu.AddOptionBool({"KAIO", "Poop Linken"}, "Dagon", false)
 Menu.AddOptionIcon(AllInOne.optionEnablePoopDagon, "panorama/images/items/dagon_5_png.vtex_c")
-AllInOne.optionEnablePoopDiffusal = Menu.AddOptionBool({"Utility", "KAIO Poop Linken"}, "Diffusal Blade", false)
+AllInOne.optionEnablePoopDiffusal = Menu.AddOptionBool({"KAIO", "Poop Linken"}, "Diffusal Blade", false)
 Menu.AddOptionIcon(AllInOne.optionEnablePoopDiffusal, "panorama/images/items/diffusal_blade_png.vtex_c")
-AllInOne.optionEnablePoopEul = Menu.AddOptionBool({"Utility", "KAIO Poop Linken"}, "Eul", false)
+AllInOne.optionEnablePoopEul = Menu.AddOptionBool({"KAIO", "Poop Linken"}, "Eul", false)
 Menu.AddOptionIcon(AllInOne.optionEnablePoopEul, "panorama/images/items/cyclone_png.vtex_c")
-AllInOne.optionEnablePoopForce = Menu.AddOptionBool({"Utility", "KAIO Poop Linken"}, "Force Staff", false)
+AllInOne.optionEnablePoopForce = Menu.AddOptionBool({"KAIO", "Poop Linken"}, "Force Staff", false)
 Menu.AddOptionIcon(AllInOne.optionEnablePoopForce, "panorama/images/items/force_staff_png.vtex_c")
-AllInOne.optionEnablePoopHalberd = Menu.AddOptionBool({"Utility", "KAIO Poop Linken"}, "Heavens Halberd", false)
+AllInOne.optionEnablePoopHalberd = Menu.AddOptionBool({"KAIO", "Poop Linken"}, "Heavens Halberd", false)
 Menu.AddOptionIcon(AllInOne.optionEnablePoopHalberd, "panorama/images/items/heavens_halberd_png.vtex_c")
-AllInOne.optionEnablePoopHex = Menu.AddOptionBool({"Utility", "KAIO Poop Linken"}, "Hex", false)
+AllInOne.optionEnablePoopHex = Menu.AddOptionBool({"KAIO", "Poop Linken"}, "Hex", false)
 Menu.AddOptionIcon(AllInOne.optionEnablePoopHex, "panorama/images/items/sheepstick_png.vtex_c")
-AllInOne.optionEnablePoopPike = Menu.AddOptionBool({"Utility", "KAIO Poop Linken"}, "Hurricane Pike", false)
+AllInOne.optionEnablePoopPike = Menu.AddOptionBool({"KAIO", "Poop Linken"}, "Hurricane Pike", false)
 Menu.AddOptionIcon(AllInOne.optionEnablePoopPike, "panorama/images/items/hurricane_pike_png.vtex_c")
-AllInOne.optionEnablePoopOrchid = Menu.AddOptionBool({"Utility", "KAIO Poop Linken"}, "Orchid", false)
+AllInOne.optionEnablePoopOrchid = Menu.AddOptionBool({"KAIO", "Poop Linken"}, "Orchid", false)
 Menu.AddOptionIcon(AllInOne.optionEnablePoopOrchid, "panorama/images/items/orchid_png.vtex_c")
 function AllInOne.Init( ... )
 	myHero = Heroes.GetLocal()
@@ -132,7 +170,15 @@ function AllInOne.Init( ... )
 		w = NPC.GetAbilityByIndex(myHero, 1)
 		e = NPC.GetAbilityByIndex(myHero, 2)
 		r = NPC.GetAbility(myHero, "nevermore_requiem")
-	else
+	elseif NPC.GetUnitName(myHero) == "npc_dota_hero_tusk" then
+		comboHero = "Tusk"
+		q = NPC.GetAbilityByIndex(myHero, 0)
+		w = NPC.GetAbilityByIndex(myHero, 1)
+		e = NPC.GetAbilityByIndex(myHero, 2)
+		f = NPC.GetAbility(myHero, "tusk_launch_snowball")
+		r = NPC.GetAbility(myHero, "tusk_walrus_punch")
+		snowball_speed = 600
+	else	
 		myHero = nil
 		return	
 	end
@@ -168,12 +214,13 @@ end
 function AllInOne.OnUpdate( ... )
 	if not myHero then return end
 	myMana = NPC.GetMana(myHero)
+	added = false
 	if comboHero == "Clinkz" and Menu.IsEnabled(AllInOne.optionClinkzEnable) then
 		if Menu.IsKeyDown(AllInOne.optionClinkzComboKey) then
 			if not enemy then
 				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
 			end
-			if Entity.IsAlive(enemy) then
+			if enemy and Entity.IsAlive(enemy) then
 				AllInOne.ClinkzCombo()
 			end
 		else
@@ -195,13 +242,22 @@ function AllInOne.OnUpdate( ... )
 			if not enemy then
 				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
 			end
-			if Entity.IsAlive(enemy) then
+			if enemy and Entity.IsAlive(enemy) then
 				AllInOne.SfCombo(eul)
 			end
 		else
 			enemy = nil
 		end
 		AllInOne.SfAutoRaze()
+	elseif comboHero == "Tusk" then
+		if Menu.IsKeyDown(AllInOne.optionTuskComboKey) then
+			if not enemy then
+				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
+			end
+			if enemy and Entity.IsAlive(enemy) then
+				AllInOne.TuskCombo()
+			end
+		end
 	end
 	AllInOne.ClearVar()
 	for i = 0, 5 do
@@ -263,7 +319,7 @@ function AllInOne.OnUpdate( ... )
 	end
 end
 function AllInOne.SfCombo( ... )
-	if not enemy or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+	if NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
 		enemy = nil
 		return
 	end
@@ -427,7 +483,7 @@ function AllInOne.castPrediction(adjVar)
 	end
 end
 function AllInOne.LegionCombo( ... )
-	if not enemy or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+	if NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
 		enemy = nil
 		return
 	end
@@ -536,8 +592,124 @@ function AllInOne.LegionCombo( ... )
 		return
 	end
 end
+function AllInOne.TuskCombo( ... )
+	if NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) or not NPC.IsEntityInRange(myHero, enemy, Menu.GetValue(AllInOne.optionTuskComboRadius)) then
+		enemy = nil
+		return
+	end
+	if not added and Ability.GetLevel(NPC.GetAbility(myHero, "special_bonus_unique_tusk_3")) > 0 then
+		snowball_speed = snowball_speed + 300
+	end
+	if w and Menu.IsEnabled(AllInOne.optionTuskEnableSnowball) and Ability.IsCastable(w, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+		Ability.CastTarget(w, enemy)
+		local tempTable = Entity.GetHeroesInRadius(myHero, 350, Enum.TeamType.TEAM_FRIEND)
+		if not Menu.IsEnabled(AllInOne.optionTuskEnablePickTeam) then
+			tempTable = nil
+		else
+			if tempTable then
+				for i, k in pairs(tempTable) do
+					if not NPC.HasModifier(k, "modifier_tusk_snowball_movement_friendly") then
+						Player.AttackTarget(myPlayer, myHero, k, false)
+					end
+				end
+				tempTable = nil
+			end	
+		end
+		if Ability.IsCastable(f, 0) and not tempTable then
+			Ability.CastNoTarget(f)
+		end
+		return
+	end
+	if q and Menu.IsEnabled(AllInOne.optionTuskEnableShard) and Ability.IsCastable(q, myMana) and not NPC.IsTurning(myHero) then
+		if NPC.HasModifier(enemy, "modifier_stunned") and Modifier.GetDieTime(NPC.GetModifier(enemy,"modifier_stunned")) > (Entity.GetAbsOrigin(myHero):__sub(Entity.GetAbsOrigin(enemy))):Length()/snowballspeed then
+			Ability.CastPosition(q, Tusk.PosPrediction(enemy, 0))
+		elseif not NPC.IsRunning(enemy) then
+			Ability.CastPosition(q, Tusk.PosPrediction(enemy, 0))
+		else
+			Ability.CastPosition(q, Tusk.PosPrediction())
+		end
+		return
+	end
+	if Menu.IsEnabled(AllInOne.optionTuskEnableSigil) and Ability.IsCastable(e, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+		if NPC.IsEntityInRange(myHero, enemy, 450) then
+			Ability.CastNoTarget(e)
+		end
+		return
+	end
+	if urn and Menu.IsEnabled(AllInOne.optionTuskEnableUrn) and Item.GetCurrentCharges(urn) > 0 and Ability.IsCastable(urn,0) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+		Ability.CastTarget(urn, enemy)
+		return
+	end
+	if vessel and Menu.IsEnabled(AllInOne.optionTuskEnableVessel) and Item.GetCurrentCharges(vessel) > 0 and Ability.IsCastable(vessel,0) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+		Ability.CastTarget(vessel, enemy)
+		return
+	end
+	if solar and Menu.IsEnabled(AllInOne.optionTuskEnableSolar) and Ability.IsCastable(solar,0) then
+		Ability.CastTarget(solar, enemy)
+		return
+	end
+	if courage and Menu.IsEnabled(AllInOne.optionTuskEnableCourage) and Ability.IsCastable(courage,0) then
+		Ability.CastTarget(courage, enemy)
+		return
+	end
+	if orchid and Menu.IsEnabled(AllInOne.optionTuskEnableOrchid) and Ability.IsCastable(orchid,0) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+		Ability.CastTarget(orchid, enemy)
+		return
+	end
+	if bloodthorn and Menu.IsEnabled(AllInOne.optionTuskEnableBloodthorn) and Ability.IsCastable(bloodthorn,0) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+		Ability.CastTarget(bloodthorn, enemy)
+		return
+	end
+	if mjolnir and Menu.IsEnabled(AllInOne.optionTuskEnableMjolnir) and Ability.IsCastable(mjolnir,0) then
+		Ability.CastTarget(mjolnir, myHero)
+		return
+	end
+	if abyssal and Menu.IsEnabled(AllInOne.optionTuskEnableAbyssal) and Ability.IsCastable(abyssal,0) then
+		Ability.CastTarget(abyssal, enemy)
+		return
+	end
+	if halberd and Menu.IsEnabled(AllInOne.optionTuskEnableHalberd) and Ability.IsCastable(halberd,0) and NPC.IsAttacking(enemy) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+		Ability.CastTarget(halberd, enemy)
+		return
+	end
+	if bkb and Menu.IsEnabled(AllInOne.optionTuskEnableBkb) and Ability.IsCastable(bkb,0) then
+		Ability.CastNoTarget(bkb)
+		return
+	end
+	if armlet and Menu.IsEnabled(AllInOne.optionTuskEnableArmlet) and not Ability.GetToggleState(armlet) and Ability.IsCastable(armlet,0) and GameRules.GetGameTime() >= nextTick then
+		Ability.Toggle(armlet)
+		nextTick = GameRules.GetGameTime() + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		return
+	end
+	if Menu.IsEnabled(AllInOne.optionTuskEnablePunch) and Ability.GetLevel(r) > 0 and Ability.IsCastable(r, myMana) and NPC.IsEntityInRange(myHero, enemy, 350) and not NPC.HasModifier(myHero, "modifier_tusk_snowball_movement") then
+		Ability.CastTarget(r, enemy)
+		return
+	end	
+	if not NPC.IsAttacking(myHero) and Menu.IsEnabled(AllInOne.optionTuskEnablePunch) and not Ability.IsCastable(r, myMana) then
+		Player.AttackTarget(myPlayer, myHero, enemy, false)
+	elseif not NPC.IsAttacking(myHero) and not Menu.IsEnabled(AllInOne.optionTuskEnablePunch) then
+		Player.AttackTarget(myPlayer, myHero, enemy, false)	
+	end
+end
+function AllInOne.ShardPrediction(speed)
+	if not enemy then return end
+	local pos = Entity.GetAbsOrigin(enemy)
+	local dir = Entity.GetRotation(myHero):GetForward():Normalized()
+	if not speed then
+		speed = AllInOne.GetMoveSpeed(enemy)
+	end
+	if speed == 0 then
+		pos = pos + dir:Scaled(100)
+	end	
+	if speed <= 350 then
+		pos = pos + dir:Scaled(speed*1.2)
+	else
+		pos = pos + dir:Scaled(speed*1.3)
+	end	
+	return pos
+end
 function AllInOne.ClinkzCombo( ... )
-	if not enemy or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) or NPC.HasModifier(enemy, "modifier_dark_willow_shadow_realm_buff") then
+	if NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) or NPC.HasModifier(enemy, "modifier_dark_willow_shadow_realm_buff") then
 		enemy = nil
 		return
 	end
