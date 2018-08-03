@@ -584,6 +584,9 @@ function AllInOne.LegionCombo( ... )
 			return
 		end
 	else
+		if NPC.IsLinkensProtected(enemy) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+			AllInOne.PoopLinken()
+		end
 		if r and Menu.IsEnabled(AllInOne.optionLegionEnableDuel) and Ability.IsCastable(r, myMana) then
 			Ability.CastTarget(r, enemy)
 		else
