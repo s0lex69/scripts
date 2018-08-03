@@ -324,7 +324,7 @@ function AllInOne.SfCombo( ... )
 		return
 	end
 	if r and Ability.IsCastable(r, myMana) then
-		if NPC.IsLinkensProtected(enemy) then
+		if AllInOne.IsLinkensProtected() then
 			AllInOne.PoopLinken(eul)
 		end
 		local possibleRange = NPC.GetMoveSpeed(myHero) * 0.8
@@ -360,7 +360,7 @@ function AllInOne.SfCombo( ... )
 		if phase and Menu.IsEnabled(AllInOne.optionSfEnablePhase) and Ability.IsCastable(phase, 0) then
 			Ability.CastNoTarget(phase)
 		end
-		if eul and Ability.IsCastable(eul, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) and not NPC.IsLinkensProtected(enemy) then
+		if eul and Ability.IsCastable(eul, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) and not AllInOne.IsLinkensProtected() then
 			if Menu.IsEnabled(AllInOne.optionSfEnableEthereal) and ebladeCasted[enemy] and eblade and Ability.SecondsSinceLastUse(eblade) < 3 then
 				Ability.CastTarget(eul, enemy)
 				ebladeCasted[enemy] = nil
@@ -518,7 +518,7 @@ function AllInOne.LegionCombo( ... )
 		end
 	end
 	if NPC.IsEntityInRange(myHero, enemy, 150) then
-		if NPC.IsLinkensProtected(enemy) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+		if AllInOne.IsLinkensProtected() and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
 			AllInOne.PoopLinken()
 		end
 		if w and Menu.IsEnabled(AllInOne.optionLegionEnablePressTheAttack) and Ability.IsCastable(w, myMana) and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE)  then
@@ -584,7 +584,7 @@ function AllInOne.LegionCombo( ... )
 			return
 		end
 	else
-		if NPC.IsLinkensProtected(enemy) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+		if AllInOne.IsLinkensProtected() and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
 			AllInOne.PoopLinken()
 		end
 		if r and Menu.IsEnabled(AllInOne.optionLegionEnableDuel) and Ability.IsCastable(r, myMana) then
@@ -625,11 +625,11 @@ function AllInOne.TuskCombo( ... )
 	end
 	if q and Menu.IsEnabled(AllInOne.optionTuskEnableShard) and Ability.IsCastable(q, myMana) and not NPC.IsTurning(myHero) then
 		if NPC.HasModifier(enemy, "modifier_stunned") and Modifier.GetDieTime(NPC.GetModifier(enemy,"modifier_stunned")) > (Entity.GetAbsOrigin(myHero):__sub(Entity.GetAbsOrigin(enemy))):Length()/snowballspeed then
-			Ability.CastPosition(q, Tusk.PosPrediction(enemy, 0))
+			Ability.CastPosition(q, AllInOne.ShardPrediction(0))
 		elseif not NPC.IsRunning(enemy) then
-			Ability.CastPosition(q, Tusk.PosPrediction(enemy, 0))
+			Ability.CastPosition(q, AllInOne.ShardPrediction(0))
 		else
-			Ability.CastPosition(q, Tusk.PosPrediction())
+			Ability.CastPosition(q, AllInOne.ShardPrediction())
 		end
 		return
 	end
@@ -729,7 +729,7 @@ function AllInOne.ClinkzCombo( ... )
 			nextTick = GameRules.GetGameTime() + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 			return
 		end
-		if NPC.IsLinkensProtected(enemy) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+		if AllInOne.IsLinkensProtected() and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
 			AllInOne.PoopLinken()
 		end
 		if nullifier and not NPC.HasModifier(enemy, "modifier_item_nullifier_mute") and Menu.IsEnabled(AllInOne.optionClinkzEnableNullifier) and Ability.IsCastable(nullifier, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
@@ -772,6 +772,12 @@ function AllInOne.ClinkzCombo( ... )
 		end
 		Player.AttackTarget(myPlayer, myHero, enemy)
 	end
+end
+function AllInOne.IsLinkensProtected()
+	if NPC.IsLinkensProtected(enemy) then
+		return true
+	end
+	return false
 end
 function AllInOne.PoopLinken(exception)
 	if abyssal and Menu.IsEnabled(AllInOne.optionEnablePoopAbyssal) and Ability.IsCastable(abyssal, myMana) then
