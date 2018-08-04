@@ -4,12 +4,14 @@ local enemy
 local comboHero
 local q,w,e,r,f
 local razeShortPos, razeMidPos, razeLongPos
+local remnant_casted = false
 local snowball_speed
 local nextTick = 0
+local needTime = 0
 local added = false
 local ebladeCasted = {}
 --items
-local urn, vessel, hex, halberd, mjolnir, bkb, nullifier, solar, courage, force, pike, eul, orchid, bloodthorn, diffusal, armlet, lotus, satanic, blademail, blink, abyssal, eblade, phase
+local urn, vessel, hex, halberd, mjolnir, bkb, nullifier, solar, courage, force, pike, eul, orchid, bloodthorn, diffusal, armlet, lotus, satanic, blademail, blink, abyssal, eblade, phase, discord, shiva
 
 AllInOne.optionClinkzEnable = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz"}, "Enable", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnable, "panorama/images/items/branches_png.vtex_c")
@@ -31,6 +33,33 @@ AllInOne.optionClinkzEnableOrchid = Menu.AddOptionBool({"KAIO","Hero Specific", 
 Menu.AddOptionIcon(AllInOne.optionClinkzEnableOrchid, "panorama/images/items/orchid_png.vtex_c")
 AllInOne.optionClinkzEnableSolar = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz", "Combo"}, "Solar Crest", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnableSolar, "panorama/images/items/solar_crest_png.vtex_c")
+AllInOne.optionEmberEnable = Menu.AddOptionBool({"KAIO", "Hero Specific", "Ember Spirit"}, "Enable", false)
+Menu.AddOptionIcon(AllInOne.optionEmberEnable, "panorama/images/items/branches_png.vtex_c")
+Menu.AddMenuIcon({"KAIO", "Hero Specific", "Ember Spirit"}, "panorama/images/heroes/icons/npc_dota_hero_ember_spirit_png.vtex_c")
+AllInOne.optionEmberAutoChain = Menu.AddOptionBool({"KAIO", "Hero Specific", "Ember Spirit"}, "Auto Cast Chains After Fist")
+AllInOne.optionEmberComboKey = Menu.AddKeyOption({"KAIO", "Hero Specific", "Ember Spirit"}, "Combo Key", Enum.ButtonCode.KEY_F)
+AllInOne.optionEmberComboRadius = Menu.AddOptionSlider({"KAIO", "Hero Specific", "Ember Spirit"}, "Combo Radius", 250, 1500, 1500)
+AllInOne.optionEmberEnableChains = Menu.AddOptionBool({"KAIO", "Hero Specific", "Ember Spirit", "Skills"}, "Searing Chains", false)
+Menu.AddOptionIcon(AllInOne.optionEmberEnableChains, "panorama/images/spellicons/ember_spirit_searing_chains_png.vtex_c")
+AllInOne.optionEmberEnableFist = Menu.AddOptionBool({"KAIO", "Hero Specific", "Ember Spirit", "Skills"}, "Sleight of Fist", false)
+Menu.AddOptionIcon(AllInOne.optionEmberEnableFist, "panorama/images/spellicons/ember_spirit_sleight_of_fist_png.vtex_c")
+AllInOne.optionEmberEnableFlame = Menu.AddOptionBool({"KAIO", "Hero Specific", "Ember Spirit", "Skills"}, "Flame Guard", false)
+Menu.AddOptionIcon(AllInOne.optionEmberEnableFlame, "panorama/images/spellicons/ember_spirit_flame_guard_png.vtex_c")
+AllInOne.optionEmberEnableRemnant = Menu.AddOptionBool({"KAIO", "Hero Specific", "Ember Spirit", "Skills"}, "Fire Remnant", false)
+Menu.AddOptionIcon(AllInOne.optionEmberEnableRemnant, "panorama/images/spellicons/ember_spirit_fire_remnant_png.vtex_c")
+AllInOne.optionEmberSaveRemnantCount = Menu.AddOptionSlider({"KAIO", "Hero Specific", "Ember Spirit", "Skills"}, "Fire Remnant Save Count", 0, 2, 0)
+AllInOne.optionEmberEnableBkb = Menu.AddOptionBool({"KAIO", "Hero Specific", "Ember Spirit", "Items"}, "Black King Bar", false)
+Menu.AddOptionIcon(AllInOne.optionEmberEnableBkb, "panorama/images/items/black_king_bar_png.vtex_c")
+AllInOne.optionEmberEnableBlademail = Menu.AddOptionBool({"KAIO", "Hero Specific", "Ember Spirit", "Items"}, "Blademail", false)
+Menu.AddOptionIcon(AllInOne.optionEmberEnableBlademail, "panorama/images/items/blade_mail_png.vtex_c")
+AllInOne.optionEmberEnableBloodthorn = Menu.AddOptionBool({"KAIO", "Hero Specific", "Ember Spirit", "Items"}, "Bloodthorn", false)
+Menu.AddOptionIcon(AllInOne.optionEmberEnableBloodthorn, "panorama/images/items/bloodthorn_png.vtex_c")
+AllInOne.optionEmberEnableDiscord = Menu.AddOptionBool({"KAIO", "Hero Specific", "Ember Spirit", "Items"}, "Veil of Discord", false)
+Menu.AddOptionIcon(AllInOne.optionEmberEnableDiscord, "panorama/images/items/veil_of_discord_png.vtex_c")
+AllInOne.optionEmberEnableOrchid = Menu.AddOptionBool({"KAIO", "Hero Specific", "Ember Spirit", "Items"}, "Orchid", false)
+Menu.AddOptionIcon(AllInOne.optionEmberEnableOrchid, "panorama/images/items/orchid_png.vtex_c")
+AllInOne.optionEmberEnableShiva = Menu.AddOptionBool({"KAIO", "Hero Specific", "Ember Spirit", "Items"}, "Shiva's Guard", false)
+Menu.AddOptionIcon(AllInOne.optionEmberEnableShiva, "panorama/images/items/shivas_guard_png.vtex_c")
 AllInOne.optionLegionEnable = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander"}, "Enable", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnable, "panorama/images/items/branches_png.vtex_c")
 AllInOne.optionLegionOnlyWithDuel = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander"}, "Combo only when duel ready", false)
@@ -70,7 +99,7 @@ Menu.AddOptionIcon(AllInOne.optionLegionEnableSatanic, "panorama/images/items/sa
 AllInOne.optionLegionSatanicThreshold = Menu.AddOptionSlider({"KAIO","Hero Specific", "Legion Commander", "Items"}, "HP Percent for satanic use", 1, 100, 15)
 AllInOne.optionLegionEnableSolar = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander", "Items"}, "Solar Crest", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnableSolar, "panorama/images/items/solar_crest_png.vtex_c")
-AllInOne.optionLegionBlinkRange = Menu.AddOptionSlider({"KAIO","Hero Specific", "Legion Commander"}, "Minimum Blink Range", 200, 1150, 300)
+AllInOne.optionLegionBlinkRange = Menu.AddOptionSlider({"KAIO", "Hero Specific", "Legion Commander"}, "Minimum Blink Range", 200, 1150, 300)
 AllInOne.optionSfEnable = Menu.AddOptionBool({"KAIO","Hero Specific", "Shadow Fiend"}, "Enable", false)
 Menu.AddMenuIcon({"KAIO","Hero Specific", "Shadow Fiend"}, "panorama/images/heroes/icons/npc_dota_hero_nevermore_png.vtex_c")
 Menu.AddOptionIcon(AllInOne.optionSfEnable, "panorama/images/items/branches_png.vtex_c")
@@ -155,6 +184,7 @@ Menu.AddOptionIcon(AllInOne.optionEnablePoopOrchid, "panorama/images/items/orchi
 function AllInOne.Init( ... )
 	myHero = Heroes.GetLocal()
 	nextTick = 0
+	needTime = 0
 	if not myHero then return end
 	if NPC.GetUnitName(myHero) == "npc_dota_hero_clinkz" then
 		comboHero = "Clinkz"
@@ -178,6 +208,13 @@ function AllInOne.Init( ... )
 		f = NPC.GetAbility(myHero, "tusk_launch_snowball")
 		r = NPC.GetAbility(myHero, "tusk_walrus_punch")
 		snowball_speed = 600
+	elseif NPC.GetUnitName(myHero) == "npc_dota_hero_ember_spirit" then
+		comboHero = "Ember"
+		q = NPC.GetAbilityByIndex(myHero, 0)
+		w = NPC.GetAbilityByIndex(myHero, 1)
+		e = NPC.GetAbilityByIndex(myHero, 2)
+		r = NPC.GetAbility(myHero, "ember_spirit_fire_remnant")
+		f = NPC.GetAbility(myHero, "ember_spirit_activate_fire_remnant")
 	else	
 		myHero = nil
 		return	
@@ -210,6 +247,11 @@ function AllInOne.ClearVar( ... )
 	blademail = nil
 	blink = nil
 	abyssal = nil
+	discrd = nil
+	phase = nil
+	dagon = nil
+	eblade = nil
+	shiva = nil
 end
 function AllInOne.OnUpdate( ... )
 	if not myHero then return end
@@ -249,7 +291,7 @@ function AllInOne.OnUpdate( ... )
 			enemy = nil
 		end
 		AllInOne.SfAutoRaze()
-	elseif comboHero == "Tusk" then
+	elseif comboHero == "Tusk" and Menu.IsEnabled(AllInOne.optionTuskEnable) then
 		if Menu.IsKeyDown(AllInOne.optionTuskComboKey) then
 			if not enemy then
 				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
@@ -258,6 +300,39 @@ function AllInOne.OnUpdate( ... )
 				AllInOne.TuskCombo()
 			end
 		end
+	elseif comboHero == "Ember" and Menu.IsEnabled(AllInOne.optionEmberEnable) then
+		if Menu.IsKeyDown(AllInOne.optionEmberComboKey) then
+			if not enemy then
+				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
+			end
+			if enemy and Entity.IsAlive(enemy) then
+				AllInOne.EmberCombo()
+			end
+		elseif Menu.IsEnabled(AllInOne.optionEmberAutoChain) then
+			if NPC.HasModifier(myHero, "modifier_ember_spirit_sleight_of_fist_marker") or NPC.HasModifier(myHero, "modifier_ember_spirit_sleight_of_fist_caster") or NPC.HasModifier(myHero, "modifier_ember_spirit_sleight_of_fist_caster_invulnerability") then
+				if not enemy then
+					if Heroes.InRadius(Entity.GetAbsOrigin(myHero),150, myTeam, Enum.TeamType.TEAM_ENEMY) then
+						for i, k in pairs(Heroes.InRadius(Entity.GetAbsOrigin(myHero),150, myTeam, Enum.TeamType.TEAM_ENEMY)) do
+							enemy = k
+							break
+						end
+					end
+				end
+				if enemy and Entity.IsAlive(enemy) then
+					if NPC.IsEntityInRange(myHero, enemy, 125) then
+						if Ability.IsCastable(q,myMana) then
+							Ability.CastNoTarget(q)
+						end
+					end
+				end
+			else
+				if not Menu.IsKeyDown(AllInOne.optionEmberComboKey) then
+					enemy = nil
+				end	
+			end
+		else	
+			enemy = nil	
+		end	
 	end
 	AllInOne.ClearVar()
 	for i = 0, 5 do
@@ -314,6 +389,10 @@ function AllInOne.OnUpdate( ... )
 				phase = item
 			elseif name == "item_dagon" or name == "item_dagon_2" or name == "item_dagon_3" or name == "item_dagon_4" or name == "item_dagon_5" then
 				dagon = item
+			elseif name == "item_veil_of_discord" then
+				discord = item
+			elseif name == "item_shivas_guard" then
+				shiva = item	
 			end	
 		end
 	end
@@ -341,6 +420,10 @@ function AllInOne.SfCombo( ... )
 			ebladeCasted[enemy] = true
 			return
 		end
+		if dagon and Menu.IsEnabled(AllInOne.optionSfEnableDagon) and Ability.IsCastable(dagon, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+			Ability.CastTarget(dagon, enemy)
+			return
+		end
 		if hex and Menu.IsEnabled(AllInOne.optionSfEnableHex) and Ability.IsCastable(hex, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
 			Ability.CastTarget(hex, enemy)
 			return
@@ -362,10 +445,13 @@ function AllInOne.SfCombo( ... )
 		end
 		if eul and Ability.IsCastable(eul, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) and not AllInOne.IsLinkensProtected() then
 			if Menu.IsEnabled(AllInOne.optionSfEnableEthereal) and ebladeCasted[enemy] and eblade and Ability.SecondsSinceLastUse(eblade) < 3 then
-				Ability.CastTarget(eul, enemy)
-				ebladeCasted[enemy] = nil
+				if NPC.HasModifier(enemy, "modifier_item_ethereal_blade_ethereal") then
+					Ability.CastTarget(eul, enemy)
+					ebladeCasted[enemy] = nil
+				end
 			else
 				Ability.CastTarget(eul, enemy)
+				ebladeCasted[enemy] = nil
 			end
 			return
 		end	
@@ -422,6 +508,67 @@ function AllInOne.SfAutoRaze( ... )
 		end
 	end
 end
+function AllInOne.EmberCombo( ... )
+	if not enemy or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) or not NPC.IsEntityInRange(myHero, enemy, Menu.GetValue(AllInOne.optionEmberComboRadius)) then
+		enemy = nil
+		return
+	end
+	local enemyPos = Entity.GetAbsOrigin(enemy)
+	local remnant_count = Modifier.GetStackCount(NPC.GetModifier(myHero, "modifier_ember_spirit_fire_remnant_charge_counter")) - Menu.GetValue(AllInOne.optionEmberSaveRemnantCount)
+	if discord and Menu.IsEnabled(AllInOne.optionEmberEnableDiscord) and Ability.IsCastable(discord, myMana) then
+		Ability.CastPosition(discord, AllInOne.castPrediction(1))
+	end
+	if bkb and Menu.IsEnabled(AllInOne.optionEmberEnableBkb) and Ability.IsCastable(bkb,0) then
+		Ability.CastNoTarget(bkb)
+		return
+	end
+	if r and Ability.IsCastable(f,myMana) and Menu.IsEnabled(AllInOne.optionEmberEnableRemnant) and remnant_count > 0 and GameRules.GetGameTime() >= nextTick then
+		for i = 1, remnant_count do
+			Ability.CastPosition(r, AllInOne.castPrediction(1))
+			remnant_casted = true
+		end
+		needTime = GameRules.GetGameTime() + ((Entity.GetAbsOrigin(myHero):__sub(enemyPos)):Length() - 350)/(AllInOne.GetMoveSpeed(myHero)*2.5)
+		nextTick = GameRules.GetGameTime() + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		return
+	end
+	if AllInOne.IsLinkensProtected() and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+		AllInOne.PoopLinken()
+	end
+	if f and Ability.IsCastable(f,myMana) and remnant_casted and GameRules.GetGameTime() >= needTime then
+		Ability.CastPosition(f, enemyPos)
+		remnant_casted = false
+		return
+	end
+	if shiva and Menu.IsEnabled(AllInOne.optionEmberEnableShiva) and Ability.IsCastable(shiva, myMana) then
+		Ability.CastNoTarget(shiva)
+		return
+	end
+	if blademail and Menu.IsEnabled(AllInOne.optionEmberEnableBlademail) and Ability.IsCastable(blademail, myMana) then
+		Ability.CastNoTarget(blademail)
+		return
+	end
+	if orchid and Menu.IsEnabled(AllInOne.optionEmberEnableOrchid) and Ability.IsCastable(orchid, myMana) then
+		Ability.CastTarget(orchid, enemy)
+		return
+	end
+	if bloodthorn and Menu.IsEnabled(AllInOne.optionEmberEnableBloodthorn) and Ability.IsCastable(bloodthorn, myMana) then
+		Ability.CastTarget(bloodthorn, enemy)
+		return
+	end
+	if q and Menu.IsEnabled(AllInOne.optionEmberEnableChains) and Ability.IsCastable(q, myMana) and NPC.IsEntityInRange(myHero, enemy, 200) then
+		Ability.CastNoTarget(q)
+		return
+	end
+	if w and Menu.IsEnabled(AllInOne.optionEmberEnableFist) and Ability.IsCastable(w, myMana) and GameRules.GetGameTime() > needTime+0.25 then
+		Ability.CastPosition(w, enemyPos)
+		return
+	end
+	if e and Menu.IsEnabled(AllInOne.optionEmberEnableFlame) and Ability.IsCastable(e, myMana) then
+		Ability.CastNoTarget(e)
+		return
+	end
+	Player.AttackTarget(myPlayer, myHero, enemy)
+end 
 function AllInOne.OnDraw( ... )
 	if not myHero then return end
 	if comboHero == "SF" and Menu.IsEnabled(AllInOne.optionSfDrawRazePos) and Ability.GetLevel(q) >= 1 then
@@ -457,14 +604,14 @@ function AllInOne.OnDraw( ... )
 		end
 	end
 end
-function AllInOne.GetMoveSpeed()
-	local baseSpeed = NPC.GetBaseSpeed(enemy)
-	local bonusSpeed = NPC.GetMoveSpeed(enemy) - baseSpeed
+function AllInOne.GetMoveSpeed(ent)
+	local baseSpeed = NPC.GetBaseSpeed(ent)
+	local bonusSpeed = NPC.GetMoveSpeed(ent) - baseSpeed
 	local modHex
-	if NPC.HasModifier(enemy, "modifier_sheepstick_debuff") or NPC.HasModifier(enemy, "modifier_lion_voodoo") or NPC.HasModifier(enemy, "modifier_shadow_shaman_voodoo") then
+	if NPC.HasModifier(ent, "modifier_sheepstick_debuff") or NPC.HasModifier(ent, "modifier_lion_voodoo") or NPC.HasModifier(ent, "modifier_shadow_shaman_voodoo") then
 		return 140 + bonusSpeed
 	end
-	if NPC.HasModifier(enemy, "modifier_invoker_cold_snap_freeze") or NPC.HasModifier(enemy, "modifier_invoker_cold_snap") then
+	if NPC.HasModifier(ent, "modifier_invoker_cold_snap_freeze") or NPC.HasModifier(ent, "modifier_invoker_cold_snap") then
 		return NPC.GetMoveSpeed(ent) * 0.5
 	end
 	return baseSpeed + bonusSpeed
@@ -518,7 +665,7 @@ function AllInOne.LegionCombo( ... )
 		end
 	end
 	if NPC.IsEntityInRange(myHero, enemy, 150) then
-		if AllInOne.IsLinkensProtected() and Menu.IsEnabled(AllInOne.optionEnablePoopLinken) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+		if AllInOne.IsLinkensProtected() and Menu.IsEnabled(AllInOne.optionEnablePoopLinken) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE)then
 			AllInOne.PoopLinken()
 		end
 		if w and Menu.IsEnabled(AllInOne.optionLegionEnablePressTheAttack) and Ability.IsCastable(w, myMana) and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE)  then
