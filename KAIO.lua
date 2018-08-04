@@ -11,7 +11,7 @@ local needTime = 0
 local added = false
 local ebladeCasted = {}
 --items
-local urn, vessel, hex, halberd, mjolnir, bkb, nullifier, solar, courage, force, pike, eul, orchid, bloodthorn, diffusal, armlet, lotus, satanic, blademail, blink, abyssal, eblade, phase, discord, shiva
+local urn, vessel, hex, halberd, mjolnir, bkb, nullifier, solar, courage, force, pike, eul, orchid, bloodthorn, diffusal, armlet, lotus, satanic, blademail, blink, abyssal, eblade, phase, discord, shiva, refresher
 
 AllInOne.optionClinkzEnable = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz"}, "Enable", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnable, "panorama/images/items/branches_png.vtex_c")
@@ -60,6 +60,22 @@ AllInOne.optionEmberEnableOrchid = Menu.AddOptionBool({"KAIO", "Hero Specific", 
 Menu.AddOptionIcon(AllInOne.optionEmberEnableOrchid, "panorama/images/items/orchid_png.vtex_c")
 AllInOne.optionEmberEnableShiva = Menu.AddOptionBool({"KAIO", "Hero Specific", "Ember Spirit", "Items"}, "Shiva's Guard", false)
 Menu.AddOptionIcon(AllInOne.optionEmberEnableShiva, "panorama/images/items/shivas_guard_png.vtex_c")
+AllInOne.optionEnigmaEnable = Menu.AddOptionBool({"KAIO", "Hero Specific", "Enigma"}, "Enable", false)
+Menu.AddMenuIcon({"KAIO", "Hero Specific", "Enigma"}, "panorama/images/heroes/icons/npc_dota_hero_enigma_png.vtex_c")
+Menu.AddOptionIcon(AllInOne.optionEnigmaEnable, "panorama/images/items/branches_png.vtex_c")
+AllInOne.optionEnigmaComboKey = Menu.AddKeyOption({"KAIO", "Hero Specific", "Enigma"}, "Combo Key", Enum.ButtonCode.KEY_Z)
+AllInOne.optionEnigmaComboRadius = Menu.AddOptionSlider({"KAIO", "Hero Specific", "Enigma"}, "Combo Radius", 420, 1200, 1200)
+AllInOne.optionEnigmaComboPos = Menu.AddOptionCombo({"KAIO", "Hero Specific", "Enigma"}, "Combo Position", {"Auto Find Better Position [BETA]", "Cursor Position"}, 0)
+AllInOne.optionEnigmaEnablePulse = Menu.AddOptionBool({"KAIO", "Hero Specific", "Enigma", "Skills"}, "Midnight Pulse", false)
+Menu.AddOptionIcon(AllInOne.optionEnigmaEnablePulse, "panorama/images/spellicons/enigma_midnight_pulse_png.vtex_c")
+AllInOne.optionEnigmaEnableBkb = Menu.AddOptionBool({"KAIO", "Hero Specific", "Enigma", "Items"}, "Black King Bar", false)
+Menu.AddOptionIcon(AllInOne.optionEnigmaEnableBkb, "panorama/images/items/black_king_bar_png.vtex_c")
+AllInOne.optionEnigmaEnableBlink = Menu.AddOptionBool({"KAIO", "Hero Specific","Enigma", "Items"}, "Blink Dagger", false)
+Menu.AddOptionIcon(AllInOne.optionEnigmaEnableBlink, "panorama/images/items/blink_png.vtex_c")
+AllInOne.optionEnigmaEnableRefresher = Menu.AddOptionBool({"KAIO", "Hero Specific", "Enigma", "Items"}, "Refresher Orb", false)
+Menu.AddOptionIcon(AllInOne.optionEnigmaEnableRefresher, "panorama/images/items/refresher_png.vtex_c")
+AllInOne.optionEnigmaEnableShiva = Menu.AddOptionBool({"KAIO", "Hero Specific", "Enigma", "Items"}, "Shiva's Guard", false)
+Menu.AddOptionIcon(AllInOne.optionEnigmaEnableShiva, "panorama/images/items/shivas_guard_png.vtex_c")
 AllInOne.optionLegionEnable = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander"}, "Enable", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnable, "panorama/images/items/branches_png.vtex_c")
 AllInOne.optionLegionOnlyWithDuel = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander"}, "Combo only when duel ready", false)
@@ -215,6 +231,10 @@ function AllInOne.Init( ... )
 		e = NPC.GetAbilityByIndex(myHero, 2)
 		r = NPC.GetAbility(myHero, "ember_spirit_fire_remnant")
 		f = NPC.GetAbility(myHero, "ember_spirit_activate_fire_remnant")
+	elseif NPC.GetUnitName(myHero) == "npc_dota_hero_enigma" then
+		comboHero = "Enigma"
+		e = NPC.GetAbilityByIndex(myHero, 2)
+		r = NPC.GetAbility(myHero, "enigma_black_hole")
 	else	
 		myHero = nil
 		return	
@@ -252,6 +272,7 @@ function AllInOne.ClearVar( ... )
 	dagon = nil
 	eblade = nil
 	shiva = nil
+	refresher = nil
 end
 function AllInOne.OnUpdate( ... )
 	if not myHero then return end
@@ -332,6 +353,15 @@ function AllInOne.OnUpdate( ... )
 			end
 		else	
 			enemy = nil	
+		end
+	elseif comboHero == "Enigma" and Menu.IsEnabled(AllInOne.optionEnigmaEnable) then
+		if Menu.IsKeyDown(AllInOne.optionEnigmaComboKey) then
+			if not enemy then
+				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
+			end
+			if enemy and Entity.IsAlive(enemy) then
+				AllInOne.EnigmaCombo()
+			end
 		end	
 	end
 	AllInOne.ClearVar()
@@ -392,7 +422,9 @@ function AllInOne.OnUpdate( ... )
 			elseif name == "item_veil_of_discord" then
 				discord = item
 			elseif name == "item_shivas_guard" then
-				shiva = item	
+				shiva = item
+			elseif name == "item_refresher" then
+				refresher = item
 			end	
 		end
 	end
@@ -568,7 +600,72 @@ function AllInOne.EmberCombo( ... )
 		return
 	end
 	Player.AttackTarget(myPlayer, myHero, enemy)
-end 
+end
+function AllInOne.EnigmaCombo( ... )
+	if not enemy then
+		return 
+	end
+	local orderPos
+	if Menu.GetValue(AllInOne.optionEnigmaComboPos) == 0 then
+		local tempTable = Entity.GetHeroesInRadius(enemy, 600, Enum.TeamType.TEAM_ENEMY)
+		orderPos = AllInOne.FindBestOrderPosition(tempTable)
+	else
+		orderPos = Input.GetWorldCursorPos()
+	end	
+	if NPC.IsPositionInRange(myHero, orderPos, Menu.GetValue(AllInOne.optionEnigmaComboRadius)) then
+		if bkb and Ability.IsCastable(bkb, 0) and Menu.IsEnabled(AllInOne.optionEnigmaEnableBkb) then
+			Ability.CastNoTarget(bkb)
+			return
+		end
+		if blink and Ability.IsCastable(blink, 0) and Menu.IsEnabled(AllInOne.optionEnigmaEnableBlink) then
+			if NPC.IsPositionInRange(myHero, orderPos, 1200) then
+				Ability.CastPosition(blink, orderPos)
+				return
+			end
+		end
+		if Ability.IsCastable(e, myMana - Ability.GetManaCost(r)) and Menu.IsEnabled(AllInOne.optionEnigmaEnablePulse) then
+			Ability.CastPosition(e, orderPos)
+			return
+		end
+		if shiva and Menu.IsEnabled(AllInOne.optionEnigmaEnableShiva) and Ability.IsCastable(shiva, myMana - Ability.GetManaCost(r)) then
+			Ability.CastNoTarget(shiva)
+			return
+		end
+		if Ability.IsCastable(r, myMana) then
+			Ability.CastPosition(r, orderPos)
+			return
+		end
+		if refresher and Ability.IsCastable(refresher, myMana - Ability.GetManaCost(r)) and not Ability.IsChannelling(r) then
+			Ability.CastNoTarget(refresher)
+			return
+		end
+	end
+end
+function AllInOne.FindBestOrderPosition(tempTable)
+	if not tempTable then
+		return Entity.GetAbsOrigin(enemy)
+	end
+	local enemyCount = #tempTable
+	local count = 1
+	local coord = {}
+	coord[1] = {x = Entity.GetAbsOrigin(enemy):GetX(), y = Entity.GetAbsOrigin(enemy):GetY()}
+	for i, k in pairs(tempTable) do
+		local origin = Entity.GetAbsOrigin(k)
+		local x = origin:GetX()
+		local y = origin:GetY()
+		table.insert(coord, {x = x, y = y})
+		count = count + 1
+	end 
+	local x = 0
+	local y = 0
+	for i = 1, count do
+		x = x + coord[i].x
+		y = y + coord[i].y
+	end
+	x = x/count
+	y = y/count
+	return Vector(x,y,0)
+end
 function AllInOne.OnDraw( ... )
 	if not myHero then return end
 	if comboHero == "SF" and Menu.IsEnabled(AllInOne.optionSfDrawRazePos) and Ability.GetLevel(q) >= 1 then
@@ -638,7 +735,7 @@ function AllInOne.LegionCombo( ... )
 		enemy = nil
 		return
 	end
-	if not NPC.IsEntityInRange(myHero, enemy, Menu.GetValue(AllInOne.optionLegionBlinkRange)) and NPC.IsEntityInRange(myHero, enemy, 1199) then
+	if blink and Ability.IsCastable(blink, 0) and not NPC.IsEntityInRange(myHero, enemy, Menu.GetValue(AllInOne.optionLegionBlinkRange)) and NPC.IsEntityInRange(myHero, enemy, 1199) then
 		if w and Menu.IsEnabled(AllInOne.optionLegionEnablePressTheAttack) and Ability.IsCastable(w, myMana) then
 			Ability.CastTarget(w, myHero)
 			return
@@ -664,7 +761,7 @@ function AllInOne.LegionCombo( ... )
 			return
 		end
 	end
-	if NPC.IsEntityInRange(myHero, enemy, 150) then
+	if NPC.IsEntityInRange(myHero, enemy, NPC.GetAttackRange(myHero)*1.5) then
 		if AllInOne.IsLinkensProtected() and Menu.IsEnabled(AllInOne.optionEnablePoopLinken) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE)then
 			AllInOne.PoopLinken()
 		end
@@ -727,15 +824,19 @@ function AllInOne.LegionCombo( ... )
 			return
 		end
 		if r and Menu.IsEnabled(AllInOne.optionLegionEnableDuel) and Ability.IsCastable(r, myMana) then
-			Ability.CastTarget(r, enemy)
-			return
+			if not NPC.IsEntityInRange(myHero, enemy, 150) then
+				Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, nil, Entity.GetAbsOrigin(enemy), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
+			else	
+				Ability.CastTarget(r, enemy)
+				return
+			end
 		end
 	else
 		if AllInOne.IsLinkensProtected() and Menu.IsEnabled(AllInOne.optionEnablePoopLinken) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
 			AllInOne.PoopLinken()
 		end
 		if r and Menu.IsEnabled(AllInOne.optionLegionEnableDuel) and Ability.IsCastable(r, myMana) then
-			Ability.CastTarget(r, enemy)
+			Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, nil, Entity.GetAbsOrigin(enemy), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
 		else
 			Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, enemy, Vector(0,0,0), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
 		end
