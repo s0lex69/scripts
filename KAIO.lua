@@ -651,7 +651,7 @@ function AllInOne.FindBestOrderPosition(tempTable)
 	end
 	local count = 0
 	local coord = {}
-	for i, k in ipairs(tempTable) do
+	for i, k in pairs(tempTable) do
 		if NPC.IsEntityInRange(k, tempTable[1], 640) then
 			local origin = Entity.GetAbsOrigin(k)
 			local originX = origin:GetX()
