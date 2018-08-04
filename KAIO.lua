@@ -607,7 +607,7 @@ function AllInOne.EnigmaCombo( ... )
 	end
 	local orderPos
 	if Menu.GetValue(AllInOne.optionEnigmaComboPos) == 0 then
-		local tempTable = Entity.GetHeroesInRadius(enemy, 600, Enum.TeamType.TEAM_ENEMY)
+		local tempTable = Entity.GetHeroesInRadius(myHero, 1600, Enum.TeamType.TEAM_ENEMY)
 		orderPos = AllInOne.FindBestOrderPosition(tempTable)
 	else
 		orderPos = Input.GetWorldCursorPos()
@@ -643,18 +643,22 @@ function AllInOne.EnigmaCombo( ... )
 end
 function AllInOne.FindBestOrderPosition(tempTable)
 	if not tempTable then
-		return Entity.GetAbsOrigin(enemy)
+		return
 	end
 	local enemyCount = #tempTable
-	local count = 1
+	if enemyCount == 1 then
+		return Entity.GetAbsOrigin(tempTable[1])
+	end
+	local count = 0
 	local coord = {}
-	coord[1] = {x = Entity.GetAbsOrigin(enemy):GetX(), y = Entity.GetAbsOrigin(enemy):GetY()}
-	for i, k in pairs(tempTable) do
-		local origin = Entity.GetAbsOrigin(k)
-		local x = origin:GetX()
-		local y = origin:GetY()
-		table.insert(coord, {x = x, y = y})
-		count = count + 1
+	for i, k in ipairs(tempTable) do
+		if NPC.IsEntityInRange(k, tempTable[1], 640) then
+			local origin = Entity.GetAbsOrigin(k)
+			local originX = origin:GetX()
+			local originY = origin:GetY()
+			table.insert(coord, {x = originX, y = originY})
+			count = count + 1
+		end
 	end 
 	local x = 0
 	local y = 0
