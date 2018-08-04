@@ -612,7 +612,7 @@ function AllInOne.EnigmaCombo( ... )
 	else
 		orderPos = Input.GetWorldCursorPos()
 	end	
-	if NPC.IsPositionInRange(myHero, orderPos, Menu.GetValue(AllInOne.optionEnigmaComboRadius)) then
+	if NPC.IsPositionInRange(myHero, orderPos, Menu.GetValue(AllInOne.optionEnigmaComboRadius)) and not Ability.IsChannelling(r) then
 		if bkb and Ability.IsCastable(bkb, 0) and Menu.IsEnabled(AllInOne.optionEnigmaEnableBkb) then
 			Ability.CastNoTarget(bkb)
 			return
