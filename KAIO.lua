@@ -33,6 +33,7 @@ AllInOne.optionClinkzEnableOrchid = Menu.AddOptionBool({"KAIO","Hero Specific", 
 Menu.AddOptionIcon(AllInOne.optionClinkzEnableOrchid, "panorama/images/items/orchid_png.vtex_c")
 AllInOne.optionClinkzEnableSolar = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz", "Combo"}, "Solar Crest", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnableSolar, "panorama/images/items/solar_crest_png.vtex_c")
+AllInOne.optionClinkzEnableStack = Menu.AddOptionBool({"KAIO", "Hero Specific", "Clinkz"}, "Stack Hex/orchid+nullifier", false)
 AllInOne.optionEmberEnable = Menu.AddOptionBool({"KAIO", "Hero Specific", "Ember Spirit"}, "Enable", false)
 Menu.AddOptionIcon(AllInOne.optionEmberEnable, "panorama/images/items/branches_png.vtex_c")
 Menu.AddMenuIcon({"KAIO", "Hero Specific", "Ember Spirit"}, "panorama/images/heroes/icons/npc_dota_hero_ember_spirit_png.vtex_c")
@@ -994,7 +995,7 @@ function AllInOne.ClinkzCombo( ... )
 					Ability.CastTarget(nullifier,enemy)
 				end
 			else
-				if NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+				if NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) and not Menu.IsEnabled(AllInOne.optionClinkzEnableStack) then
 					local modHex = NPC.GetModifier(enemy, "modifier_sheepstick_debuff")
 					if not modHex then
 						modHex = NPC.GetModifier(enemy, "modifier_shadow_shaman_voodoo")
@@ -1002,9 +1003,11 @@ function AllInOne.ClinkzCombo( ... )
 					if not modHex then
 						modHex = NPC.GetModifier(enemy, "modifier_lion_voodoo")
 					end
-					local dieTime = Modifier.GetDieTime(modHex)
-					if dieTime - GameRules.GetGameTime() <= (Entity.GetAbsOrigin(enemy)-Entity.GetAbsOrigin(myHero)):Length()/750 then
-						Ability.CastTarget(nullifier,enemy)
+					if modHex then
+						local dieTime = Modifier.GetDieTime(modHex)
+						if dieTime - GameRules.GetGameTime() <= (Entity.GetAbsOrigin(enemy)-Entity.GetAbsOrigin(myHero)):Length()/750 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
+							Ability.CastTarget(nullifier,enemy)
+						end
 					end
 				else
 					Ability.CastTarget(nullifier, enemy)
@@ -1016,12 +1019,24 @@ function AllInOne.ClinkzCombo( ... )
 			Ability.CastTarget(diffusal, enemy)
 			return
 		end
-		if orchid and not NPC.HasModifier(enemy, "modifier_orchid_malevolence_debuff") and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) and Menu.IsEnabled(AllInOne.optionClinkzEnableOrchid) and Ability.IsCastable(orchid, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
-			Ability.CastTarget(orchid, enemy)
+		if orchid and not NPC.HasModifier(enemy, "modifier_orchid_malevolence_debuff") and Menu.IsEnabled(AllInOne.optionClinkzEnableOrchid) and Ability.IsCastable(orchid, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+			if Menu.IsEnabled(AllInOne.optionClinkzEnableStack) and NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED)then
+				Ability.CastTarget(orchid, enemy)
+			elseif not Menu.IsEnabled(AllInOne.optionClinkzEnableStack) and NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+			
+			else
+				Ability.CastTarget(orchid, enemy)	
+			end
 			return
 		end
-		if bloodthorn and not NPC.HasModifier(enemy, "modifier_bloodthorn_debuff") and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) and Menu.IsEnabled(AllInOne.optionClinkzEnableBlood) and Ability.IsCastable(bloodthorn, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
-			Ability.CastTarget(bloodthorn, enemy)
+		if bloodthorn and not NPC.HasModifier(enemy, "modifier_bloodthorn_debuff") and Menu.IsEnabled(AllInOne.optionClinkzEnableBlood) and Ability.IsCastable(bloodthorn, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+			if Menu.IsEnabled(AllInOne.optionClinkzEnableStack) and NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+				Ability.CastTarget(bloodthorn, enemy)
+			elseif not Menu.IsEnabled(AllInOne.optionClinkzEnableStack) and NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+			
+			else
+				Ability.CastTarget(bloodthorn, enemy)	
+			end
 			return
 		end
 		if courage and not NPC.HasModifier(enemy, "modifier_item_medallion_of_courage_armor_reduction") and Menu.IsEnabled(AllInOne.optionClinkzEnableCourage) and Ability.IsCastable(courage, 0) then
