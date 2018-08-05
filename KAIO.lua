@@ -12,7 +12,7 @@ local added = false
 local ebladeCasted = {}
 --items
 local urn, vessel, hex, halberd, mjolnir, bkb, nullifier, solar, courage, force, pike, eul, orchid, bloodthorn, diffusal, armlet, lotus, satanic, blademail, blink, abyssal, eblade, phase, discord, shiva, refresher
-
+local time = 0
 AllInOne.optionClinkzEnable = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz"}, "Enable", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnable, "panorama/images/items/branches_png.vtex_c")
 Menu.AddMenuIcon({"KAIO","Hero Specific", "Clinkz"}, "panorama/images/heroes/icons/npc_dota_hero_clinkz_png.vtex_c")
@@ -202,6 +202,7 @@ function AllInOne.Init( ... )
 	myHero = Heroes.GetLocal()
 	nextTick = 0
 	needTime = 0
+	time = 0
 	if not myHero then return end
 	if NPC.GetUnitName(myHero) == "npc_dota_hero_clinkz" then
 		comboHero = "Clinkz"
@@ -279,6 +280,7 @@ function AllInOne.OnUpdate( ... )
 	if not myHero then return end
 	myMana = NPC.GetMana(myHero)
 	added = false
+	time = GameRules.GetGameTime()
 	if comboHero == "Clinkz" and Menu.IsEnabled(AllInOne.optionClinkzEnable) then
 		if Menu.IsKeyDown(AllInOne.optionClinkzComboKey) then
 			if not enemy then
@@ -493,7 +495,7 @@ function AllInOne.SfCombo( ... )
 			if not NPC.IsEntityInRange(myHero, enemy, 65) then
 				Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, nil, Entity.GetAbsOrigin(enemy), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
 			else
-				if cycloneDieTime - GameRules.GetGameTime() <= 1.67 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
+				if cycloneDieTime - time <= 1.67 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
 					Ability.CastNoTarget(r)
 					return
 				end
@@ -555,19 +557,19 @@ function AllInOne.EmberCombo( ... )
 		Ability.CastNoTarget(bkb)
 		return
 	end
-	if r and Ability.IsCastable(f,myMana) and Menu.IsEnabled(AllInOne.optionEmberEnableRemnant) and remnant_count > 0 and GameRules.GetGameTime() >= nextTick then
+	if r and Ability.IsCastable(f,myMana) and Menu.IsEnabled(AllInOne.optionEmberEnableRemnant) and remnant_count > 0 and time >= nextTick then
 		for i = 1, remnant_count do
 			Ability.CastPosition(r, AllInOne.castPrediction(1))
 			remnant_casted = true
 		end
-		needTime = GameRules.GetGameTime() + ((Entity.GetAbsOrigin(myHero):__sub(enemyPos)):Length() - 350)/(AllInOne.GetMoveSpeed(myHero)*2.5)
-		nextTick = GameRules.GetGameTime() + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		needTime = time + ((Entity.GetAbsOrigin(myHero):__sub(enemyPos)):Length() - 350)/(AllInOne.GetMoveSpeed(myHero)*2.5)
+		nextTick = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 		return
 	end
 	if AllInOne.IsLinkensProtected() and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
 		AllInOne.PoopLinken()
 	end
-	if f and Ability.IsCastable(f,myMana) and remnant_casted and GameRules.GetGameTime() >= needTime then
+	if f and Ability.IsCastable(f,myMana) and remnant_casted and time >= needTime then
 		Ability.CastPosition(f, enemyPos)
 		remnant_casted = false
 		return
@@ -592,7 +594,7 @@ function AllInOne.EmberCombo( ... )
 		Ability.CastNoTarget(q)
 		return
 	end
-	if w and Menu.IsEnabled(AllInOne.optionEmberEnableFist) and Ability.IsCastable(w, myMana) and GameRules.GetGameTime() > needTime+0.25 then
+	if w and Menu.IsEnabled(AllInOne.optionEmberEnableFist) and Ability.IsCastable(w, myMana) and time > needTime+0.25 then
 		Ability.CastPosition(w, enemyPos)
 		return
 	end
@@ -795,9 +797,9 @@ function AllInOne.LegionCombo( ... )
 			Ability.CastTarget(lotus, myHero)
 			return
 		end
-		if armlet and Menu.IsEnabled(AllInOne.optionLegionEnableArmlet) and not Ability.GetToggleState(armlet) and Ability.IsCastable(armlet, 0) and GameRules.GetGameTime() >= nextTick then
+		if armlet and Menu.IsEnabled(AllInOne.optionLegionEnableArmlet) and not Ability.GetToggleState(armlet) and Ability.IsCastable(armlet, 0) and time >= nextTick then
 			Ability.Toggle(armlet)
-			nextTick = GameRules.GetGameTime() + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			nextTick = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 			return
 		end
 		if blademail and Menu.IsEnabled(AllInOne.optionLegionEnableBlademail) and Ability.IsCastable(blademail, myMana) then
@@ -932,9 +934,9 @@ function AllInOne.TuskCombo( ... )
 		Ability.CastNoTarget(bkb)
 		return
 	end
-	if armlet and Menu.IsEnabled(AllInOne.optionTuskEnableArmlet) and not Ability.GetToggleState(armlet) and Ability.IsCastable(armlet,0) and GameRules.GetGameTime() >= nextTick then
+	if armlet and Menu.IsEnabled(AllInOne.optionTuskEnableArmlet) and not Ability.GetToggleState(armlet) and Ability.IsCastable(armlet,0) and time >= nextTick then
 		Ability.Toggle(armlet)
-		nextTick = GameRules.GetGameTime() + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		nextTick = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 		return
 	end
 	if Menu.IsEnabled(AllInOne.optionTuskEnablePunch) and Ability.GetLevel(r) > 0 and Ability.IsCastable(r, myMana) and NPC.IsEntityInRange(myHero, enemy, 350) and not NPC.HasModifier(myHero, "modifier_tusk_snowball_movement") then
@@ -977,9 +979,9 @@ function AllInOne.ClinkzCombo( ... )
 			Ability.CastNoTarget(q)
 			return
 		end
-		if not Ability.GetAutoCastState(w) and GameRules.GetGameTime() >= nextTick then
+		if not Ability.GetAutoCastState(w) and time >= nextTick then
 			Ability.ToggleMod(w)
-			nextTick = GameRules.GetGameTime() + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			nextTick = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 			return
 		end
 		if AllInOne.IsLinkensProtected() and Menu.IsEnabled(AllInOne.optionEnablePoopLinken) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
@@ -1005,7 +1007,7 @@ function AllInOne.ClinkzCombo( ... )
 					end
 					if modHex then
 						local dieTime = Modifier.GetDieTime(modHex)
-						if dieTime - GameRules.GetGameTime() <= (Entity.GetAbsOrigin(enemy)-Entity.GetAbsOrigin(myHero)):Length()/750 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
+						if dieTime - time <= (Entity.GetAbsOrigin(enemy)-Entity.GetAbsOrigin(myHero)):Length()/750 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
 							Ability.CastTarget(nullifier,enemy)
 						end
 					end
