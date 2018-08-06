@@ -1,5 +1,5 @@
 local AllInOne = {}
-local myHero, myPlayer, myTeam, myMana, attackRange
+local myHero, myPlayer, myTeam, myMana, attackRange, myPos, enemyPosition
 local enemy
 local comboHero
 local q,w,e,r,f
@@ -77,6 +77,24 @@ AllInOne.optionEnigmaEnableRefresher = Menu.AddOptionBool({"KAIO", "Hero Specifi
 Menu.AddOptionIcon(AllInOne.optionEnigmaEnableRefresher, "panorama/images/items/refresher_png.vtex_c")
 AllInOne.optionEnigmaEnableShiva = Menu.AddOptionBool({"KAIO", "Hero Specific", "Enigma", "Items"}, "Shiva's Guard", false)
 Menu.AddOptionIcon(AllInOne.optionEnigmaEnableShiva, "panorama/images/items/shivas_guard_png.vtex_c")
+AllInOne.optionLionEnable = Menu.AddOptionBool({"KAIO", "Hero Specific", "Lion"}, "Enable", false)
+Menu.AddMenuIcon({"KAIO", "Hero Specific", "Lion"}, "panorama/images/heroes/icons/npc_dota_hero_lion_png.vtex_c")
+Menu.AddOptionIcon(AllInOne.optionLionEnable, "panorama/images/items/branches_png.vtex_c")
+AllInOne.optionLionComboKey = Menu.AddKeyOption({"KAIO", "Hero Specific", "Lion"}, "Combo Key", Enum.ButtonCode.KEY_Z)
+AllInOne.optionLionComboRadius = Menu.AddOptionSlider({"KAIO", "Hero Specific", "Lion"}, "Safe Radius for Blink", 0, 600, 250)
+AllInOne.optionLionEnableSpike = Menu.AddOptionBool({"KAIO", "Hero Specific", "Lion", "Skills"}, "Earth Spike", false)
+Menu.AddOptionIcon(AllInOne.optionLionEnableSpike, "panorama/images/spellicons/lion_impale_png.vtex_c")
+AllInOne.optionLionEnableHex = Menu.AddOptionBool({"KAIO", "Hero Specific", "Lion", "Skills"}, "Hex", false)
+Menu.AddOptionIcon(AllInOne.optionLionEnableHex, "panorama/images/spellicons/lion_voodoo_png.vtex_c")
+AllInOne.optionLionEnableFinger = Menu.AddOptionBool({"KAIO", "Hero Specific", "Lion", "Skills"}, "Finger of Death", false)
+Menu.AddOptionIcon(AllInOne.optionLionEnableFinger, "panorama/images/spellicons/lion_finger_of_death_png.vtex_c")
+AllInOne.optionLionEnableBlink = Menu.AddOptionBool({"KAIO", "Hero Specific", "Lion", "Items"}, "Blink Dagger", false)
+Menu.AddOptionIcon(AllInOne.optionLionEnableBlink, "panorama/images/items/blink_png.vtex_c")
+AllInOne.optionLionMinimumBlinkRange = Menu.AddOptionSlider({"KAIO", "Hero Specific", "Lion", "Items"}, "Minimum Blink Range", 250, 1150, 800)
+AllInOne.optionLionEnableEblade = Menu.AddOptionBool({"KAIO", "Hero Specific", "Lion", "Items"}, "Ethereal Blade", false)
+Menu.AddOptionIcon(AllInOne.optionLionEnableEblade, "panorama/images/items/ethereal_blade_png.vtex_c")
+AllInOne.optionLionEnableDagon = Menu.AddOptionBool({"KAIO", "Hero Specific", "Lion", "Items"}, "Dagon", false)
+Menu.AddOptionIcon(AllInOne.optionLionEnableDagon, "panorama/images/items/dagon_5_png.vtex_c")
 AllInOne.optionLegionEnable = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander"}, "Enable", false)
 Menu.AddOptionIcon(AllInOne.optionLegionEnable, "panorama/images/items/branches_png.vtex_c")
 AllInOne.optionLegionOnlyWithDuel = Menu.AddOptionBool({"KAIO","Hero Specific", "Legion Commander"}, "Combo only when duel ready", false)
@@ -203,6 +221,7 @@ function AllInOne.Init( ... )
 	nextTick = 0
 	needTime = 0
 	time = 0
+	added = false
 	if not myHero then return end
 	if NPC.GetUnitName(myHero) == "npc_dota_hero_clinkz" then
 		comboHero = "Clinkz"
@@ -237,6 +256,11 @@ function AllInOne.Init( ... )
 		comboHero = "Enigma"
 		e = NPC.GetAbilityByIndex(myHero, 2)
 		r = NPC.GetAbility(myHero, "enigma_black_hole")
+	elseif NPC.GetUnitName(myHero) == "npc_dota_hero_lion" then
+		comboHero = "Lion"
+		q = NPC.GetAbilityByIndex(myHero,0)
+		w = NPC.GetAbilityByIndex(myHero, 1)
+		r = NPC.GetAbility(myHero, "lion_finger_of_death")
 	else	
 		myHero = nil
 		return	
@@ -279,8 +303,8 @@ end
 function AllInOne.OnUpdate( ... )
 	if not myHero then return end
 	myMana = NPC.GetMana(myHero)
-	added = false
 	time = GameRules.GetGameTime()
+	myPos = Entity.GetAbsOrigin(myHero)
 	if comboHero == "Clinkz" and Menu.IsEnabled(AllInOne.optionClinkzEnable) then
 		if Menu.IsKeyDown(AllInOne.optionClinkzComboKey) then
 			if not enemy then
@@ -298,6 +322,7 @@ function AllInOne.OnUpdate( ... )
 				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
 			end
 			if enemy and Entity.IsAlive(enemy) then
+				enemyPosition = Entity.GetAbsOrigin(enemy)
 				AllInOne.LegionCombo()
 			end
 		else
@@ -309,6 +334,7 @@ function AllInOne.OnUpdate( ... )
 				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
 			end
 			if enemy and Entity.IsAlive(enemy) then
+				enemyPosition = Entity.GetAbsOrigin(enemy)
 				AllInOne.SfCombo(eul)
 			end
 		else
@@ -321,6 +347,7 @@ function AllInOne.OnUpdate( ... )
 				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
 			end
 			if enemy and Entity.IsAlive(enemy) then
+				enemyPosition = Entity.GetAbsOrigin(enemy)
 				AllInOne.TuskCombo()
 			end
 		end
@@ -330,19 +357,21 @@ function AllInOne.OnUpdate( ... )
 				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
 			end
 			if enemy and Entity.IsAlive(enemy) then
+				enemyPosition = Entity.GetAbsOrigin(enemy)
 				AllInOne.EmberCombo()
 			end
 		elseif Menu.IsEnabled(AllInOne.optionEmberAutoChain) then
 			if NPC.HasModifier(myHero, "modifier_ember_spirit_sleight_of_fist_marker") or NPC.HasModifier(myHero, "modifier_ember_spirit_sleight_of_fist_caster") or NPC.HasModifier(myHero, "modifier_ember_spirit_sleight_of_fist_caster_invulnerability") then
 				if not enemy then
-					if Heroes.InRadius(Entity.GetAbsOrigin(myHero),150, myTeam, Enum.TeamType.TEAM_ENEMY) then
-						for i, k in pairs(Heroes.InRadius(Entity.GetAbsOrigin(myHero),150, myTeam, Enum.TeamType.TEAM_ENEMY)) do
+					if Heroes.InRadius(myPos,150, myTeam, Enum.TeamType.TEAM_ENEMY) then
+						for i, k in pairs(Heroes.InRadius(myPos,150, myTeam, Enum.TeamType.TEAM_ENEMY)) do
 							enemy = k
 							break
 						end
 					end
 				end
 				if enemy and Entity.IsAlive(enemy) then
+					enemyPosition = Entity.GetAbsOrigin(enemy)
 					if NPC.IsEntityInRange(myHero, enemy, 125) then
 						if Ability.IsCastable(q,myMana) then
 							Ability.CastNoTarget(q)
@@ -363,7 +392,16 @@ function AllInOne.OnUpdate( ... )
 				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
 			end
 			if enemy and Entity.IsAlive(enemy) then
+				enemyPosition = Entity.GetAbsOrigin(enemy)
 				AllInOne.EnigmaCombo()
+			end
+		end
+	elseif comboHero == "Lion" and Menu.IsEnabled(AllInOne.optionLionEnable) then
+		if Menu.IsKeyDown(AllInOne.optionLionComboKey) then
+			enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
+			if enemy and Entity.IsAlive(enemy) then
+				enemyPosition = Entity.GetAbsOrigin(enemy)
+				AllInOne.LionCombo()
 			end
 		end	
 	end
@@ -432,6 +470,171 @@ function AllInOne.OnUpdate( ... )
 		end
 	end
 end
+function AllInOne.LionCombo( ... )
+	if not enemy or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+		enemy = nil
+		return
+	end
+	if not added and Ability.GetLevel(NPC.GetAbility(myHero, "special_bonus_unique_lion_4")) > 0 then
+		added = true
+	end
+	if blink and Ability.IsCastable(blink, 0) and Menu.IsEnabled(AllInOne.optionLionEnableBlink) and not NPC.IsEntityInRange(myHero, enemy, Menu.GetValue(AllInOne.optionLionMinimumBlinkRange)) and NPC.IsPositionInRange(myHero, enemyPosition + (myPos - enemyPosition):Normalized():Scaled(Menu.GetValue(AllInOne.optionLionComboRadius)), 1199) then
+		Ability.CastPosition(blink, enemyPosition + (myPos - enemyPosition):Normalized():Scaled(Menu.GetValue(AllInOne.optionLionComboRadius)))
+		return
+	end
+	if NPC.IsLinkensProtected(enemy) and Menu.IsEnabled(AllInOne.optionEnablePoopLinken) then
+		AllInOne.PoopLinken()
+	end
+	if w and not added and Menu.IsEnabled(AllInOne.optionLionEnableHex) and Ability.IsCastable(w, myMana) and NPC.IsEntityInRange(myHero, enemy, Ability.GetCastRange(w)*1.5) then
+		if NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+			local modHex = NPC.GetModifier(enemy, "modifier_sheepstick_debuff")
+			if not modHex then
+				modHex = NPC.GetModifier(enemy, "modifier_shadow_shaman_voodoo")
+			end
+			if not modHex then
+				modHex = NPC.GetModifier(enemy, "modifier_lion_voodoo")
+			end
+			if modHex then
+				local dieTime = Modifier.GetDieTime(modHex)
+				if dieTime - time <= Ability.GetCastPoint(w) + 0.35 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
+					Ability.CastTarget(w,enemy)
+					nextTick = time + 0.25 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+					return
+				end
+			end
+		elseif NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_STUNNED) then
+			if not NPC.IsEntityInRange(myHero, enemy, Ability.GetCastRange(w)) then
+				Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION,	(myPos - enemyPosition):Normalized():Scaled(Ability.GetCastRange(w)+21), Vector(),nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
+			end
+			local mod = NPC.GetModifier(enemy, "modifier_lion_impale")
+			if mod then
+				local dieTime = Modifier.GetDieTime(mod)
+				if dieTime - time <= Ability.GetCastPoint(w) + 0.35 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
+					Ability.CastTarget(w, enemy)
+					nextTick = time + 0.25 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+					return
+				end
+			end
+		else
+			Ability.CastTarget(w, enemy)
+			nextTick = time + 0.25 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		end
+	end
+	if eblade and Menu.IsEnabled(AllInOne.optionLionEnableEblade) and Ability.IsCastable(eblade, myMana) then
+		Ability.CastTarget(eblade, enemy)
+		ebladeCasted[enemy] = true
+		return
+	end
+	if w and added and Menu.IsEnabled(AllInOne.optionLionEnableHex) and Ability.IsCastable(w, myMana) and NPC.IsEntityInRange(myHero, enemy, Ability.GetCastRange(w)*1.5) then
+		if not NPC.IsEntityInRange(myHero, enemy, Ability.GetCastRange(w)) and (not Menu.IsEnabled(AllInOne.optionLionEnableSpike) or not Ability.IsCastable(q, myMana)) then
+			Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_TARGET, enemy, Vector(),nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
+		end
+		local tempTable = Heroes.InRadius(enemyPosition, 600, myTeam, Enum.TeamType.TEAM_ENEMY)
+		if not tempTable then return end
+		if #tempTable == 1 then
+			if NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+				local modHex = NPC.GetModifier(enemy, "modifier_sheepstick_debuff")
+				if not modHex then
+					modHex = NPC.GetModifier(enemy, "modifier_shadow_shaman_voodoo")
+				end
+				if not modHex then
+					modHex = NPC.GetModifier(enemy, "modifier_lion_voodoo")
+				end
+				if modHex then
+					local dieTime = Modifier.GetDieTime(modHex)
+					if dieTime - time <= Ability.GetCastPoint(q) + 0.35 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
+						Ability.CastPosition(w,enemyPosition)
+						nextTick = time + 0.25 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+						return
+					end
+				end
+			elseif NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_STUNNED) then
+				local mod = NPC.GetModifier(enemy, "modifier_lion_impale")
+				if mod then
+					local dieTime = Modifier.GetDieTime(mod)
+					if dieTime - time <= Ability.GetCastPoint(w) + 0.35 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
+						Ability.CastPosition(w, enemyPosition)
+						nextTick = time + 0.25 + NetChannel.GetAvgLatency
+						return
+					end
+				end	
+			else
+				Ability.CastPosition(w, enemyPosition)
+				nextTick = time + 0.25 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+				return
+			end
+		else
+			local orderPos = AllInOne.FindBestOrderPosition(tempTable, 600)
+			Ability.CastPosition(w, orderPos)
+		end
+	end
+	if q and NPC.IsEntityInRange(myHero, enemy, Ability.GetCastRange(q)+400) and Menu.IsEnabled(AllInOne.optionLionEnableSpike) and Ability.IsCastable(q, myMana) and time >= nextTick then
+		if NPC.IsEntityInRange(myHero, enemy, Ability.GetCastRange(w)) and Menu.IsEnabled(AllInOne.optionLionEnableHex) and Ability.GetLevel(w) > 0 and Ability.SecondsSinceLastUse(w) <= 0.3 and Ability.SecondsSinceLastUse(w) >= -1 then
+			return
+		end
+		if NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+			local modHex = NPC.GetModifier(enemy, "modifier_sheepstick_debuff")
+			if not modHex then
+				modHex = NPC.GetModifier(enemy, "modifier_shadow_shaman_voodoo")
+			end
+			if not modHex then
+				modHex = NPC.GetModifier(enemy, "modifier_lion_voodoo")
+			end
+			if modHex then
+				local dieTime = Modifier.GetDieTime(modHex)
+				if dieTime - time <= Ability.GetCastPoint(q) + 0.35 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
+					if (myPos-enemyPosition):Length() >= 600 then
+						Ability.CastPosition(q, AllInOne.castPrediction(1, 1) + (myPos - AllInOne.castPrediction(1, 1)):Normalized():Scaled(600))
+					else	
+						Ability.CastPosition(q, AllInOne.castPrediction(1, 1))
+					end
+					return
+				end
+			end
+		else
+			if (myPos-enemyPosition):Length() >= 600 then
+				Ability.CastPosition(q, AllInOne.castPrediction(1, 1) + (myPos - AllInOne.castPrediction(1, 1)):Normalized():Scaled(600))
+			else	
+				Ability.CastPosition(q, AllInOne.castPrediction(1, 1))
+			end
+			return
+		end
+	end
+	if dagon and Menu.IsEnabled(AllInOne.optionLionEnableDagon) and Ability.IsCastable(dagon, myMana) then
+		if eblade and ebladeCasted[enemy] and Ability.SecondsSinceLastUse(eblade) < 3 then
+			if NPC.HasModifier(enemy, "modifier_item_ethereal_blade_ethereal") then
+				Ability.CastTarget(dagon, enemy)
+				ebladeCasted[enemy] = nil
+			end
+		else	
+			Ability.CastTarget(dagon, enemy)
+			ebladeCasted[enemy] = nil
+		end
+		return
+	end
+	if r and Menu.IsEnabled(AllInOne.optionLionEnableFinger) and Ability.IsCastable(r, myMana) and NPC.IsEntityInRange(myHero, enemy, Ability.GetCastRange(r)) then
+		if eblade and ebladeCasted[enemy] and Ability.SecondsSinceLastUse(eblade) < 3 then
+			if NPC.HasModifier(enemy, "modifier_item_ethereal_blade_ethereal") then
+				Ability.CastTarget(r, enemy)
+				ebladeCasted[enemy] = nil
+			end
+		else
+			Ability.CastTarget(r, enemy)
+			ebladeCasted[enemy] = nil
+		end	
+		return
+	end
+	if not NPC.IsEntityInRange(myHero, enemy, Ability.GetCastRange(w)+21) then
+		Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_TARGET, enemy, Vector(), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
+	else
+		if not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_ATTACK_IMMUNE) then
+			Player.AttackTarget(myPlayer,myHero,enemy)
+		else
+			Player.HoldPosition(myPlayer, myHero)	
+		end
+	end
+end 
 function AllInOne.SfCombo( ... )
 	if NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
 		enemy = nil
@@ -444,7 +647,7 @@ function AllInOne.SfCombo( ... )
 		local possibleRange = NPC.GetMoveSpeed(myHero) * 0.8
 		if not NPC.IsEntityInRange(myHero, enemy, possibleRange) then
 			if blink and Menu.IsEnabled(AllInOne.optionSfEnableBlink) and Ability.IsCastable(blink,0) and NPC.IsEntityInRange(myHero, enemy, 1175 + 0.75 * possibleRange) then
-				Ability.CastPosition(blink, (Entity.GetAbsOrigin(enemy) + (Entity.GetAbsOrigin(myHero) - Entity.GetAbsOrigin(enemy)):Normalized():Scaled(0.75 * possibleRange)))
+				Ability.CastPosition(blink, (enemyPosition + (myPos - enemyPosition):Normalized():Scaled(0.75 * possibleRange)))
 				return
 			else
 				Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_TARGET, enemy, Vector(0,0,0), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)	
@@ -493,7 +696,7 @@ function AllInOne.SfCombo( ... )
 		if NPC.HasModifier(enemy, "modifier_eul_cyclone") then
 			local cycloneDieTime = Modifier.GetDieTime(NPC.GetModifier(enemy, "modifier_eul_cyclone"))
 			if not NPC.IsEntityInRange(myHero, enemy, 65) then
-				Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, nil, Entity.GetAbsOrigin(enemy), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
+				Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, nil, enemyPosition, nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
 			else
 				if cycloneDieTime - time <= 1.67 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
 					Ability.CastNoTarget(r)
@@ -505,9 +708,9 @@ function AllInOne.SfCombo( ... )
 	end
 end
 function AllInOne.SfAutoRaze( ... )
-	razeShortPos = Entity.GetAbsOrigin(myHero) + Entity.GetRotation(myHero):GetForward():Normalized():Scaled(200)
-	razeMidPos = Entity.GetAbsOrigin(myHero) + Entity.GetRotation(myHero):GetForward():Normalized():Scaled(450)
-	razeLongPos = Entity.GetAbsOrigin(myHero) + Entity.GetRotation(myHero):GetForward():Normalized():Scaled(700)
+	razeShortPos = myPos + Entity.GetRotation(myHero):GetForward():Normalized():Scaled(200)
+	razeMidPos = myPos + Entity.GetRotation(myHero):GetForward():Normalized():Scaled(450)
+	razeLongPos = myPos + Entity.GetRotation(myHero):GetForward():Normalized():Scaled(700)
 	if Menu.IsKeyDown(AllInOne.optionSfRazeKey) then
 		if not enemy then
 			enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
@@ -548,7 +751,7 @@ function AllInOne.EmberCombo( ... )
 		enemy = nil
 		return
 	end
-	local enemyPos = Entity.GetAbsOrigin(enemy)
+	local enemyPos = enemyPosition
 	local remnant_count = Modifier.GetStackCount(NPC.GetModifier(myHero, "modifier_ember_spirit_fire_remnant_charge_counter")) - Menu.GetValue(AllInOne.optionEmberSaveRemnantCount)
 	if discord and Menu.IsEnabled(AllInOne.optionEmberEnableDiscord) and Ability.IsCastable(discord, myMana) then
 		Ability.CastPosition(discord, AllInOne.castPrediction(1))
@@ -562,7 +765,7 @@ function AllInOne.EmberCombo( ... )
 			Ability.CastPosition(r, AllInOne.castPrediction(1))
 			remnant_casted = true
 		end
-		needTime = time + ((Entity.GetAbsOrigin(myHero):__sub(enemyPos)):Length() - 350)/(AllInOne.GetMoveSpeed(myHero)*2.5)
+		needTime = time + ((myPos:__sub(enemyPos)):Length() - 350)/(AllInOne.GetMoveSpeed(myHero)*2.5)
 		nextTick = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 		return
 	end
@@ -720,16 +923,26 @@ function AllInOne.GetMoveSpeed(ent)
 	end
 	return baseSpeed + bonusSpeed
 end
-function AllInOne.castPrediction(adjVar)
+function AllInOne.castPrediction(adjVar, keyValue)
 	local enemyRotation = Entity.GetRotation(enemy):GetVectors()
 	enemyRotation:SetZ(0)
-	local enemyOrigin = Entity.GetAbsOrigin(enemy)
+	local enemyOrigin = enemyPosition
 	enemyOrigin:SetZ(0)
 	if enemyRotation and enemyOrigin then
 		if not NPC.IsRunning(enemy) then
 			return enemyOrigin
 		else
-			return enemyOrigin:__add(enemyRotation:Normalized():Scaled(AllInOne.GetMoveSpeed(enemy) * adjVar))	
+			if keyValue == 1 then --lion
+				enemyRotation = Entity.GetRotation(enemy)
+				local enemyPos = enemyOrigin+enemyRotation:GetForward():Normalized():Scaled(AllInOne.GetMoveSpeed(enemy)*adjVar)
+				if NPC.IsPositionInRange(myHero, enemyPos, 600) then
+					return enemyOrigin
+				else
+					return enemyOrigin+enemyRotation:GetVectors():Scaled(AllInOne.GetMoveSpeed(enemy))	
+				end
+			else
+				return enemyOrigin:__add(enemyRotation:Normalized():Scaled(AllInOne.GetMoveSpeed(enemy) * adjVar))
+			end
 		end
 	end
 end
@@ -764,7 +977,7 @@ function AllInOne.LegionCombo( ... )
 			return
 		end
 		if blink and Menu.IsEnabled(AllInOne.optionLegionEnableBlink) and Ability.IsCastable(blink, 0) then
-			Ability.CastPosition(blink, Entity.GetAbsOrigin(enemy))
+			Ability.CastPosition(blink, enemyPosition)
 			return
 		end
 	end
@@ -832,7 +1045,7 @@ function AllInOne.LegionCombo( ... )
 		end
 		if r and Menu.IsEnabled(AllInOne.optionLegionEnableDuel) and Ability.IsCastable(r, myMana) then
 			if not NPC.IsEntityInRange(myHero, enemy, 150) then
-				Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, nil, Entity.GetAbsOrigin(enemy), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
+				Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, nil, enemyPosition, nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
 			else	
 				Ability.CastTarget(r, enemy)
 				return
@@ -843,7 +1056,7 @@ function AllInOne.LegionCombo( ... )
 			AllInOne.PoopLinken()
 		end
 		if r and Menu.IsEnabled(AllInOne.optionLegionEnableDuel) and Ability.IsCastable(r, myMana) then
-			Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, nil, Entity.GetAbsOrigin(enemy), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
+			Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_POSITION, nil, enemyPosition, nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
 		else
 			Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_TARGET, enemy, Vector(0,0,0), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
 		end
@@ -879,7 +1092,7 @@ function AllInOne.TuskCombo( ... )
 		return
 	end
 	if q and Menu.IsEnabled(AllInOne.optionTuskEnableShard) and Ability.IsCastable(q, myMana) and not NPC.IsTurning(myHero) then
-		if NPC.HasModifier(enemy, "modifier_stunned") and Modifier.GetDieTime(NPC.GetModifier(enemy,"modifier_stunned")) > (Entity.GetAbsOrigin(myHero):__sub(Entity.GetAbsOrigin(enemy))):Length()/snowballspeed then
+		if NPC.HasModifier(enemy, "modifier_stunned") and Modifier.GetDieTime(NPC.GetModifier(enemy,"modifier_stunned")) > (myPos:__sub(enemyPosition)):Length()/snowballspeed then
 			Ability.CastPosition(q, AllInOne.ShardPrediction(0))
 		elseif not NPC.IsRunning(enemy) then
 			Ability.CastPosition(q, AllInOne.ShardPrediction(0))
@@ -951,7 +1164,7 @@ function AllInOne.TuskCombo( ... )
 end
 function AllInOne.ShardPrediction(speed)
 	if not enemy then return end
-	local pos = Entity.GetAbsOrigin(enemy)
+	local pos = enemyPosition
 	local dir = Entity.GetRotation(myHero):GetForward():Normalized()
 	if not speed then
 		speed = AllInOne.GetMoveSpeed(enemy)
@@ -1007,7 +1220,7 @@ function AllInOne.ClinkzCombo( ... )
 					end
 					if modHex then
 						local dieTime = Modifier.GetDieTime(modHex)
-						if dieTime - time <= (Entity.GetAbsOrigin(enemy)-Entity.GetAbsOrigin(myHero)):Length()/750 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
+						if dieTime - time <= (enemyPosition-myPos):Length()/750 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
 							Ability.CastTarget(nullifier,enemy)
 						end
 					end
