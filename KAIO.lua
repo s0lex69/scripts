@@ -311,6 +311,7 @@ function AllInOne.OnUpdate( ... )
 				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
 			end
 			if enemy and Entity.IsAlive(enemy) then
+				enemyPosition = Entity.GetAbsOrigin(enemy)
 				AllInOne.ClinkzCombo()
 			end
 		else
