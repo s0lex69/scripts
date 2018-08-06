@@ -10,13 +10,18 @@ local nextTick = 0
 local needTime = 0
 local added = false
 local ebladeCasted = {}
+local RearmChannelTime = {}
+RearmChannelTime[1] = 3.00
+RearmChannelTime[2] = 1.5
+RearmChannelTime[3] = 0.75
 --items
-local urn, vessel, hex, halberd, mjolnir, bkb, nullifier, solar, courage, force, pike, eul, orchid, bloodthorn, diffusal, armlet, lotus, satanic, blademail, blink, abyssal, eblade, phase, discord, shiva, refresher
+local urn, soulring, vessel, hex, halberd, mjolnir, bkb, nullifier, solar, courage, force, pike, eul, orchid, bloodthorn, diffusal, armlet, lotus, satanic, blademail, blink, abyssal, eblade, phase, discord, shiva, refresher
 local time = 0
 AllInOne.optionClinkzEnable = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz"}, "Enable", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnable, "panorama/images/items/branches_png.vtex_c")
 Menu.AddMenuIcon({"KAIO","Hero Specific", "Clinkz"}, "panorama/images/heroes/icons/npc_dota_hero_clinkz_png.vtex_c")
 AllInOne.optionClinkzComboKey = Menu.AddKeyOption({"KAIO","Hero Specific", "Clinkz"}, "Combo Key", Enum.ButtonCode.KEY_Z)
+AllInOne.optionClinkzTargetStyle = Menu.AddOptionCombo({"KAIO", "Hero Specific", "Clinkz"}, "Target Style", {"Free Target", "Lock Target"}, 1)
 AllInOne.optionClinkzEnableBkb = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz", "Combo"}, "Black King Bar", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnableBkb, "panorama/images/items/black_king_bar_png.vtex_c")
 AllInOne.optionClinkzEnableBlood = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz", "Combo"}, "Bloodthorn", false)
@@ -157,6 +162,35 @@ AllInOne.optionSfEnableOrchid = Menu.AddOptionBool({"KAIO","Hero Specific", "Sha
 Menu.AddOptionIcon(AllInOne.optionSfEnableOrchid, "panorama/images/items/orchid_png.vtex_c")
 AllInOne.optionSfEnablePhase = Menu.AddOptionBool({"KAIO","Hero Specific", "Shadow Fiend", "Eul Combo"}, "Phase Boots", false)
 Menu.AddOptionIcon(AllInOne.optionSfEnablePhase, "panorama/images/items/phase_boots_png.vtex_c")
+AllInOne.optionTinkerEnable = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker"}, "Enable", false)
+Menu.AddMenuIcon({"KAIO","Hero Specific","Tinker"}, "panorama/images/heroes/icons/npc_dota_hero_tinker_png.vtex_c")
+Menu.AddOptionIcon(AllInOne.optionTinkerEnable, "panorama/images/items/branches_png.vtex_c")
+AllInOne.optionTinkerComboKey = Menu.AddKeyOption({"KAIO", "Hero Specific", "Tinker"}, "Combo Key", Enum.ButtonCode.KEY_Z)
+AllInOne.optionTinkerTargetStyle = Menu.AddOptionCombo({"KAIO", "Hero Specific", "Tinker"}, "Target Style", {"Free Target", "Lock Target"}, 1)
+AllInOne.optionTinkerEnableBkb = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Black King Bar", false)
+Menu.AddOptionIcon(AllInOne.optionTinkerEnableBkb, "panorama/images/items/black_king_bar_png.vtex_c")
+AllInOne.optionTinkerEnableBlink = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Blink Dagger", false)
+Menu.AddOptionIcon(AllInOne.optionTinkerEnableBlink, "panorama/images/items/blink_png.vtex_c")
+AllInOne.optionTinkerBlinkSafeRange = Menu.AddOptionSlider({"KAIO", "Hero Specific", "Tinker", "Items"}, "Safe Radius for Blink", 0, 800, 400)
+AllInOne.optionTinkerBlinkStyle = Menu.AddOptionCombo({"KAIO", "Hero Specific", "Tinker"}, "Blink Style", {"Auto Blink Safe Pozition", "Cursor Position"}, 0)
+AllInOne.optionTinkerEnableBlood = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Bloodthorn", false)
+Menu.AddOptionIcon(AllInOne.optionTinkerEnableBlood, "panorama/images/items/bloodthorn_png.vtex_c")
+AllInOne.optionTinkerEnableDagon = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Dagon", false)
+Menu.AddOptionIcon(AllInOne.optionTinkerEnableDagon, "panorama/images/items/dagon_5_png.vtex_c")
+AllInOne.optionTinkerEnableEblade = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Ethereal Blade", false)
+Menu.AddOptionIcon(AllInOne.optionTinkerEnableEblade, "panorama/images/items/ethereal_blade_png.vtex_c")
+AllInOne.optionTinkerEnableLotus = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Lotus Orb", false)
+Menu.AddOptionIcon(AllInOne.optionTinkerEnableLotus, "panorama/images/items/lotus_orb_png.vtex_c")
+AllInOne.optionTinkerEnableOrchid = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Orchid", false)
+Menu.AddOptionIcon(AllInOne.optionTinkerEnableOrchid, "panorama/images/items/orchid_png.vtex_c")
+AllInOne.optionTinkerEnableHex = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Scythe of Vyse", false)
+Menu.AddOptionIcon(AllInOne.optionTinkerEnableHex, "panorama/images/items/sheepstick_png.vtex_c")
+AllInOne.optionTinkerEnableShiva = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Shiva's Guard", false)
+Menu.AddOptionIcon(AllInOne.optionTinkerEnableShiva, "panorama/images/items/shivas_guard_png.vtex_c")
+AllInOne.optionTinkerEnableSoul = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Soul Ring", false)
+Menu.AddOptionIcon(AllInOne.optionTinkerEnableSoul, "panorama/images/items/soul_ring_png.vtex_c")
+AllInOne.optionTinkerEnableDiscord = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Veil of Discord", false)
+Menu.AddOptionIcon(AllInOne.optionTinkerEnableDiscord, "panorama/images/items/veil_of_discord_png.vtex_c")
 AllInOne.optionTuskEnable = Menu.AddOptionBool({"KAIO","Hero Specific" ,"Tusk"}, "Enable", false)
 Menu.AddMenuIcon({"KAIO", "Hero Specific", "Tusk"}, "panorama/images/heroes/icons/npc_dota_hero_tusk_png.vtex_c")
 Menu.AddOptionIcon(AllInOne.optionTuskEnable, "panorama/images/items/branches_png.vtex_c")
@@ -261,6 +295,11 @@ function AllInOne.Init( ... )
 		q = NPC.GetAbilityByIndex(myHero,0)
 		w = NPC.GetAbilityByIndex(myHero, 1)
 		r = NPC.GetAbility(myHero, "lion_finger_of_death")
+	elseif NPC.GetUnitName(myHero) == "npc_dota_hero_tinker" then
+		comboHero = "Tinker"
+		q = NPC.GetAbilityByIndex(myHero, 0)
+		w = NPC.GetAbilityByIndex(myHero, 1)
+		r = NPC.GetAbility(myHero, "tinker_rearm")
 	else	
 		myHero = nil
 		return	
@@ -299,6 +338,7 @@ function AllInOne.ClearVar( ... )
 	eblade = nil
 	shiva = nil
 	refresher = nil
+	soulring = nil
 end
 function AllInOne.OnUpdate( ... )
 	if not myHero then return end
@@ -307,7 +347,9 @@ function AllInOne.OnUpdate( ... )
 	myPos = Entity.GetAbsOrigin(myHero)
 	if comboHero == "Clinkz" and Menu.IsEnabled(AllInOne.optionClinkzEnable) then
 		if Menu.IsKeyDown(AllInOne.optionClinkzComboKey) then
-			if not enemy then
+			if Menu.GetValue(AllInOne.optionClinkzTargetStyle) == 1 and not enemy then
+				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
+			elseif Menu.GetValue(AllInOne.optionClinkzTargetStyle) == 0 then
 				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
 			end
 			if enemy and Entity.IsAlive(enemy) then
@@ -351,6 +393,8 @@ function AllInOne.OnUpdate( ... )
 				enemyPosition = Entity.GetAbsOrigin(enemy)
 				AllInOne.TuskCombo()
 			end
+		else
+			enemy = nil	
 		end
 	elseif comboHero == "Ember" and Menu.IsEnabled(AllInOne.optionEmberEnable) then
 		if Menu.IsKeyDown(AllInOne.optionEmberComboKey) then
@@ -404,7 +448,21 @@ function AllInOne.OnUpdate( ... )
 				enemyPosition = Entity.GetAbsOrigin(enemy)
 				AllInOne.LionCombo()
 			end
-		end	
+		end
+	elseif comboHero == "Tinker" and Menu.IsEnabled(AllInOne.optionTinkerEnable) then
+		if Menu.IsKeyDown(AllInOne.optionTinkerComboKey) then
+			if Menu.GetValue(AllInOne.optionTinkerTargetStyle) == 1 and not enemy then
+				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
+			elseif Menu.GetValue(AllInOne.optionTinkerTargetStyle) == 0 then
+				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
+			end
+			if enemy and Entity.IsAlive(enemy) then
+				enemyPosition = Entity.GetAbsOrigin(enemy)
+				AllInOne.TinkerCombo()
+			end
+		else
+			enemy = nil		
+		end
 	end
 	AllInOne.ClearVar()
 	for i = 0, 5 do
@@ -467,7 +525,85 @@ function AllInOne.OnUpdate( ... )
 				shiva = item
 			elseif name == "item_refresher" then
 				refresher = item
+			elseif name == "item_soul_ring"	then
+				soulring = item
 			end	
+		end
+	end
+end
+function AllInOne.TinkerCombo( ... )
+	if not enemy or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+		enemy = nil
+		return
+	end
+	if not Ability.IsChannelling(r) then
+		if soulring and Menu.IsEnabled(AllInOne.optionTinkerEnableSoul) and Ability.IsCastable(soulring, 0) and NPC.IsEntityInRange(myHero, enemy, 1050) then
+			Ability.CastNoTarget(soulring)
+			return
+		end
+		if NPC.IsLinkensProtected(enemy) and Menu.IsEnabled(AllInOne.optionEnablePoopLinken) then
+			AllInOne.PoopLinken()
+			return
+		end
+		if blink and Menu.IsEnabled(AllInOne.optionTinkerEnableBlink) and Ability.IsCastable(blink, 0) and not NPC.IsEntityInRange(myHero, enemy, 801) and NPC.IsPositionInRange(myHero, enemyPosition + (myPos - enemyPosition):Normalized():Scaled(Menu.GetValue(AllInOne.optionTinkerBlinkSafeRange)), 1199) then
+			if Menu.GetValue(AllInOne.optionTinkerBlinkStyle) == 0 then
+				Ability.CastPosition(blink, enemyPosition + (myPos - enemyPosition):Normalized():Scaled(Menu.GetValue(AllInOne.optionTinkerBlinkSafeRange)))
+			else
+				Ability.CastPosition(blink, Input.GetWorldCursorPos())
+			end
+			return
+		end
+		if hex and Menu.IsEnabled(AllInOne.optionTinkerEnableHex) and Ability.IsCastable(hex, myMana) and not NPC.HasModifier(enemy, "modifier_sheepstick_debuff") or NPC.HasModifier(enemy, "modifier_sheepstick_debuff") and Modifier.GetDieTime(NPC.GetModifier(enemy, "modifier_sheepstick_debuff")) - GameRules.GetGameTime() <= RearmChannelTime[Ability.GetLevel(r)] + Ability.GetCastPoint(r) + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)*2 then
+			Ability.CastTarget(hex, enemy)
+			return
+		end
+		if discord and Menu.IsEnabled(AllInOne.optionTinkerEnableDiscord) and Ability.IsCastable(discord, myMana) then
+			Ability.CastPosition(discord, enemyPosition)
+			return
+		end
+		if eblade and Menu.IsEnabled(AllInOne.optionTinkerEnableEblade) and Ability.IsCastable(eblade, myMana) and not NPC.HasModifier(enemy, "modifier_item_ethereal_blade_ethereal") or NPC.HasModifier(enemy, "modifier_item_ethereal_blade_ethereal") and Modifier.GetDieTime(NPC.GetModifier(enemy, "modifier_item_ethereal_blade_ethereal")) - GameRules.GetGameTime() <= RearmChannelTime[Ability.GetLevel(r)] + Ability.GetCastPoint(r) + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)*2 then
+			Ability.CastTarget(eblade, enemy)
+			ebladeCasted[enemy] = true
+			return
+		end
+		if bkb and Menu.IsEnabled(AllInOne.optionTinkerEnableBkb) and Ability.IsCastable(bkb, 0) and NPC.IsEntityInRange(myHero, enemy, 1050) and not NPC.HasModifier(myHero, "modifier_black_king_bar_immune") or NPC.HasModifier(myHero, "modifier_black_king_bar_immune") and Modifier.GetDieTime(NPC.GetModifier(myHero, "modifier_black_king_bar_immune")) - GameRules.GetGameTime() <= RearmChannelTime[Ability.GetLevel(r)] + Ability.GetCastPoint(r) + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)*2 then
+			Ability.CastNoTarget(bkb)
+			return
+		end
+		if lotus and Menu.IsEnabled(AllInOne.optionTinkerEnableLotus) and Ability.IsCastable(lotus, myMana) and NPC.IsEntityInRange(myHero, enemy, 1050) and not NPC.HasModifier(myHero, "modifier_item_lotus_orb_active") or NPC.HasModifier(myHero, "modifier_item_lotus_orb_active") and Modifier.GetDieTime(NPC.GetModifier(myHero, "modifier_item_lotus_orb_active")) - GameRules.GetGameTime() <= RearmChannelTime[Ability.GetLevel(r)] + Ability.GetCastPoint(r) + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)*2 then
+			Ability.CastTarget(lotus, myHero)
+			return
+		end
+		if orchid and Menu.IsEnabled(AllInOne.optionTinkerEnableOrchid) and Ability.IsCastable(orchid, myMana) then
+			Ability.CastTarget(orchid, enemy)
+			return
+		end
+		if bloodthorn and Menu.IsEnabled(AllInOne.optionTinkerEnableBlood) and Ability.IsCastable(bloodthorn, myMana) then
+			Ability.CastTarget(bloodthorn, enemy)
+			return
+		end
+		if shiva and Menu.IsEnabled(AllInOne.optionTinkerEnableShiva) and Ability.IsCastable(shiva, myMana) and NPC.IsEntityInRange(myHero, enemy, 800) then
+			Ability.CastNoTarget(shiva)
+			return
+		end
+		if Ability.IsCastable(q, myMana) then
+			Ability.CastTarget(q, enemy)
+			return
+		end
+		if dagon and Menu.IsEnabled(AllInOne.optionTinkerEnableDagon) and Ability.IsCastable(dagon, myMana) then
+			Ability.CastTarget(dagon, enemy)
+			return
+		end
+		if Ability.IsCastable(w, myMana) then
+			Ability.CastNoTarget(w)
+			return
+		end
+		if Ability.IsCastable(r, myMana) and time >= nextTick then
+			if not Ability.IsCastable(q,myMana) then
+				Ability.CastNoTarget(r)
+				nextTick = time + (RearmChannelTime[Ability.GetLevel(r)] + Ability.GetCastPoint(r) + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING))/2
+				return
+			end
 		end
 	end
 end
@@ -927,7 +1063,7 @@ end
 function AllInOne.castPrediction(adjVar, keyValue)
 	local enemyRotation = Entity.GetRotation(enemy):GetVectors()
 	enemyRotation:SetZ(0)
-	local enemyOrigin = enemyPosition
+	local enemyOrigin = Entity.GetAbsOrigin(enemy)
 	enemyOrigin:SetZ(0)
 	if enemyRotation and enemyOrigin then
 		if not NPC.IsRunning(enemy) then
@@ -1267,8 +1403,8 @@ function AllInOne.ClinkzCombo( ... )
 			Ability.CastNoTarget(bkb)
 			return
 		end
-		Player.AttackTarget(myPlayer, myHero, enemy)
 	end
+	Player.AttackTarget(myPlayer, myHero, enemy)
 end
 function AllInOne.IsLinkensProtected()
 	if NPC.IsLinkensProtected(enemy) then
