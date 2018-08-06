@@ -556,7 +556,7 @@ function AllInOne.LionCombo( ... )
 					local dieTime = Modifier.GetDieTime(mod)
 					if dieTime - time <= Ability.GetCastPoint(w) + 0.35 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
 						Ability.CastPosition(w, enemyPosition)
-						nextTick = time + 0.25 + NetChannel.GetAvgLatency
+						nextTick = time + 0.25 + NetChannel.GetAvgLatencyy(Enum.Flow.FLOW_OUTGOING)
 						return
 					end
 				end	
