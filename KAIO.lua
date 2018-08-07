@@ -193,6 +193,7 @@ AllInOne.optionTinkerEnableShiva = Menu.AddOptionBool({"KAIO", "Hero Specific", 
 Menu.AddOptionIcon(AllInOne.optionTinkerEnableShiva, "panorama/images/items/shivas_guard_png.vtex_c")
 AllInOne.optionTinkerEnableSoul = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Soul Ring", false)
 Menu.AddOptionIcon(AllInOne.optionTinkerEnableSoul, "panorama/images/items/soul_ring_png.vtex_c")
+AllInOne.optionTinkerThreshold = Menu.AddOptionSlider({"KAIO", "Hero Specific", "Tinker", "Items"}, "HP Percent Threshold for use soulring", 0, 99, 10)
 AllInOne.optionTinkerEnableDiscord = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Veil of Discord", false)
 Menu.AddOptionIcon(AllInOne.optionTinkerEnableDiscord, "panorama/images/items/veil_of_discord_png.vtex_c")
 AllInOne.optionTuskEnable = Menu.AddOptionBool({"KAIO","Hero Specific" ,"Tusk"}, "Enable", false)
@@ -550,7 +551,7 @@ function AllInOne.TinkerSpamRockets( ... )
 		end
 	end
 	if bool and not Ability.IsChannelling(r) then
-		if soulring and Ability.IsCastable(soulring, 0) then
+		if soulring and Ability.IsCastable(soulring, 0) and Entity.GetHealth(myHero)/Entity.GetMaxHealth(myHero)*100 > Menu.GetValue(AllInOne.optionTinkerThreshold) then
 			Ability.CastNoTarget(soulring)
 			return
 		end
@@ -574,7 +575,7 @@ function AllInOne.TinkerCombo( ... )
 		return
 	end
 	if not Ability.IsChannelling(r) then
-		if soulring and Menu.IsEnabled(AllInOne.optionTinkerEnableSoul) and Ability.IsCastable(soulring, 0) and NPC.IsEntityInRange(myHero, enemy, 1050) then
+		if soulring and Menu.IsEnabled(AllInOne.optionTinkerEnableSoul) and Ability.IsCastable(soulring, 0) and NPC.IsEntityInRange(myHero, enemy, 1050) and Entity.GetHealth(myHero)/Entity.GetMaxHealth(myHero)*100 > Menu.GetValue(AllInOne.optionTinkerThreshold) then
 			Ability.CastNoTarget(soulring)
 			return
 		end
