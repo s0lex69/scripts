@@ -167,6 +167,7 @@ Menu.AddMenuIcon({"KAIO","Hero Specific","Tinker"}, "panorama/images/heroes/icon
 Menu.AddOptionIcon(AllInOne.optionTinkerEnable, "panorama/images/items/branches_png.vtex_c")
 AllInOne.optionTinkerComboKey = Menu.AddKeyOption({"KAIO", "Hero Specific", "Tinker"}, "Combo Key", Enum.ButtonCode.KEY_Z)
 AllInOne.optionTinkerSpamKey = Menu.AddKeyOption({"KAIO", "Hero Specific", "Tinker"}, "Spam Rockets Key", Enum.ButtonCode.KEY_F)
+AllInOne.optionTinkerFailSwitch = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker"}, "Rocket and Rearm failswitch", true)
 AllInOne.optionTinkerPoopLaser = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker"}, "Poop Linken with Laser", false)
 AllInOne.optionTinkerTargetStyle = Menu.AddOptionCombo({"KAIO", "Hero Specific", "Tinker"}, "Target Style", {"Free Target", "Lock Target"}, 1)
 AllInOne.optionTinkerCheckBM = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker"}, "Check BM/Lotus", true)
@@ -626,6 +627,10 @@ function AllInOne.TinkerCombo( ... )
 			Ability.CastNoTarget(shiva)
 			return
 		end
+		if Ability.IsCastable(w, myMana) and NPC.IsEntityInRange(myHero, enemy, Ability.GetCastRange(w)) then
+			Ability.CastNoTarget(w)
+			return
+		end
 		if Ability.IsCastable(q, myMana) then
 			Ability.CastTarget(q, enemy)
 			return
@@ -642,10 +647,6 @@ function AllInOne.TinkerCombo( ... )
 				ebladeCasted[enemy] = nil
 				return
 			end
-		end
-		if Ability.IsCastable(w, myMana) then
-			Ability.CastNoTarget(w)
-			return
 		end
 		if Ability.IsCastable(r, myMana) and time >= nextTick then
 			if not Ability.IsCastable(q,myMana) then
@@ -1501,6 +1502,39 @@ function AllInOne.PoopLinken(exception)
 	if orchid and Menu.IsEnabled(AllInOne.optionEnablePoopOrchid) and Ability.IsCastable(orchid, myMana) then
 		Ability.CastTarget(orchid, enemy)
 		return
+	end
+end
+function AllInOne.OnPrepareUnitOrders(order)
+	if not myHero or not Menu.IsEnabled(AllInOne.optionTinkerFailSwitch) or comboHero ~= "Tinker" then
+		return
+	end
+	if not order or not order.ability or order.order ~= 8 then
+		return
+	end
+	if Ability.GetName(order.ability) == "tinker_heat_seeking_missile" then
+		if not Entity.GetHeroesInRadius(myHero, Ability.GetCastRange(w), Enum.TeamType.TEAM_ENEMY) then
+			return false
+		end
+	end
+	if Ability.GetName(order.ability) == "tinker_rearm" then
+		local bool = false
+		for i = 0, 8 do
+			local item = NPC.GetItemByIndex(myHero, i)
+			if item and item ~= 0 and not Ability.IsReady(item) then
+				bool = true
+				break
+			end
+		end
+		if not bool then
+			for i = 0, 5 do
+				local ability = NPC.GetAbilityByIndex(myHero, i)
+				if ability and not Ability.IsHidden(ability) and not Ability.IsReady(ability) then
+					bool = true
+					break
+				end
+			end
+		end
+		return bool
 	end
 end
 AllInOne.Init()
