@@ -167,6 +167,7 @@ Menu.AddMenuIcon({"KAIO","Hero Specific","Tinker"}, "panorama/images/heroes/icon
 Menu.AddOptionIcon(AllInOne.optionTinkerEnable, "panorama/images/items/branches_png.vtex_c")
 AllInOne.optionTinkerComboKey = Menu.AddKeyOption({"KAIO", "Hero Specific", "Tinker"}, "Combo Key", Enum.ButtonCode.KEY_Z)
 AllInOne.optionTinkerSpamKey = Menu.AddKeyOption({"KAIO", "Hero Specific", "Tinker"}, "Spam Rockets Key", Enum.ButtonCode.KEY_F)
+AllInOne.optionTinkerPoopLaser = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker"}, "Poop Linken with Laser", false)
 AllInOne.optionTinkerTargetStyle = Menu.AddOptionCombo({"KAIO", "Hero Specific", "Tinker"}, "Target Style", {"Free Target", "Lock Target"}, 1)
 AllInOne.optionTinkerCheckBM = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker"}, "Check BM/Lotus", true)
 AllInOne.optionTinkerEnableBkb = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Black King Bar", false)
@@ -576,9 +577,13 @@ function AllInOne.TinkerCombo( ... )
 			Ability.CastNoTarget(soulring)
 			return
 		end
-		if NPC.IsLinkensProtected(enemy) and Menu.IsEnabled(AllInOne.optionEnablePoopLinken) then
-			AllInOne.PoopLinken()
-			return
+		if NPC.IsLinkensProtected(enemy) then
+			if Menu.IsEnabled(AllInOne.optionTinkerPoopLaser) and Ability.IsCastable(q, myMana) then
+				Ability.CastTarget(q,enemy)
+				return
+			elseif Menu.IsEnabled(AllInOne.optionEnablePoopLinken) then
+				AllInOne.PoopLinken()
+			end
 		end
 		if blink and Menu.IsEnabled(AllInOne.optionTinkerEnableBlink) and Ability.IsCastable(blink, 0) and not NPC.IsEntityInRange(myHero, enemy, 801) and NPC.IsPositionInRange(myHero, enemyPosition + (myPos - enemyPosition):Normalized():Scaled(Menu.GetValue(AllInOne.optionTinkerBlinkSafeRange)), 1199) then
 			if Menu.GetValue(AllInOne.optionTinkerBlinkStyle) == 0 then
@@ -626,8 +631,17 @@ function AllInOne.TinkerCombo( ... )
 			return
 		end
 		if dagon and Menu.IsEnabled(AllInOne.optionTinkerEnableDagon) and Ability.IsCastable(dagon, myMana) then
-			Ability.CastTarget(dagon, enemy)
-			return
+			if ebladeCasted[enemy] and Ability.SecondsSinceLastUse(eblade) < 3 then
+				if NPC.HasModifier(enemy, "modifier_item_ethereal_blade_ethereal") then
+					Ability.CastTarget(dagon, enemy)
+					ebladeCasted[enemy] = nil
+					return
+				end	
+			else
+				Ability.CastTarget(dagon, enemy)
+				ebladeCasted[enemy] = nil
+				return
+			end
 		end
 		if Ability.IsCastable(w, myMana) then
 			Ability.CastNoTarget(w)
