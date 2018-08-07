@@ -166,6 +166,7 @@ AllInOne.optionTinkerEnable = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tink
 Menu.AddMenuIcon({"KAIO","Hero Specific","Tinker"}, "panorama/images/heroes/icons/npc_dota_hero_tinker_png.vtex_c")
 Menu.AddOptionIcon(AllInOne.optionTinkerEnable, "panorama/images/items/branches_png.vtex_c")
 AllInOne.optionTinkerComboKey = Menu.AddKeyOption({"KAIO", "Hero Specific", "Tinker"}, "Combo Key", Enum.ButtonCode.KEY_Z)
+AllInOne.optionTinkerSpamKey = Menu.AddKeyOption({"KAIO", "Hero Specific", "Tinker"}, "Spam Rockets Key", Enum.ButtonCode.KEY_F)
 AllInOne.optionTinkerTargetStyle = Menu.AddOptionCombo({"KAIO", "Hero Specific", "Tinker"}, "Target Style", {"Free Target", "Lock Target"}, 1)
 AllInOne.optionTinkerCheckBM = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker"}, "Check BM/Lotus", true)
 AllInOne.optionTinkerEnableBkb = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Black King Bar", false)
@@ -464,6 +465,9 @@ function AllInOne.OnUpdate( ... )
 		else
 			enemy = nil		
 		end
+		if Menu.IsKeyDown(AllInOne.optionTinkerSpamKey) then
+			AllInOne.TinkerSpamRockets()
+		end
 	end
 	AllInOne.ClearVar()
 	for i = 0, 5 do
@@ -529,6 +533,33 @@ function AllInOne.OnUpdate( ... )
 			elseif name == "item_soul_ring"	then
 				soulring = item
 			end	
+		end
+	end
+end
+function AllInOne.TinkerSpamRockets( ... )
+	local tempTable = Entity.GetHeroesInRadius(myHero, Ability.GetCastRange(w), Enum.TeamType.TEAM_ENEMY)
+	local bool = false
+	if tempTable then
+		for i, k in pairs(tempTable) do
+			if not NPC.HasState(k, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) and not NPC.HasState(k, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+				bool = true
+				break
+			end
+		end
+	end
+	if bool and not Ability.IsChannelling(r) then
+		if soulring and Ability.IsCastable(soulring, 0) then
+			Ability.CastNoTarget(soulring)
+			return
+		end
+		if Ability.IsCastable(w,myMana) then
+			Ability.CastNoTarget(w)
+			return
+		end
+		if Ability.IsCastable(r, myMana) and time >= nextTick then
+			Ability.CastNoTarget(r)
+			nextTick = time + (RearmChannelTime[Ability.GetLevel(r)] + Ability.GetCastPoint(r) + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING))/2
+			return
 		end
 	end
 end
