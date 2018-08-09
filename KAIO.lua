@@ -171,6 +171,10 @@ AllInOne.optionTinkerFailSwitch = Menu.AddOptionBool({"KAIO", "Hero Specific", "
 AllInOne.optionTinkerPoopLaser = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker"}, "Poop Linken with Laser", false)
 AllInOne.optionTinkerTargetStyle = Menu.AddOptionCombo({"KAIO", "Hero Specific", "Tinker"}, "Target Style", {"Free Target", "Lock Target"}, 1)
 AllInOne.optionTinkerCheckBM = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker"}, "Check BM/Lotus", true)
+AllInOne.optionTinkerEnableRockets = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Skills"}, "Heat-Seeking Missle", true)
+Menu.AddOptionIcon(AllInOne.optionTinkerEnableRockets, "panorama/images/spellicons/tinker_heat_seeking_missile_png.vtex_c")
+AllInOne.optionTinkerEnableRearm = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Skills"}, "Rearm", true)
+Menu.AddOptionIcon(AllInOne.optionTinkerEnableRearm, "panorama/images/spellicons/tinker_rearm_png.vtex_c")
 AllInOne.optionTinkerEnableBkb = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Black King Bar", false)
 Menu.AddOptionIcon(AllInOne.optionTinkerEnableBkb, "panorama/images/items/black_king_bar_png.vtex_c")
 AllInOne.optionTinkerEnableBlink = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tinker", "Items"}, "Blink Dagger", false)
@@ -493,8 +497,6 @@ function AllInOne.OnUpdate( ... )
 				halberd = item
 			elseif name == "item_abyssal_blade" then
 				abyssal = item
-			elseif name == "item_orchid" then
-				orchid = item
 			elseif name == "item_armlet" then
 				armlet = item
 			elseif name == "item_bloodthorn" then
@@ -628,7 +630,7 @@ function AllInOne.TinkerCombo( ... )
 			Ability.CastNoTarget(shiva)
 			return
 		end
-		if Ability.IsCastable(w, myMana) and NPC.IsEntityInRange(myHero, enemy, Ability.GetCastRange(w)) then
+		if Ability.IsCastable(w, myMana) and NPC.IsEntityInRange(myHero, enemy, Ability.GetCastRange(w)) and Menu.IsEnabled(AllInOne.optionTinkerEnableRockets) then
 			Ability.CastNoTarget(w)
 			return
 		end
@@ -649,7 +651,7 @@ function AllInOne.TinkerCombo( ... )
 				return
 			end
 		end
-		if Ability.IsCastable(r, myMana) and time >= nextTick then
+		if Ability.IsCastable(r, myMana) and time >= nextTick and Menu.IsEnabled(AllInOne.optionTinkerEnableRearm) then
 			if not Ability.IsCastable(q,myMana) then
 				Ability.CastNoTarget(r)
 				nextTick = time + (RearmChannelTime[Ability.GetLevel(r)] + Ability.GetCastPoint(r) + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING))/2
