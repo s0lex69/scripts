@@ -587,7 +587,11 @@ function AllInOne.TinkerCombo( ... )
 				return
 			elseif Menu.IsEnabled(AllInOne.optionEnablePoopLinken) then
 				AllInOne.PoopLinken()
+				needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 			end
+		end
+		if time < needTime then
+			return
 		end
 		if blink and Menu.IsEnabled(AllInOne.optionTinkerEnableBlink) and Ability.IsCastable(blink, 0) and not NPC.IsEntityInRange(myHero, enemy, 801) and NPC.IsPositionInRange(myHero, enemyPosition + (myPos - enemyPosition):Normalized():Scaled(Menu.GetValue(AllInOne.optionTinkerBlinkSafeRange)), 1199) then
 			if Menu.GetValue(AllInOne.optionTinkerBlinkStyle) == 0 then
