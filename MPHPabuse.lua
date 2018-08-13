@@ -86,7 +86,7 @@ local dropped = 0
 local toggled = false
 local needInit = true
 local x,y
-local myHero
+local myHero, myPlayer
 MPHPAbuse.optionEnable = Menu.AddOptionBool({ "Utility", "MP/HP Abuse" }, "Enable", false)
 MPHPAbuse.optionToggleKey = Menu.AddKeyOption({"Utility", "MP/HP Abuse"}, "Toggle Key", Enum.ButtonCode.KEY_NONE)
 MPHPAbuse.threshold = Menu.AddOptionSlider({"Utility", "MP/HP Abuse"}, "HP Percent Threshold", 0, 100, 5)
@@ -96,6 +96,7 @@ function MPHPAbuse.OnGameStart()
 end
 function MPHPAbuse.Init()
 	myHero = Heroes.GetLocal()
+	myPlayer = Players.GetLocal()
 	x, y = Renderer.GetScreenSize()
 	x = x * 0.59
 	y = y * 0.8426
@@ -103,7 +104,7 @@ function MPHPAbuse.Init()
 	needInit = false	
 end
 function MPHPAbuse.OnPrepareUnitOrders(orders)
-	if not Heroes.GetLocal() or not Engine.IsInGame() or not Menu.IsEnabled(MPHPAbuse.optionEnable) or not orders or not Entity.IsAbility(orders.ability) then return end
+	if not myHero or not Engine.IsInGame() or not Menu.IsEnabled(MPHPAbuse.optionEnable) or not orders or not Entity.IsAbility(orders.ability) then return end
 	if not toggled then return end
 	if Entity.GetHealth(myHero)/Entity.GetMaxHealth(myHero) < Menu.GetValue(MPHPAbuse.threshold)/100 then return end
 	if orders.order ~= 8 then return end
@@ -153,17 +154,17 @@ function MPHPAbuse.OnDraw()
 	end	
 end
 function MPHPAbuse.OnEntityCreate(ent)
-	if not Heroes.GetLocal() or not Engine.IsInGame() or not Menu.IsEnabled(MPHPAbuse.optionEnable) then return end
+	if not myHero or not Engine.IsInGame() or not Menu.IsEnabled(MPHPAbuse.optionEnable) then return end
 	if not toggled then return end
 	if Entity.GetClassName(ent) == "C_DOTA_Item_Physical" and dropped > 0 then
-		MPHPAbuse.pickItem(Heroes.GetLocal(), ent)
+		MPHPAbuse.pickItem(myHero, ent)
 		dropped = dropped - 1
 	end
 end
 function MPHPAbuse.dropItem(myHero, item)
-	Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_DROP_ITEM, nil, Entity.GetAbsOrigin(myHero), item, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
+	Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_DROP_ITEM, nil, Entity.GetAbsOrigin(myHero), item, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
 end
 function MPHPAbuse.pickItem(myHero, item)
-	Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_PICKUP_ITEM, item, Vector(0, 0, 0), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
+	Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_PICKUP_ITEM, item, Vector(0, 0, 0), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero)
 end
 return MPHPAbuse
