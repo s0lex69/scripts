@@ -924,7 +924,7 @@ function AllInOne.DrawArcPanel( ... )
 		elseif clone_state == 3 and Entity.IsAlive(clone) then
 			Renderer.SetDrawColor(0,255,0)
 			AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/2, yInfo + 40, "Pushing", 0)
-		else
+		elseif Entity.IsAlive(clone) then
 			Renderer.SetDrawColor(255, 100, 0, 255)
 			AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/2, yInfo + 40, "idle", 0)
 		end
@@ -935,13 +935,13 @@ function AllInOne.DrawArcPanel( ... )
 	Renderer.DrawFilledRect(x+1, yInfo+111, arcPanelW-2, 20-2)
 	if clone then
 		local tempTable = {}
-		if clone_midas then
+		if clone_midas and Entity.IsAbility(clone_midas) then
 			table.insert(tempTable, clone_midas)
 		end
-		if clone_boots then
+		if clone_boots and Entity.IsAbility(clone_boots) then
 			table.insert(tempTable, clone_boots)
 		end
-		if clone_necro then
+		if clone_necro and Entity.IsAbility(clone_necro) then
 			table.insert(tempTable, clone_necro)
 		end
 		for i, k in ipairs(tempTable) do
@@ -1508,7 +1508,7 @@ function AllInOne.ArcCloneCombo(target)
 	end
 end
 function AllInOne.ArcCombo( ... )
-	if not enemy or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) or not NPC.IsEntityInRange(myHero, enemy, 1100) then
+	if not enemy or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) or not NPC.IsEntityInRange(myHero, enemy, 2500) then
 		enemy = nil
 		return
 	end
