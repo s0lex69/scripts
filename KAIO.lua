@@ -1,5 +1,5 @@
 local AllInOne = {}
-local myHero, myPlayer, myTeam, myMana, attackRange, myPos, enemyPosition
+local myHero, myPlayer, myTeam, myMana, myFaction, attackRange, myPos, myBase, enemyBase, enemyPosition
 local enemy
 local comboHero
 local q,w,e,r,f
@@ -7,16 +7,75 @@ local razeShortPos, razeMidPos, razeLongPos
 local remnant_casted = false
 local snowball_speed
 local nextTick = 0
+local nextTick2 = 0
 local needTime = 0
+local needTime2 = 0
+local needAttack
 local added = false
+local pushing = false
 local ebladeCasted = {}
 local RearmChannelTime = {}
 RearmChannelTime[1] = 3.00
 RearmChannelTime[2] = 1.5
 RearmChannelTime[3] = 0.75
+local clone, clone_q, clone_w, clone_e, clone_mana, clone_state, clone_target, thinker
+local clone_hex, clone_orchid, clone_blood, clone_nullifier, clone_silver, clone_mjolnir, clone_manta, clone_midas, clone_bkb, clone_diffusal, clone_satanic, clone_boots, clone_necro
+local x,y
+local arcPanelW = 120
+local arcPanelH = 277
+local arcFont = Renderer.LoadFont("Arial", 18, Enum.FontWeight.EXTRABOLD)
+local arcPushMode = Config.ReadString("KAIO", "arcPushMode", "Auto")
+local arcPushModeLine = Config.ReadString("KAIO", "arcPushModeLine", "min")
+local necroTable = {}
+local mantaTable = {}
 --items
-local urn, soulring, vessel, hex, halberd, mjolnir, bkb, nullifier, solar, courage, force, pike, eul, orchid, bloodthorn, diffusal, armlet, lotus, satanic, blademail, blink, abyssal, eblade, phase, discord, shiva, refresher
+local urn, soulring, vessel, hex, halberd, mjolnir, bkb, nullifier, solar, courage, force, pike, eul, orchid, bloodthorn, diffusal, armlet, lotus, satanic, blademail, blink, abyssal, eblade, phase, discord, shiva, refresher, manta, silver, midas, necro, silver
 local time = 0
+local cachedHeroIcons = {}
+local cachedItemIcons = {}
+AllInOne.optionArcEnable = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden"}, "Enable", false)
+Menu.AddOptionIcon(AllInOne.optionArcEnable, "panorama/images/items/branches_png.vtex_c")
+Menu.AddMenuIcon({"KAIO", "Hero Specific", "Arc Warden"}, "panorama/images/heroes/icons/npc_dota_hero_arc_warden_png.vtex_c")
+AllInOne.optionArcMainComboKey = Menu.AddKeyOption({"KAIO", "Hero Specific", "Arc Warden"}, "Main Hero Combo Key", Enum.ButtonCode.KEY_Z)
+AllInOne.optionArcCloneComboKey = Menu.AddKeyOption({"KAIO", "Hero Specific", "Arc Warden"}, "Clone Combo Key", Enum.ButtonCode.KEY_V)
+AllInOne.optionArcStackClone = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden"}, "Use Clone in Main Hero Combo", true)	
+AllInOne.optionArcTargetStyle = Menu.AddOptionCombo({"KAIO", "Hero Specific", "Arc Warden"}, "Target Style", {"Lock Target", "Free Target"}, 0)
+AllInOne.optionArcDebuffUnstack = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden"}, "Debuff Unstack", true)
+AllInOne.optionArcClonePushKey = Menu.AddKeyOption({"KAIO", "Hero Specific", "Arc Warden"}, "Clone Push Key", Enum.ButtonCode.KEY_N)
+AllInOne.optionArcMinimumRangeToTP = Menu.AddOptionSlider({"KAIO", "Hero Specific", "Arc Warden"}, "Minimum Range to use travel boots in push mode", 1000,3000,1000)
+AllInOne.optionArcDrawPanel = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden"}, "Draw Info Panel", true)
+AllInOne.optionArcPanelMoveable = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden"}, "Movable Panel", true)
+AllInOne.optionArcEnableFlux = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden", "Skills"}, "Flux", true)
+Menu.AddOptionIcon(AllInOne.optionArcEnableFlux, "panorama/images/spellicons/arc_warden_flux_png.vtex_c")
+AllInOne.optionArcEnableField = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden", "Skills"}, "Magnetic Field", true)
+Menu.AddOptionIcon(AllInOne.optionArcEnableField, "panorama/images/spellicons/arc_warden_magnetic_field_png.vtex_c")
+AllInOne.optionArcEnableSpark = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden", "Skills"}, "Spark Wraith", true)
+Menu.AddOptionIcon(AllInOne.optionArcEnableSpark, "panorama/images/spellicons/arc_warden_spark_wraith_png.vtex_c", true)
+AllInOne.optionArcEnableBkb = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden", "Items"}, "Black King Bar", false)
+Menu.AddOptionIcon(AllInOne.optionArcEnableBkb, "panorama/images/items/black_king_bar_png.vtex_c")
+AllInOne.optionArcEnableBlood = Menu.AddOptionBool({"KAIO", "Hero Specific","Arc Warden", "Items"}, "Bloodthorn", false)
+Menu.AddOptionIcon(AllInOne.optionArcEnableBlood, "panorama/images/items/bloodthorn_png.vtex_c")
+AllInOne.optionArcEnableDiffusal = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden", "Items"}, "Diffusal Blade", false)
+Menu.AddOptionIcon(AllInOne.optionArcEnableDiffusal, "panorama/images/items/diffusal_blade_png.vtex_c")
+AllInOne.optionArcEnableMidas = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden", "Items"}, "Hand of Midas", false)
+Menu.AddOptionIcon(AllInOne.optionArcEnableMidas, "panorama/images/items/hand_of_midas_png.vtex_c")
+AllInOne.optionArcEnableManta = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden", "Items"}, "Manta Style", false)
+Menu.AddOptionIcon(AllInOne.optionArcEnableManta, "panorama/images/items/manta_png.vtex_c")
+AllInOne.optionArcEnableMjolnir = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden", "Items"}, "Mjolnir", false)
+Menu.AddOptionIcon(AllInOne.optionArcEnableMjolnir, "panorama/images/items/mjollnir_png.vtex_c")
+AllInOne.optionArcEnableNecro = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden", "Items"}, "Necronomicon", false)
+Menu.AddOptionIcon(AllInOne.optionArcEnableNecro, "panorama/images/items/necronomicon_3_png.vtex_c")
+AllInOne.optionArcEnableNulifier = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden", "Items"}, "Nullifier", false)
+Menu.AddOptionIcon(AllInOne.optionArcEnableNulifier, "panorama/images/items/nullifier_png.vtex_c")
+AllInOne.optionArcEnableOrchid = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden", "Items"}, "Orchid", false)
+Menu.AddOptionIcon(AllInOne.optionArcEnableOrchid, "panorama/images/items/orchid_png.vtex_c")
+AllInOne.optionArcEnableSatanic = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden", "Items"}, "Satanic", false)
+Menu.AddOptionIcon(AllInOne.optionArcEnableSatanic, "panorama/images/items/satanic_png.vtex_c")
+AllInOne.optionArcSatanicThreshold = Menu.AddOptionSlider({"KAIO", "Hero Specific", "Arc Warden", "Items"}, "HP Percent for satanic use", 1, 50, 15)
+AllInOne.optionArcEnableHex = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden", "Items"}, "Scythe of Vyse", false)
+Menu.AddOptionIcon(AllInOne.optionArcEnableHex, "panorama/images/items/sheepstick_png.vtex_c")
+AllInOne.optionArcEnableSilver = Menu.AddOptionBool({"KAIO", "Hero Specific", "Arc Warden", "Items"}, "Silver Edge", false)
+Menu.AddOptionIcon(AllInOne.optionArcEnableSilver, "panorama/images/items/silver_edge_png.vtex_c")
 AllInOne.optionClinkzEnable = Menu.AddOptionBool({"KAIO","Hero Specific", "Clinkz"}, "Enable", false)
 Menu.AddOptionIcon(AllInOne.optionClinkzEnable, "panorama/images/items/branches_png.vtex_c")
 Menu.AddMenuIcon({"KAIO","Hero Specific", "Clinkz"}, "panorama/images/heroes/icons/npc_dota_hero_clinkz_png.vtex_c")
@@ -262,7 +321,9 @@ Menu.AddOptionIcon(AllInOne.optionEnablePoopOrchid, "panorama/images/items/orchi
 function AllInOne.Init( ... )
 	myHero = Heroes.GetLocal()
 	nextTick = 0
+	nextTick2 = 0
 	needTime = 0
+	needTime2 = 0
 	time = 0
 	added = false
 	if not myHero then return end
@@ -309,11 +370,29 @@ function AllInOne.Init( ... )
 		q = NPC.GetAbilityByIndex(myHero, 0)
 		w = NPC.GetAbilityByIndex(myHero, 1)
 		r = NPC.GetAbility(myHero, "tinker_rearm")
+	elseif NPC.GetUnitName(myHero) == "npc_dota_hero_arc_warden" then
+		comboHero = "Arc"
+		q = NPC.GetAbility(myHero, "arc_warden_flux")
+		w = NPC.GetAbility(myHero, "arc_warden_magnetic_field")
+		e = NPC.GetAbility(myHero, "arc_warden_spark_wraith")
+		r = NPC.GetAbility(myHero, "arc_warden_tempest_double")
+		local w,h = Renderer.GetScreenSize()
+		x = Config.ReadInt("KAIO", "arcPanelX", w/2)
+		y = Config.ReadInt("KAIO", "arcPanelY", h/2)
 	else	
 		myHero = nil
 		return	
 	end
 	myTeam = Entity.GetTeamNum(myHero)
+	if myTeam == 2 then -- radiant
+		myBase = Vector(-7328.000000, -6816.000000, 512.000000)
+		enemyBase = Vector(7141.750000, 6666.125000, 512.000000)
+		myFaction = "radiant"
+	else
+		myBase = Vector(7141.750000, 6666.125000, 512.000000)
+		enemyBase = Vector(-7328.000000, -6816.000000, 512.000000)
+		myFaction = "dire"
+	end
 	myPlayer = Players.GetLocal()
 end
 function AllInOne.OnGameStart( ... )
@@ -348,6 +427,25 @@ function AllInOne.ClearVar( ... )
 	shiva = nil
 	refresher = nil
 	soulring = nil
+	necro = nil
+	manta = nil
+	silver = nil
+end
+function AllInOne.cloneClearVar( ... )
+	clone_hex = nil
+	clone_orchid = nil
+	clone_blood = nil
+	clone_nullifier = nil
+	clone_silver = nil
+	clone_mjolnir = nil
+	clone_manta = nil
+	clone_midas = nil
+	clone_bkb = nil
+	clone_diffusal = nil
+	clone_satanic = nil
+	clone_necro = nil
+	clone_boots = nil
+	clone_silver = nil
 end
 function AllInOne.OnUpdate( ... )
 	if not myHero then return end
@@ -367,6 +465,77 @@ function AllInOne.OnUpdate( ... )
 			end
 		else
 			enemy = nil
+		end
+	elseif comboHero == "Arc" and Menu.IsEnabled(AllInOne.optionArcEnable) then
+		if Ability.GetLevel(r) > 0 then
+			AllInOne.DrawArcPanel()
+		end
+		AllInOne.ArcPush()
+		if clone and Entity.IsAlive(clone) then
+			clone_mana = NPC.GetMana(clone)
+			AllInOne.cloneClearVar()
+			for i = 0, 5 do
+			item = NPC.GetItemByIndex(clone, i)
+				if item and item ~= 0 then
+					local name = Ability.GetName(item)
+					if name == "item_sheepstick" then
+						clone_hex = item
+					elseif name == "item_nullifier" then
+						clone_nullifier = item
+					elseif name == "item_diffusal_blade" then
+						clone_diffusal = item
+					elseif name == "item_mjollnir" then
+						clone_mjolnir = item
+					elseif name == "item_bloodthorn" then
+						clone_blood = item
+					elseif name == "item_black_king_bar" then
+						clone_bkb = item
+					elseif name == "item_orchid" then
+						clone_orchid = item
+					elseif name == "item_satanic" then
+						clone_satanic = item
+					elseif name == "item_manta" then
+						clone_manta = item
+					elseif name == "item_travel_boots" or name == "item_travel_boots_2" then
+						clone_boots = item	
+					elseif name == "item_hand_of_midas" then
+						clone_midas = item
+					elseif name == "item_necronomicon"	 or name == "item_necronomicon_2" or name == "item_necronomicon_3" then
+						clone_necro = item
+					elseif name == "item_silver_edge" then
+						clone_silver = item	
+					end	 
+				end
+			end
+		end
+		if Menu.IsKeyDown(AllInOne.optionArcMainComboKey) then
+			if Menu.GetValue(AllInOne.optionArcTargetStyle) == 0 and not enemy then
+				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
+			elseif Menu.GetValue(AllInOne.optionArcTargetStyle) == 1 then
+				enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
+			end
+			if enemy and Entity.IsAlive(enemy) then
+				enemyPosition = Entity.GetAbsOrigin(enemy)
+				AllInOne.ArcCombo()
+			end
+		elseif Menu.IsKeyDown(AllInOne.optionArcCloneComboKey) then
+			if Menu.GetValue(AllInOne.optionArcTargetStyle) == 0 and not clone_target then
+				clone_target = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
+			elseif Menu.GetValue(AllInOne.optionArcTargetStyle) == 1 then
+				clone_target = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
+			end
+			if clone_target and Entity.IsAlive(clone_target) then
+				AllInOne.ArcCloneCombo(clone_target)
+			end
+		else
+			added = false
+			enemy = nil	
+		end
+		if Menu.IsKeyDownOnce(AllInOne.optionArcClonePushKey) and ((clone and Entity.IsEntity(clone) and Entity.IsAlive(clone)) or Ability.IsCastable(r, myMana))  then
+			pushing = true
+		end
+		if clone_target and not Menu.IsKeyDown(AllInOne.optionArcMainComboKey) and not Menu.IsKeyDown(AllInOne.optionArcCloneComboKey) and not pushing then
+			clone_target = nil
 		end
 	elseif comboHero == "Legion" and Menu.IsEnabled(AllInOne.optionLegionEnable) then
 		if Menu.IsKeyDown(AllInOne.optionLegionComboKey) then
@@ -537,8 +706,966 @@ function AllInOne.OnUpdate( ... )
 				refresher = item
 			elseif name == "item_soul_ring"	then
 				soulring = item
+			elseif name == "item_manta" then
+				manta = item
+			elseif name == "item_necronomicon" or name == "item_necronomicon_2" or name == "item_necronomicon_3" then
+				necro = item
+			elseif name == "item_silver_edge" then
+				silver = item
+			end
+		end
+	end
+end
+function AllInOne.OnModifierCreate(ent, mod) 
+	if not myHero or not Menu.IsEnabled(AllInOne.optionArcEnable) or comboHero ~= "Arc" then
+		return
+	end
+	if Modifier.GetName(mod) == "modifier_arc_warden_magnetic_field_thinker_attack_speed" then
+		thinker = mod
+	end
+	if Modifier.GetName(mod) == "modifier_kill" and Entity.GetOwner(ent) == clone then
+		if NPC.GetUnitName(ent) == "npc_dota_necronomicon_warrior_1" or NPC.GetUnitName(ent) == "npc_dota_necronomicon_warrior_2" or NPC.GetUnitName(ent) == "npc_dota_necronomicon_warrior_3" or NPC.GetUnitName(ent) == "npc_dota_necronomicon_archer_1" or NPC.GetUnitName(ent) == "npc_dota_necronomicon_archer_2" or NPC.GetUnitName(ent) == "npc_dota_necronomicon_archer_3" then
+			table.insert(necroTable, ent)
+		end
+	end
+	if Modifier.GetName(mod) == "modifier_illusion" and Entity.GetOwner(ent) == myPlayer and ((manta and not Ability.IsReady(clone_manta)) or clone_manta and not Ability.IsReady(clone_manta)) then
+		table.insert(mantaTable, ent)
+	end
+	if Entity.GetClassName(ent) == "CDOTA_Unit_Hero_ArcWarden" and ent ~= myHero and NPC.HasModifier(ent, "modifier_arc_warden_tempest_double") and (not clone or not Entity.IsEntity(clone) or not Entity.IsAlive(clone)) then
+		clone = ent
+		clone_state = 0
+		clone_q = NPC.GetAbility(clone, "arc_warden_flux")
+		clone_w = NPC.GetAbility(clone, "arc_warden_magnetic_field")
+		clone_e = NPC.GetAbility(clone, "arc_warden_spark_wraith")
+	end
+end
+function AllInOne.OnModifierDestroy(ent, mod)
+	if not myHero or comboHero ~= "Arc" then
+		return
+	end
+	if Modifier.GetName(mod) == "modifier_kill" then
+		if NPC.GetUnitName(ent) == "npc_dota_hero_arc_warden" then
+			pushing = false
+		end
+		for i, k in pairs(necroTable) do
+			if k == ent then
+				table.remove(necroTable, ent)
+			end
+		end
+	end
+	if Modifier.GetName(mod) == "modifier_illusion" then
+		for i, k in pairs(mantaTable) do
+			if k == ent then
+				table.remove(mantaTable, ent)
+			end
+		end
+	end
+end
+function AllInOne.DrawArcPanel( ... )
+	if not Menu.IsEnabled(AllInOne.optionArcDrawPanel) then
+		return
+	end
+	if Menu.IsEnabled(AllInOne.optionArcPanelMoveable) then
+		if Input.IsKeyDown(Enum.ButtonCode.KEY_UP) then
+			y = y - 10
+			Config.WriteInt("KAIO", "arcPanelY", y)
+		end
+		if Input.IsKeyDown(Enum.ButtonCode.KEY_DOWN) then
+			y = y + 10
+			Config.WriteInt("KAIO", "arcPanelY", y)
+		end
+		if Input.IsKeyDown(Enum.ButtonCode.KEY_LEFT) then
+			x = x - 10
+			Config.WriteInt("KAIO", "arcPanelX", x)
+		end
+		if Input.IsKeyDown(Enum.ButtonCode.KEY_RIGHT) then
+			x = x + 10
+			Config.WriteInt("KAIO", "arcPanelX", x)
+		end
+	end
+	Renderer.SetDrawColor(0,0,0,125)
+	Renderer.DrawFilledRect(x,y,arcPanelW, arcPanelH)
+	Renderer.SetDrawColor(0,0,0)
+	Renderer.DrawOutlineRect(x,y,arcPanelW, arcPanelH)
+	Renderer.SetDrawColor(255,0,0)
+	AllInOne.DrawTextCentered(arcFont, x + arcPanelW/2, y + 10, "OPTIONS", 1)
+	Renderer.SetDrawColor(0,0,0,45)
+	Renderer.DrawFilledRect(x+1,y+1,arcPanelW-2, 18)
+	Renderer.SetDrawColor(0, 191, 255)
+	AllInOne.DrawTextCentered(arcFont, x + arcPanelW/2, y + 30, "TP PUSH", 1)
+	Renderer.SetDrawColor(255, 255, 255, 45)
+	Renderer.DrawFilledRect(x+1, y+21, arcPanelW-2, 18)
+	Renderer.SetDrawColor(0, 0, 0)
+	Renderer.DrawOutlineRect(x, y+40, arcPanelW/2, 20)
+	Renderer.DrawOutlineRect(x + arcPanelW/2, y+40, arcPanelW/2, 20)
+	local hoveringOverAuto = Input.IsCursorInRect(x, y+40, arcPanelW/2, 20)
+	local hoveringOverCursor = Input.IsCursorInRect(x + arcPanelW/2, y+40, arcPanelW/2, 20)
+	if hoveringOverAuto and Input.IsKeyDownOnce(Enum.ButtonCode.MOUSE_LEFT) then
+		if arcPushMode == "Cursor" then
+			arcPushMode = "Auto"
+			Config.WriteString("KAIO", "arcPushMode", "Auto")
+		end
+	end
+
+	if hoveringOverCursor and Input.IsKeyDownOnce(Enum.ButtonCode.MOUSE_LEFT) then
+		if arcPushMode == "Auto" then
+			arcPushMode = "Cursor"
+			Config.WriteString("KAIO", "arcPushMode", "Cursor")
+		end
+	end
+	if arcPushMode == "Auto" then
+		Renderer.SetDrawColor(0, 255, 0, 255)
+		AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/4, y + 40, "auto", 0)
+		Renderer.SetDrawColor(255, 255, 255, 75)
+		AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/4*3, y + 40, "cursor", 0)
+	else
+		Renderer.SetDrawColor(255, 255, 255, 75)
+		AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/4, y + 40, "auto", 0)
+		Renderer.SetDrawColor(0, 255, 0, 255)
+		AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/4*3, y + 40, "cursor", 0)
+	end
+
+	Renderer.SetDrawColor(0, 191, 255, 255)
+	AllInOne.DrawTextCentered(arcFont, x + arcPanelW/2, y + 70, "line select", 1)
+	Renderer.SetDrawColor(255, 255, 255, 45)
+	Renderer.DrawFilledRect(x+1, y+61, arcPanelW-2, 18)
+	Renderer.SetDrawColor(0, 0, 0, 255)
+	Renderer.DrawOutlineRect(x, y+80, arcPanelW/2, 20)
+	Renderer.DrawOutlineRect(x + arcPanelW/2, y+80, arcPanelW/2, 20)
+
+	local hoveringOverFurthest = Input.IsCursorInRect(x, y+80, arcPanelW/2, 20)
+	local hoveringOverLeast = Input.IsCursorInRect(x + arcPanelW/2, y+80, arcPanelW/2, 20)
+
+	if hoveringOverFurthest and Input.IsKeyDownOnce(Enum.ButtonCode.MOUSE_LEFT) then
+		if arcPushModeLine == "max" then
+			arcPushModeLine = "min"
+			Config.WriteString("KAIO", "arcPushModeLine", "min")
+		end
+	end
+
+	if hoveringOverLeast and Input.IsKeyDownOnce(Enum.ButtonCode.MOUSE_LEFT) then
+		if arcPushModeLine == "min" then
+			arcPushModeLine = "max"
+			Config.WriteString("KAIO", "arcPushModeLine", "max")
+		end
+	end
+
+	if arcPushMode == "Cursor" then
+		Renderer.SetDrawColor(255, 255, 255, 75)
+		AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/4, y + 80, "min", 0)
+		AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/4*3, y + 80, "max", 0)
+	else
+		if arcPushModeLine == "min" then
+			Renderer.SetDrawColor(0, 255, 0, 255)
+			AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/4, y + 80, "min", 0)
+			Renderer.SetDrawColor(255, 255, 255, 75)
+			AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/4*3, y + 80, "max", 0)
+		else
+			Renderer.SetDrawColor(255, 255, 255, 75)
+			AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/4, y + 80, "min", 0)
+			Renderer.SetDrawColor(0, 255, 0, 255)
+			AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/4*3, y + 80, "max", 0)
+		end
+	end
+	local yInfo = y + 110
+	Renderer.SetDrawColor(255, 0, 0, 255)
+	AllInOne.DrawTextCentered(arcFont, x + arcPanelW/2, yInfo + 10, "INFORMATION", 1)
+	Renderer.SetDrawColor(0, 0, 0, 45)
+	Renderer.DrawFilledRect(x+1, yInfo+1, arcPanelW-2, 20-2)
+
+	Renderer.SetDrawColor(0, 191, 255, 255)
+	AllInOne.DrawTextCentered(arcFont, x + arcPanelW/2, yInfo + 30, "Clone action", 1)
+	Renderer.SetDrawColor(255, 255, 255, 45)
+	Renderer.DrawFilledRect(x+1, yInfo+21, arcPanelW-2, 20-2)
+	if not clone then
+		Renderer.SetDrawColor(255, 100, 0, 255)
+		AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/2, yInfo + 40, "not spawned", 0)
+	else
+		if not Entity.IsEntity(clone) or not Entity.IsAlive(clone) then
+			Renderer.SetDrawColor(255, 100, 0, 255)
+			AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/2, yInfo + 40, "dead", 0)
+		end
+		if clone_state == 0 and Entity.IsEntity(clone) and Entity.IsAlive(clone) then
+			Renderer.SetDrawColor(255, 100, 0, 255)
+			AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/2, yInfo + 40, "idle", 0)
+		elseif clone_state == 1 and enemy and clone_target == enemy and Entity.IsAlive(clone)  then
+			Renderer.SetDrawColor(0, 255, 0, 255)
+			AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/2, yInfo + 40, "main comboing", 0)
+			local heroName = NPC.GetUnitName(clone_target)
+			local imageHandle
+			if cachedHeroIcons[heroName] then
+				imageHandle = cachedHeroIcons[heroName]
+			else
+				imageHandle = Renderer.LoadImage("panorama/images/heroes/icons/" .. heroName .. "_png.vtex_c")
+				cachedHeroIcons[heroName] = imageHandle
+			end
+			Renderer.SetDrawColor(255, 255, 255, 255)
+			if imageHandle then
+				Renderer.DrawImage(imageHandle, x + arcPanelW/2 - 35, yInfo + 58, 67, 48)
+			end
+		elseif clone_state == 1 and clone_target ~= enemy and Entity.IsAlive(clone) then
+			Renderer.SetDrawColor(0, 255, 0, 255)
+			AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/2, yInfo + 40, "comboing", 0)
+			local heroName = NPC.GetUnitName(clone_target)
+			local imageHandle
+			if cachedHeroIcons[heroName] then
+				imageHandle = cachedHeroIcons[heroName]
+			else
+				imageHandle = Renderer.LoadImage("panorama/images/heroes/icons/"..heroName.."_png.vtex_c")
+				cachedHeroIcons[heroName] = imageHandle
+			end	
+			Renderer.SetDrawColor(255,255,255)
+			if imageHandle then
+				Renderer.DrawImage(imageHandle, x + arcPanelW/2 - 35, yInfo + 58, 67, 48)
+			end
+		elseif clone_state == 2 and Entity.IsAlive(clone) then
+			Renderer.SetDrawColor(0,255,0)			
+			AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/2, yInfo + 40, "TPing", 0)
+		elseif clone_state == 3 and Entity.IsAlive(clone) then
+			Renderer.SetDrawColor(0,255,0)
+			AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/2, yInfo + 40, "Pushing", 0)
+		else
+			Renderer.SetDrawColor(255, 100, 0, 255)
+			AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/2, yInfo + 40, "idle", 0)
+		end
+	end
+	Renderer.SetDrawColor(0, 191, 255, 255)
+	AllInOne.DrawTextCentered(arcFont, x + arcPanelW/2, yInfo + 120, "Clone CDs", 1)
+	Renderer.SetDrawColor(255, 255, 255, 45)
+	Renderer.DrawFilledRect(x+1, yInfo+111, arcPanelW-2, 20-2)
+	if clone then
+		local tempTable = {}
+		if clone_midas then
+			table.insert(tempTable, clone_midas)
+		end
+		if clone_boots then
+			table.insert(tempTable, clone_boots)
+		end
+		if clone_necro then
+			table.insert(tempTable, clone_necro)
+		end
+		for i, k in ipairs(tempTable) do
+			local itemName = Ability.GetName(k)
+			local itemNameShort = string.gsub(itemName, "item_", "")
+			local imageHandle
+			if cachedItemIcons[itemNameShort] then
+				imageHandle = cachedItemIcons[itemNameShort]
+			else
+				imageHandle = Renderer.LoadImage("resource/flash3/images/items/"..itemNameShort.."_png.vtex_c")
+				cachedItemIcons[itemNameShort] = imageHandle
+			end	
+			Renderer.SetDrawColor(255,255,255)
+			Renderer.DrawImage(imageHandle, x + 3 + (39*(i-1)), yInfo + 135, 37, 26)
+			if Ability.GetCooldownTimeLeft(k) > 0 then
+				Renderer.SetDrawColor(255, 255, 255, 45)
+				Renderer.DrawFilledRect(x + 3 + (39*(i-1)), yInfo + 135, 37, 26)
+				Renderer.SetDrawColor(255, 0, 0)
+				AllInOne.DrawTextCenteredX(arcFont, x + 21 + (39*(i-1)), yInfo + 139, math.ceil(Ability.GetCooldownTimeLeft(k)), 0)
+			end
+		end
+	end
+end
+function AllInOne.ArcTP( ... )
+	if arcPushMode == "Cursor" then
+		local targetCreep
+		local targetDistance = 999999
+		if clone_boots then
+			for i = 1, NPCs.Count() do
+				local npc = NPCs.Get(i)
+				if npc and Entity.IsEntity(npc) and Entity.IsAlive(npc) and not NPC.IsWaitingToSpawn(npc) and NPC.IsLaneCreep(npc) and Entity.IsSameTeam(myHero, npc) and NPC.IsRanged(npc) and NPC.GetUnitName(npc) ~= "npc_dota_neutral_caster" then
+					local creepOrigin = Entity.GetAbsOrigin(npc)
+					local distanceToMouse = (creepOrigin - Input.GetWorldCursorPos()):Length2D()
+					if distanceToMouse < targetDistance then
+						targetCreep = npc
+						targetDistance = distanceToMouse
+					end
+				end
+			end
+		end
+		if not targetCreep then
+			targetDistance = 999999
+		else
+			return Entity.GetAbsOrigin(targetCreep)	
+		end
+	else
+		local targetCreep
+		local targetDistance = 999999
+		if clone_boots then
+			for i = 1, NPCs.Count() do
+				local npc = NPCs.Get(i)
+				if npc and Entity.IsEntity(npc) and Entity.IsAlive(npc) and not NPC.IsWaitingToSpawn(npc) and NPC.IsLaneCreep(npc) and Entity.IsSameTeam(myHero, npc) and NPC.IsRanged(npc) and NPC.GetUnitName(npc) ~= "npc_dota_neutral_caster" then
+					local tempTable = Entity.GetUnitsInRadius(npc, 1200, Enum.TeamType.TEAM_ENEMY)
+					local tempTable2 = Entity.GetHeroesInRadius(npc, 900, Enum.TeamType.TEAM_ENEMY)
+					local tempTable3 = Entity.GetHeroesInRadius(npc, 1000, Enum.TeamType.TEAM_FRIEND)
+					if tempTable and #tempTable >= 3 and (not tempTable2 or #tempTable2 == 1) and (not tempTable3 or #tempTable3 == 1) then
+						tempTable = Entity.GetUnitsInRadius(npc, 500, Enum.TeamType.TEAM_FRIEND)
+						if Entity.GetHealth(npc)/Entity.GetMaxHealth(npc) >= 0.8 and tempTable and #tempTable >= 2 then
+							if (Entity.GetAbsOrigin(npc) - myPos):Length2D() >= 3000 then
+								if arcPushModeLine == "min" then
+									if (Entity.GetAbsOrigin(npc) - enemyBase):Length2D() < targetDistance then
+										targetCreep = npc
+										targetDistance = (Entity.GetAbsOrigin(npc) - enemyBase):Length2D()
+										break
+									end
+								else
+									if (Entity.GetAbsOrigin(npc) - myBase):Length2D() < targetDistance then
+										targetCreep = npc
+										targetDistance = (Entity.GetAbsOrigin(npc) - myBase):Length2D()
+										break
+									end
+								end	
+							end
+						end
+					end
+				end
+			end
+		end
+		if not targetCreep then
+			targetDistance = 999999
+		else
+			return Entity.GetAbsOrigin(targetCreep)	
+		end
+	end
+end
+function AllInOne.ArcPush( ... )
+	if not pushing then
+		return
+	end
+	if not clone or not Entity.IsEntity(clone) or not Entity.IsAlive(clone) then
+		if r and Ability.IsCastable(r, myMana) then
+			Ability.CastNoTarget(r)
+			nextTick2 = 0.1 + time + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		end
+	end
+	if clone and Entity.IsEntity(clone) and Entity.IsAlive(clone) and clone_target and Entity.IsEntity(clone_target) and Entity.IsAlive(clone_target) and NPC.IsEntityInRange(clone, clone_target, 1100) then
+		AllInOne.ArcCloneCombo(clone_target)
+	end
+	if clone and Entity.IsEntity(clone) and Entity.IsAlive(clone) and clone_boots and Ability.IsCastable(clone_boots, clone_mana) then
+		if AllInOne.ArcTP() and not NPC.IsPositionInRange(clone, AllInOne.ArcTP(), Menu.GetValue(AllInOne.optionArcMinimumRangeToTP)) then
+			Ability.CastPosition(clone_boots, AllInOne.ArcTP())
+		end
+	end
+	if clone and time >= nextTick2 and Entity.IsEntity(clone) and Entity.IsAlive(clone) and clone_mana then
+		if clone_boots and Ability.IsChannelling(clone_boots) then
+			clone_state = 2
+			return
+		end
+		if not clone_target or not NPC.IsEntityInRange(clone, clone_target, 1300) then
+			clone_state = 3
+		end
+		local tempTable1 = Entity.GetUnitsInRadius(clone, 1300, Enum.TeamType.TEAM_ENEMY)
+		if clone_midas and Ability.IsCastable(clone_midas, 0) and tempTable1 then
+			local target
+			for i, k in pairs(tempTable1) do
+				if Entity.IsEntity(k) and Entity.IsAlive(k) and not NPC.IsWaitingToSpawn(k) and NPC.IsCreep(k) and not Entity.IsDormant(k) then
+					target = k
+					break
+				end
+			end
+			if target then
+				Ability.CastTarget(clone_midas, target)
+				nextTick2 = 0.1 + time + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			end
+		end
+		if clone_necro and Ability.IsCastable(clone_necro, clone_mana) then
+			Ability.CastNoTarget(clone_necro)
+			nextTick2 = 0.1 + time + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		end
+		if clone_manta and Ability.IsCastable(clone_manta, clone_mana) then
+			Ability.CastNoTarget(clone_manta)
+			nextTick2 = 0.1 + time + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		end
+		if NPC.HasModifier(clone, "modifier_kill") then
+			local tempestDieTime = Modifier.GetDieTime(NPC.GetModifier(clone, "modifier_kill"))
+			if tempestDieTime - time < 2.5 then
+				if clone_mjolnir and Ability.IsCastable(clone_mjolnir, clone_mana) then
+					local tempTable = Entity.GetUnitsInRadius(clone, 825, Enum.TeamType.TEAM_FRIEND)
+					if tempTable then
+						for i, k in pairs(tempTable) do
+							Ability.CastTarget(clone_mjolnir, k)
+							nextTick2 = 0.1 + time + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+							return
+						end
+					end
+				end
+			end
+		end
+		if attackRange ~= NPC.GetAttackRange(myHero) then
+			attackRange = NPC.GetAttackRange(myHero)
+		end
+		local target
+		local targetHP = 999999
+		local targetCreep
+		local targetCreepHP = 999999
+		local tempTable = Entity.GetHeroesInRadius(clone, attackRange+21, Enum.TeamType.TEAM_ENEMY)
+		if tempTable then
+			for i, k in pairs(tempTable) do
+				if Entity.IsAlive(k) and Entity.GetHealth(k) < targetHP then
+					target = k
+					targetHP = Entity.GetHealth(k)
+				end
+			end
+		else
+			tempTable = Entity.GetUnitsInRadius(clone, attackRange+21, Enum.TeamType.TEAM_ENEMY)
+			if tempTable then
+				for i, k in pairs(tempTable) do
+					if Entity.IsAlive(k) and (NPC.IsCreep(k) or NPC.IsStructure(k)) and NPC.IsKillable(k) and not NPC.IsWaitingToSpawn(k) and NPC.GetUnitName(k) ~= "npc_dota_neutral_caster" then
+						if Entity.GetHealth(k) < targetCreepHP then
+							targetCreep = k
+							targetCreepHP = Entity.GetHealth(k)
+						end
+					end
+				end
+			else
+				target = nil
+				targetHP = 999999
+				targetCreep = nil
+				targetCreepHP = 999999
+			end
+		end
+		if target then
+			AllInOne.ArcCloneCombo(target)
+			nextTick2 = 0.1 + time + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		elseif targetCreep then
+			if not NPC.IsAttacking(clone) then
+				Player.AttackTarget(myPlayer, clone, targetCreep)
+				nextTick2 = NPC.GetAttackTime(clone)/2 + time + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			end
+			tempTable = Entity.GetUnitsInRadius(clone, 625, Enum.TeamType.TEAM_ENEMY)
+			if tempTable and #tempTable >= 3 then
+				if clone_w and Ability.IsCastable(clone_w, clone_mana) then
+					tempTable = Heroes.InRadius(Entity.GetAbsOrigin(clone),570, myTeam, Enum.TeamType.TEAM_FRIEND)
+					if tempTable then
+						table.insert(tempTable, clone)
+						Ability.CastPosition(clone_w, AllInOne.FindBestOrderPosition(tempTable,570))
+					else
+						Ability.CastPosition(clone_w, Entity.GetAbsOrigin(clone))	
+					end
+				end
+			end
+			if NPC.IsEntityInRange(clone, targetCreep, 1999) then
+				if clone_e and Ability.IsCastable(clone_e, clone_mana) then
+					Ability.CastPosition(clone_e, Entity.GetAbsOrigin(targetCreep))
+					nextTick2 = 0.1 + time + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+					return
+				end
+			end
+		end
+		if not targetCreep and not target then
+			if not NPC.IsAttacking(clone) then
+				Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_MOVE, nil, AllInOne.GenericLanePusher(clone), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, clone)
+				nextTick2 = 0.1 + time + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			end
+			if #necroTable > 1 then
+				AllInOne.NecroController("push")
+			end
+			if #mantaTable > 1 then
+				AllInOne.MantaController("push")
+			end
+		end
+	end
+end
+function AllInOne.NecroController(keyValue, var)
+	for i, k in pairs(necroTable) do
+		if k and Entity.IsEntity(k) and Entity.IsAlive(k) then
+			if keyValue == "attack" then
+				if not NPC.IsAttacking(k) and NPC.IsEntityInRange(k, var, 1000) then
+					Player.AttackTarget(myPlayer, k, var)
+				end
+				if NPC.GetUnitName(k) == "npc_dota_necronomicon_archer" or NPC.GetUnitName(k) == "npc_dota_necronomicon_archer_2" or NPC.GetUnitName(k) == "npc_dota_necronomicon_archer_3" then
+					local ability = NPC.GetAbilityByIndex(k, 0)
+					if ability and Ability.IsCastable(ability, 0) then
+						Ability.CastTarget(ability, var)
+					end
+				end
+			elseif keyValue == "push" then
+				if not NPC.IsAttacking(k) then
+					Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_MOVE, nil, AllInOne.GenericLanePusher(k), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, k)
+				end
+			end
+		end
+	end
+end
+function AllInOne.MantaController(keyValue, var)
+	for i, k in pairs(mantaTable) do
+		if k and Entity.IsEntity(k) and Entity.IsAlive(k) then
+			if keyValue == "attack" then
+				if not NPC.IsAttacking(k) and NPC.IsEntityInRange(k, var, 1000) then
+					Player.AttackTarget(myPlayer, k, var)
+				end
+			elseif keyValue == "push" then
+				if not NPC.IsAttacking(k) then
+					Player.PrepareUnitOrders(myPlayer, Enum.UnitOrder.DOTA_UNIT_ORDER_ATTACK_MOVE, nil, AllInOne.GenericLanePusher(k), nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, k)
+				end
+			end
+		end
+	end
+end
+function AllInOne.GenericLanePusher(npc)
+	if not npc then return end
+
+
+	local leftCornerPos = Vector(-5750, 6050, 384)
+	local rightCornerPos = Vector(6000, -5800, 384)
+	local midPos = Vector(-600, -300, 128)
+
+	local radiantTop2 = Vector(-6150, -800, 384)
+	local radiantBot2 = Vector(-800, -6250, 384)
+	local radiantMid2 = Vector(-2800, -2250, 256)
+	
+	local direTop2 = Vector(800, 6000, 384)
+	local direBot2 = Vector(6200, 400, 384)
+	local direMid2 = Vector(2800, 2100, 256)
+
+
+	local myBotTower2
+		if myFaction == "radiant"
+			then myBotTower2 = radiantBot2
+		else myBotTower2 = direBot2
+		end
+
+	local myTopTower2
+		if myFaction == "radiant"
+			then myTopTower2 = radiantTop2
+		else myTopTower2 = direTop2
+		end
+
+	local myMidTower2
+		if myFaction == "radiant"
+			then myMidTower2 = radiantMid2
+		else myMidTower2 = direMid2
+		end
+
+
+	local npcPos = Entity.GetAbsOrigin(npc)
+
+	local homeSide
+	if npcPos:__sub(myBase):Length2D() < npcPos:__sub(enemyBase):Length2D() then
+		homeSide = true
+	else homeSide = false
+	end
+	
+	if not homeSide then
+		return enemyBase
+	end
+
+	if homeSide then
+		if npcPos:__sub(leftCornerPos):Length2D() <= 800 then
+			return enemyBase
+		elseif npcPos:__sub(rightCornerPos):Length2D() <= 800 then
+			return enemyBase
+		elseif npcPos:__sub(midPos):Length2D() <= 800 then
+			return enemyBase
+		end
+	end
+
+	if homeSide then
+		if npcPos:__sub(leftCornerPos):Length2D() > 800 and npcPos:__sub(rightCornerPos):Length2D() > 800 and npcPos:__sub(midPos):Length2D() > 800 then
+			
+			if npcPos:__sub(leftCornerPos):Length2D() < npcPos:__sub(rightCornerPos):Length2D() and npcPos:__sub(leftCornerPos):Length2D() < npcPos:__sub(midPos):Length2D() then
+				return leftCornerPos
+			elseif npcPos:__sub(leftCornerPos):Length2D() < npcPos:__sub(rightCornerPos):Length2D() and npcPos:__sub(myTopTower2):Length2D() < npcPos:__sub(midPos):Length2D() and npcPos:__sub(myMidTower2):Length2D() > npcPos:__sub(myTopTower2):Length2D() then
+				return leftCornerPos
+			elseif npcPos:__sub(rightCornerPos):Length2D() < npcPos:__sub(leftCornerPos):Length2D() and npcPos:__sub(rightCornerPos):Length2D() < npcPos:__sub(midPos):Length2D() then
+				return rightCornerPos
+			elseif npcPos:__sub(rightCornerPos):Length2D() < npcPos:__sub(leftCornerPos):Length2D() and npcPos:__sub(myBotTower2):Length2D() < npcPos:__sub(midPos):Length2D() and npcPos:__sub(myMidTower2):Length2D() > npcPos:__sub(myBotTower2):Length2D() then
+				return rightCornerPos
+			elseif npcPos:__sub(midPos):Length2D() < npcPos:__sub(leftCornerPos):Length2D() and npcPos:__sub(midPos):Length2D() < npcPos:__sub(rightCornerPos):Length2D() and npcPos:__sub(myMidTower2):Length2D() < npcPos:__sub(myTopTower2):Length2D() then
+				return enemyBase
+			elseif npcPos:__sub(midPos):Length2D() < npcPos:__sub(leftCornerPos):Length2D() and npcPos:__sub(midPos):Length2D() < npcPos:__sub(rightCornerPos):Length2D() and npcPos:__sub(myMidTower2):Length2D() < npcPos:__sub(myBotTower2):Length2D() then
+				return enemyBase
+			else return enemyBase
+			end
+		end
+	end
+end
+function AllInOne.DrawTextCentered(p1,p2,p3,p4,p5) -- Wrap Utility
+	local wide, tall = Renderer.GetTextSize(p1, p4)
+	return Renderer.DrawText(p1, p2 - wide/2 , p3 - tall/2, p4)
+end
+function AllInOne.DrawTextCenteredX(p1,p2,p3,p4,p5) -- Wrap Utility
+	local wide, tall = Renderer.GetTextSize(p1, p4)
+	return Renderer.DrawText(p1, p2 - wide/2, p3, p4)
+end
+function AllInOne.ArcCloneCombo(target)
+	if not target or NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE)then
+		clone_target = nil
+		pushing = true
+		return
+	end
+	if (not clone or not Entity.IsEntity(clone) or not Entity.IsAlive(clone)) and Ability.IsCastable(r, myMana) then
+		Ability.CastNoTarget(r)
+		return
+	end
+	if not NPC.IsEntityInRange(clone, target, 1100) then
+		clone_target = nil
+		pushing = true
+		return
+	end
+	if clone and Entity.IsEntity(clone) and Entity.IsAlive(clone) then
+		clone_state = 1
+		clone_target = target
+		if NPC.IsLinkensProtected(target) then
+			if clone_diffusal and Menu.IsEnabled(AllInOne.optionEnablePoopDiffusal) and Ability.IsCastable(clone_diffusal, 0) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+				Ability.CastTarget(clone_diffusal, target)
+				return
+			end
+			if clone_orchid and Menu.IsEnabled(AllInOne.optionEnablePoopOrchid) and Ability.IsCastable(clone_orchid, clone_mana) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+				Ability.CastTarget(clone_orchid, target)
+				return
+			end
+			if clone_blood and Menu.IsEnabled(AllInOne.optionEnablePoopBlood) and Ability.IsCastable(clone_blood, clone_mana) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+				Ability.CastTarget(clone_blood, target)
+				return
+			end
+			if clone_hex and Menu.IsEnabled(AllInOne.optionEnablePoopHex) and Ability.IsCastable(clone_hex, clone_mana) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+				Ability.CastTarget(clone_hex, target)
+				return
+			end
+			if clone_q and Ability.IsCastable(clone_q, clone_mana) and Menu.IsEnabled(AllInOne.optionArcEnableFlux) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+				Ability.CastTarget(clone_q, target)
+				return
+			end
+		end
+		if NPC.HasModifier(clone, "modifier_item_silver_edge_windwalk") and time >= needTime then
+			Player.AttackTarget(myPlayer, clone, target)
+			needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		end
+		if clone_hex and time >= needTime2 and Ability.IsCastable(clone_hex, clone_mana) and Menu.IsEnabled(AllInOne.optionArcEnableHex) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+			if Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) then
+				if NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+					local modHex = NPC.GetModifier(target, "modifier_sheepstick_debuff")
+					if not modHex then
+						modHex = NPC.GetModifier(target, "modifier_shadow_shaman_voodoo")
+					end
+					if not modHex then
+						modHex = NPC.GetModifier(target, "modifier_lion_voodoo")
+					end
+					if modHex then
+						local dieTime = Modifier.GetDieTime(modHex)
+						if dieTime - time <= 0.85 then
+							Ability.CastTarget(clone_hex,target)
+							needTime2 = time + 0.05 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+							return
+						end
+					end
+				else	
+					Ability.CastTarget(clone_hex, target)
+					needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+					return
+				end
+			elseif not Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) then
+				Ability.CastTarget(clone_hex, target)
+				needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+				return
 			end	
 		end
+		if clone_silver and Menu.IsEnabled(AllInOne.optionArcEnableSilver) and Ability.IsCastable(clone_silver, clone_mana) then
+			Ability.CastNoTarget(clone_silver)
+			needTime2 = time + 0.3 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)*3
+			needAttack = true
+			return
+		end
+		if clone_bkb and time >= needTime2 and Ability.IsCastable(clone_bkb, 0) and Menu.IsEnabled(AllInOne.optionArcEnableBkb) and not NPC.HasState(clone, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+			Ability.CastNoTarget(clone_bkb)
+			needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		end
+		if clone_orchid and time >= needTime2 and Menu.IsEnabled(AllInOne.optionArcEnableOrchid) and Ability.IsCastable(clone_orchid, myMana) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+			if Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_SILENCED) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+				Ability.CastTarget(clone_orchid,target)
+				needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+				return
+			elseif not Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) then
+				Ability.CastTarget(clone_orchid, target)
+				needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+				return	
+			end
+		end
+		if clone_blood and time >= needTime2 and Menu.IsEnabled(AllInOne.optionArcEnableBlood) and Ability.IsCastable(clone_blood, myMana) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+			if Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_SILENCED) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+				Ability.CastTarget(clone_blood,target)
+				needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+				return
+			elseif not Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) then
+				Ability.CastTarget(clone_blood, target)
+				needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+				return	
+			end
+		end
+		if clone_nullifier and time >= needTime2 and Ability.IsCastable(clone_nullifier, myMana) and Menu.IsEnabled(AllInOne.optionArcEnableNulifier) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+			if NPC.GetItem(target, "item_aeon_disk", true) then
+				if NPC.HasModifier(target, "modifier_item_aeon_disk_buff") or not Ability.IsReady(NPC.GetItem(target, "item_aeon_disk", true)) then
+					Ability.CastTarget(clone_nullifier,target)
+					needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+					return
+				end
+			else
+				if NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_HEXED) and Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) then
+					local modHex = NPC.GetModifier(target, "modifier_sheepstick_debuff")
+					if not modHex then
+						modHex = NPC.GetModifier(target, "modifier_shadow_shaman_voodoo")
+					end
+					if not modHex then
+						modHex = NPC.GetModifier(target, "modifier_lion_voodoo")
+					end
+					if modHex and not added then
+						local dieTime = Modifier.GetDieTime(modHex)
+						if dieTime - time <= (Entity.GetAbsOrigin(target)-Entity.GetAbsOrigin(clone)):Length()/750 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
+							Ability.CastTarget(clone_nullifier,target)
+							needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+							return
+						end
+					end
+				elseif NPC.HasModifier(target, "modifier_item_nullifier_mute") and Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) then
+					added = false
+					local mod = NPC.GetModifier(target, "modifier_item_nullifier_mute")
+					if mod then
+						local dieTime = Modifier.GetDieTime(mod)
+						if dieTime - time <= (Entity.GetAbsOrigin(target)-Entity.GetAbsOrigin(clone)):Length()/750 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
+							Ability.CastTarget(clone_nullifier, target)
+							needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+							return
+						end
+					end
+				elseif Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_HEXED) and not NPC.HasModifier(target, "modifier_item_nullifier_mute") then
+					Ability.CastTarget(clone_nullifier, target)
+					needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+					return	
+				elseif not Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) then
+					Ability.CastTarget(clone_nullifier, target)
+					needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+					return
+				end
+			end
+		end
+		if clone_diffusal and time >= needTime2 and Menu.IsEnabled(AllInOne.optionArcEnableDiffusal) and Ability.IsCastable(clone_diffusal, 0) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+			if Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) and not NPC.HasModifier(target, "modifier_item_diffusal_blade_slow") and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+				Ability.CastTarget(clone_diffusal, target)
+				needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+				return
+			elseif not Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) then
+				Ability.CastTarget(clone_diffusal, target)
+				needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+				return
+			end	
+		end
+		if clone_satanic and time >= needTime2 and Menu.IsEnabled(AllInOne.optionArcEnableSatanic) and Ability.IsCastable(satanic, 0) and Entity.GetHealth(clone)/Entity.GetMaxHealth(clone) <= Menu.GetValue(AllInOne.optionArcSatanicThreshold) then
+			Ability.CastNoTarget(clone_satanic)
+			needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		end
+		if clone_mjolnir and time >= needTime2 and Menu.IsEnabled(AllInOne.optionArcEnableMjolnir) and Ability.IsCastable(clone_mjolnir, myMana) then
+			Ability.CastTarget(clone_mjolnir, clone)
+			needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		end
+		if clone_manta and time >= needTime2 and Ability.IsCastable(clone_manta, clone_mana) and Menu.IsEnabled(AllInOne.optionArcEnableManta) then
+			Ability.CastNoTarget(clone_manta)
+			needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		end
+		if clone_necro and time >= needTime2 and Ability.IsCastable(clone_necro, clone_mana) and Menu.IsEnabled(AllInOne.optionArcEnableNecro) then
+			Ability.CastNoTarget(clone_necro)
+			needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		end
+		if clone_q and time >= needTime2 and Ability.IsCastable(clone_q, clone_mana) and Menu.IsEnabled(AllInOne.optionArcEnableFlux) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+			Ability.CastTarget(clone_q, target)
+			needTime2 = time + 0.35 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		end
+		if clone_w and time >= needTime2 and Ability.IsCastable(clone_w, clone_mana) and Menu.IsEnabled(AllInOne.optionArcEnableField) and time >= nextTick and (not NPC.HasModifier(myHero, "modifier_arc_warden_magnetic_field_attack_speed") or NPC.HasModifier(myHero, "modifier_arc_warden_magnetic_field_attack_speed") and Modifier.GetDieTime(thinker) - time <= Ability.GetCastPoint(clone_w) + 0.25 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)) then
+			local tempTable = Heroes.InRadius(Entity.GetAbsOrigin(clone), 570, myTeam, Enum.TeamType.TEAM_FRIEND)
+			if tempTable then
+				table.insert(tempTable, clone)
+				Ability.CastPosition(clone_w, AllInOne.FindBestOrderPosition(tempTable, 570))
+			else
+				Ability.CastPosition(clone_w, Entity.GetAbsOrigin(clone))	
+			end
+			needTime2 = time + 0.35 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		end
+		if clone_e and time >= needTime2 and Ability.IsCastable(clone_e, clone_mana) and Menu.IsEnabled(AllInOne.optionArcEnableSpark) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+			Ability.CastPosition(clone_e, AllInOne.castPrediction(target,1.5))
+			needTime2 = time + 0.35 + Ability.GetCastPoint(clone_e)*3 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		end
+	end
+	if #mantaTable > 1 then
+		AllInOne.MantaController("attack", target)
+	end
+	if #necroTable > 1 then
+		AllInOne.NecroController("attack", target)
+	end
+	if time >= needTime2 or needAttack then
+		Player.AttackTarget(myPlayer,clone,target)
+		needTime2 = time + 0.35 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		needAttack = false
+	end
+end
+function AllInOne.ArcCombo( ... )
+	if not enemy or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) or not NPC.IsEntityInRange(myHero, enemy, 1100) then
+		enemy = nil
+		return
+	end
+	if NPC.IsLinkensProtected(enemy) then
+		AllInOne.PoopLinken()
+	end
+	if NPC.HasModifier(myHero, "modifier_item_silver_edge_windwalk") and time >= needTime then
+		Player.AttackTarget(myPlayer, myHero, enemy)
+		needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		return
+	end
+	if hex and time >= needTime and Ability.IsCastable(hex, myMana) and Menu.IsEnabled(AllInOne.optionArcEnableHex) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+		if Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+			Ability.CastTarget(hex, enemy)
+			needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		elseif not Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) then
+			Ability.CastTarget(hex, enemy)
+			needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		end	
+	end	
+	if Menu.IsEnabled(AllInOne.optionArcStackClone) and time >= needTime and Ability.IsCastable(r, myMana) then
+		Ability.CastNoTarget(r)
+		needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		return
+	end
+	if silver and Menu.IsEnabled(AllInOne.optionArcEnableSilver) and Ability.IsCastable(silver, myMana) then
+		Ability.CastNoTarget(silver)
+		needTime = time + 0.3 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)*3
+		return
+	end
+	if clone and Entity.IsEntity(clone) and Entity.IsAlive(clone) and NPC.IsEntityInRange(myHero, clone, 1500) and Menu.IsEnabled(AllInOne.optionArcStackClone) then
+		AllInOne.ArcCloneCombo(enemy)
+	end 
+	if nullifier and time >= needTime and Ability.IsCastable(nullifier, myMana) and Menu.IsEnabled(AllInOne.optionArcEnableNulifier) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+		if NPC.GetItem(enemy, "item_aeon_disk", true) then
+			if NPC.HasModifier(enemy, "modifier_item_aeon_disk_buff") or not Ability.IsReady(NPC.GetItem(enemy, "item_aeon_disk", true)) then
+				Ability.CastTarget(nullifier,enemy)
+				needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+				return
+			end
+		else
+			if NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) and Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) then
+				local modHex = NPC.GetModifier(enemy, "modifier_sheepstick_debuff")
+				if not modHex then
+					modHex = NPC.GetModifier(enemy, "modifier_shadow_shaman_voodoo")
+				end
+				if not modHex then
+					modHex = NPC.GetModifier(enemy, "modifier_lion_voodoo")
+				end
+				if modHex then
+					local dieTime = Modifier.GetDieTime(modHex)
+					if dieTime - time <= (enemyPosition-myPos):Length()/750 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
+						Ability.CastTarget(nullifier,enemy)
+						needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+						needTime2 = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+						added = true
+						return
+					end
+				end
+			elseif Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+				Ability.CastTarget(nullifier, enemy)
+				needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+				return	
+			elseif not Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) then
+				Ability.CastTarget(nullifier, enemy)
+				needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+				return
+			end
+		end
+	end
+	if orchid and time >= needTime and Menu.IsEnabled(AllInOne.optionArcEnableOrchid) and Ability.IsCastable(orchid, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+		if Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_SILENCED) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+			Ability.CastTarget(orchid,enemy)
+			needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		elseif not Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) then
+			Ability.CastTarget(orchid, enemy)
+			needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return	
+		end
+	end
+	if bloodthorn and time >= needTime and Menu.IsEnabled(AllInOne.optionArcEnableBlood) and Ability.IsCastable(bloodthorn, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+		if Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_SILENCED) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+			Ability.CastTarget(bloodthorn,enemy)
+			needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		elseif not Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) then
+			Ability.CastTarget(bloodthorn, enemy)
+			needTime = time + 0.05 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return	
+		end
+	end
+	if bkb and time >= needTime and Ability.IsCastable(bkb, myMana) and Menu.IsEnabled(AllInOne.optionArcEnableBkb) and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+		Ability.CastNoTarget(bkb)
+		needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		return
+	end
+	if mjolnir and time >= needTime and Menu.IsEnabled(AllInOne.optionArcEnableMjolnir) and Ability.IsCastable(mjolnir, myMana) then
+		Ability.CastTarget(mjolnir, myHero)
+		needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		return
+	end
+	if satanic and time >= needTime and Menu.IsEnabled(AllInOne.optionArcEnableSatanic) and Ability.IsCastable(satanic, 0) and Entity.GetHealth(myHero)/Entity.GetMaxHealth(myHero) <= Menu.GetValue(AllInOne.optionArcSatanicThreshold)/100 then
+		Ability.CastNoTarget(satanic)
+		needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		return
+	end
+	if diffusal and time >= needTime and Menu.IsEnabled(AllInOne.optionArcEnableDiffusal) and Ability.IsCastable(diffusal, 0) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+		if Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) and not NPC.HasModifier(enemy, "modifier_item_diffusal_blade_slow") and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_HEXED) then
+			Ability.CastTarget(diffusal, enemy)
+			needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		elseif not Menu.IsEnabled(AllInOne.optionArcDebuffUnstack) then
+			Ability.CastTarget(diffusal, enemy)
+			needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			return
+		end	
+	end
+	if manta and time >= needTime and Ability.IsCastable(manta, myMana) and Menu.IsEnabled(AllInOne.optionArcEnableManta) then
+		Ability.CastNoTarget(manta)
+		needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		return
+	end
+	if necro and time >= needTime and Ability.IsCastable(necro, myMana) and Menu.IsEnabled(AllInOne.optionArcEnableNecro) then
+		Ability.CastNoTarget(necro)
+		needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		return
+	end
+	if Ability.IsCastable(q, myMana) and time >= needTime and Menu.IsEnabled(AllInOne.optionArcEnableFlux) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+		Ability.CastTarget(q, enemy)
+		needTime = time + 0.1 + Ability.GetCastPoint(q) + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		return
+	end
+	if Ability.IsCastable(w, myMana) and time >= needTime and Menu.IsEnabled(AllInOne.optionArcEnableField) and (not NPC.HasModifier(myHero, "modifier_arc_warden_magnetic_field_attack_speed") or NPC.HasModifier(myHero, "modifier_arc_warden_magnetic_field_attack_speed") and Modifier.GetDieTime(thinker) - time <= Ability.GetCastPoint(w) + 0.25 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)) then
+		local tempTable = Heroes.InRadius(myPos, 570, myTeam, Enum.TeamType.TEAM_FRIEND)
+		if clone and Entity.IsAlive(clone) then
+			table.insert(tempTable, clone)
+		end
+		Ability.CastPosition(w, AllInOne.FindBestOrderPosition(tempTable, 570))
+		needTime = time + 0.1 + Ability.GetCastPoint(w) + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+		nextTick = time + 0.75 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) * 3
+		return
+	end
+	if Ability.IsCastable(e, myMana) and time >= needTime and Menu.IsEnabled(AllInOne.optionArcEnableSpark) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+		Ability.CastPosition(e, AllInOne.castPrediction(enemy,1.5))
+		needTime = time + 0.1 + Ability.GetCastPoint(e) + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+	end
+	if #mantaTable > 1 then
+		AllInOne.MantaController("attack", enemy)
+	end
+	if #necroTable > 1 then
+		AllInOne.NecroController("attack", enemy)
+	end
+	if not NPC.IsAttacking(myHero) then
+		Player.AttackTarget(myPlayer, myHero, enemy)
 	end
 end
 function AllInOne.TinkerSpamRockets( ... )
@@ -581,15 +1708,6 @@ function AllInOne.TinkerCombo( ... )
 			Ability.CastNoTarget(soulring)
 			return
 		end
-		if NPC.IsLinkensProtected(enemy) then
-			if Menu.IsEnabled(AllInOne.optionTinkerPoopLaser) and Ability.IsCastable(q, myMana) then
-				Ability.CastTarget(q,enemy)
-				return
-			elseif Menu.IsEnabled(AllInOne.optionEnablePoopLinken) then
-				AllInOne.PoopLinken()
-				needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
-			end
-		end
 		if time < needTime then
 			return
 		end
@@ -600,6 +1718,15 @@ function AllInOne.TinkerCombo( ... )
 				Ability.CastPosition(blink, Input.GetWorldCursorPos())
 			end
 			return
+		end
+		if NPC.IsLinkensProtected(enemy) then
+			if Menu.IsEnabled(AllInOne.optionTinkerPoopLaser) and Ability.IsCastable(q, myMana) then
+				Ability.CastTarget(q,enemy)
+				return
+			elseif Menu.IsEnabled(AllInOne.optionEnablePoopLinken) then
+				AllInOne.PoopLinken()
+				needTime = time + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+			end
 		end
 		if hex and Menu.IsEnabled(AllInOne.optionTinkerEnableHex) and Ability.IsCastable(hex, myMana) and not NPC.HasModifier(enemy, "modifier_sheepstick_debuff") or NPC.HasModifier(enemy, "modifier_sheepstick_debuff") and Modifier.GetDieTime(NPC.GetModifier(enemy, "modifier_sheepstick_debuff")) - time <= RearmChannelTime[Ability.GetLevel(r)] + Ability.GetCastPoint(r) + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)*2 then
 			Ability.CastTarget(hex, enemy)
@@ -749,7 +1876,7 @@ function AllInOne.LionCombo( ... )
 					local dieTime = Modifier.GetDieTime(mod)
 					if dieTime - time <= Ability.GetCastPoint(w) + 0.35 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
 						Ability.CastPosition(w, enemyPosition)
-						nextTick = time + 0.25 + NetChannel.GetAvgLatencyy(Enum.Flow.FLOW_OUTGOING)
+						nextTick = time + 0.25 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 						return
 					end
 				end	
@@ -779,18 +1906,18 @@ function AllInOne.LionCombo( ... )
 				local dieTime = Modifier.GetDieTime(modHex)
 				if dieTime - time <= Ability.GetCastPoint(q) + 0.35 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) then
 					if (myPos-enemyPosition):Length() >= 600 then
-						Ability.CastPosition(q, AllInOne.castPrediction(1, 1) + (myPos - AllInOne.castPrediction(1, 1)):Normalized():Scaled(600))
+						Ability.CastPosition(q, AllInOne.castPrediction(enemy,1, 1) + (myPos - AllInOne.castPrediction(enemy,1, 1)):Normalized():Scaled(600))
 					else	
-						Ability.CastPosition(q, AllInOne.castPrediction(1, 1))
+						Ability.CastPosition(q, AllInOne.castPrediction(enemy,1, 1))
 					end
 					return
 				end
 			end
 		else
 			if (myPos-enemyPosition):Length() >= 600 then
-				Ability.CastPosition(q, AllInOne.castPrediction(1, 1) + (myPos - AllInOne.castPrediction(1, 1)):Normalized():Scaled(600))
+				Ability.CastPosition(q, AllInOne.castPrediction(enemy,1, 1) + (myPos - AllInOne.castPrediction(enemy,1, 1)):Normalized():Scaled(600))
 			else	
-				Ability.CastPosition(q, AllInOne.castPrediction(1, 1))
+				Ability.CastPosition(q, AllInOne.castPrediction(enemy,1, 1))
 			end
 			return
 		end
@@ -917,7 +2044,7 @@ function AllInOne.SfAutoRaze( ... )
 	end
 	local razePrediction = 0.55 + 0.1 + (NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING) * 2)
 	if not enemy or not Entity.IsAlive(enemy) then return end
-	local predictPos = AllInOne.castPrediction(razePrediction)
+	local predictPos = AllInOne.castPrediction(enemy,razePrediction)
 	if q and Ability.IsCastable(q, myMana) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
 		local disRazePOSpredictedPOS = (razeShortPos - predictPos):Length2D()
 		if disRazePOSpredictedPOS <= 200 and not NPC.IsTurning(myHero) then
@@ -948,7 +2075,7 @@ function AllInOne.EmberCombo( ... )
 	local enemyPos = enemyPosition
 	local remnant_count = Modifier.GetStackCount(NPC.GetModifier(myHero, "modifier_ember_spirit_fire_remnant_charge_counter")) - Menu.GetValue(AllInOne.optionEmberSaveRemnantCount)
 	if discord and Menu.IsEnabled(AllInOne.optionEmberEnableDiscord) and Ability.IsCastable(discord, myMana) then
-		Ability.CastPosition(discord, AllInOne.castPrediction(1))
+		Ability.CastPosition(discord, AllInOne.castPrediction(enemy,1))
 	end
 	if bkb and Menu.IsEnabled(AllInOne.optionEmberEnableBkb) and Ability.IsCastable(bkb,0) then
 		Ability.CastNoTarget(bkb)
@@ -956,7 +2083,7 @@ function AllInOne.EmberCombo( ... )
 	end
 	if r and Ability.IsCastable(f,myMana) and Menu.IsEnabled(AllInOne.optionEmberEnableRemnant) and remnant_count > 0 and time >= nextTick then
 		for i = 1, remnant_count do
-			Ability.CastPosition(r, AllInOne.castPrediction(1))
+			Ability.CastPosition(r, AllInOne.castPrediction(enemy,1))
 			remnant_casted = true
 		end
 		needTime = time + ((myPos:__sub(enemyPos)):Length() - 350)/(AllInOne.GetMoveSpeed(myHero)*2.5)
@@ -1117,7 +2244,7 @@ function AllInOne.GetMoveSpeed(ent)
 	end
 	return baseSpeed + bonusSpeed
 end
-function AllInOne.castPrediction(adjVar, keyValue)
+function AllInOne.castPrediction(enemy,adjVar, keyValue)
 	local enemyRotation = Entity.GetRotation(enemy):GetVectors()
 	enemyRotation:SetZ(0)
 	local enemyOrigin = Entity.GetAbsOrigin(enemy)
