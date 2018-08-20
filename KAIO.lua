@@ -903,7 +903,7 @@ function AllInOne.DrawArcPanel( ... )
 			if imageHandle then
 				Renderer.DrawImage(imageHandle, x + arcPanelW/2 - 35, yInfo + 58, 67, 48)
 			end
-		elseif clone_state == 1 and clone_target ~= enemy and Entity.IsAlive(clone) then
+		elseif clone_state == 1 and clone_target ~= enemy and Entity.IsAlive(clone) and clone_target then
 			Renderer.SetDrawColor(0, 255, 0, 255)
 			AllInOne.DrawTextCenteredX(arcFont, x + arcPanelW/2, yInfo + 40, "comboing", 0)
 			local heroName = NPC.GetUnitName(clone_target)
@@ -1298,6 +1298,9 @@ function AllInOne.ArcCloneCombo(target)
 	end
 	if (not clone or not Entity.IsEntity(clone) or not Entity.IsAlive(clone)) and Ability.IsCastable(r, myMana) then
 		Ability.CastNoTarget(r)
+		return
+	end
+	if not clone or not Entity.IsEntity(clone) or not Entity.IsAlive(clone) then
 		return
 	end
 	if not NPC.IsEntityInRange(clone, target, 1100) then

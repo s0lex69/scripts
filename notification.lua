@@ -137,7 +137,6 @@ local vendetta
 local x, y
 local timerX, timerY, alertX, alertY, roshStateX, roshStateY
 local roshAlive = false
-local heroTable = {}
 local eventTable = {}
 local posTable = {}
 local idTable = {}
@@ -148,7 +147,6 @@ local nextTick = 0
 function notification.Init( ... )
 	myHero = Heroes.GetLocal()
 	myPlayer = Players.GetLocal()
-	heroTable = {}
 	idTable = {}
 	posTable = {}
 	roshTick = 0
@@ -159,7 +157,7 @@ function notification.Init( ... )
 	bara = false
 	eventTable = {}
 	if not myHero then return end
-	heroTable = Heroes.GetAll()
+	local heroTable = Heroes.GetAll()
 	for i, k in pairs(heroTable) do
 		if NPC.GetUnitName(k) == "npc_dota_hero_mirana" and not Entity.IsSameTeam(myHero, k) then
 			mirana = true
@@ -277,8 +275,8 @@ function notification.baraAlert( ... )
 		end	
 		chargHero = nil
 	end
-	for i = 1, #heroTable do
-		local hero = heroTable[i]
+	for i = 1, Heroes.Count() do
+		local hero = Heroes.Get(i)
 		local heroName = NPC.GetUnitName(hero)
 		if NPC.HasModifier(hero, "modifier_spirit_breaker_charge_of_darkness_vision") and Entity.IsSameTeam(myHero, hero) and not chargHero then
 			if language == 0 then
@@ -297,8 +295,8 @@ function notification.OnParticleCreate(particle)
 	if Menu.IsEnabled(notification.optionChatAlertEnable) then
 		if Menu.IsEnabled(notification.optionSkillAlertEnable) then
 			if particle.name == "sandking_epicenter_tell" then
-				for i = 1, #heroTable do
-					local hero = heroTable[i]
+				for i = 1, Heroes.Count() do
+					local hero = Heroes.Get(i)
 					local heroName = NPC.GetUnitName(hero)
 					if heroName == "npc_dota_hero_sand_king" and not Entity.IsSameTeam(myHero, hero) then
 						local ability = NPC.GetAbility(hero, "sandking_epicenter")
@@ -307,8 +305,8 @@ function notification.OnParticleCreate(particle)
 				end
 			end
 			if particle.name == "sven_spell_gods_strength_ambient" or particle.name == "sven_spell_gods_strength" then
-				for i = 1, #heroTable do
-					local hero = heroTable[i]
+				for i = 1, Heroes.Count() do
+					local hero = Heroes.Get(i)
 					local heroName = NPC.GetUnitName(hero)
 					if heroName == "npc_dota_hero_sven" and not Entity.IsSameTeam(myHero, hero) then
 						local ability = NPC.GetAbility(hero, "sven_gods_strength")
@@ -317,8 +315,8 @@ function notification.OnParticleCreate(particle)
 				end
 			end
 			if particle.name == "lycan_shapeshift_cast" then
-				for i = 1, #heroTable do
-					local hero = heroTable[i]
+				for i = 1, Heroes.Count() do
+					local hero = Heroes.Get(i)
 					local heroName = NPC.GetUnitName(hero)
 					if heroName == "npc_dota_hero_lycan" and not Entity.IsSameTeam(myHero, hero) then
 						local ability = NPC.GetAbility(hero, "lycan_shapeshift")
@@ -456,8 +454,8 @@ function notification.OnModifierCreate(ent, mod)
 		return
 	end
 	if Modifier.GetName(mod) == "modifier_invoker_sun_strike" then
-		for i = 1, #heroTable do
-			local hero = heroTable[i]
+		for i = 1, Heroes.Count() do
+			local hero = Heroes.Get(i)
 			local heroName = NPC.GetUnitName(hero)
 			if heroName == "npc_dota_hero_invoker" and not Entity.IsSameTeam(myHero, hero) then
 				local ability = NPC.GetAbility(hero, "invoker_sun_strike")
@@ -466,8 +464,8 @@ function notification.OnModifierCreate(ent, mod)
 		end
 	end
 	if Modifier.GetName(mod) == "modifier_kunkka_torrent_thinker" then
-		for i = 1, #heroTable do
-			local hero = heroTable[i]
+		for i = 1, Heroes.Count() do
+			local hero = Heroes.Get(i)
 			local heroName = NPC.GetUnitName(hero)
 			if heroName == "npc_dota_hero_kunkka" and not Entity.IsSameTeam(myHero, hero) then
 				local ability = NPC.GetAbility(hero, "kunkka_torrent")
@@ -476,8 +474,8 @@ function notification.OnModifierCreate(ent, mod)
 		end
 	end
 	if Modifier.GetName(mod) == "modifier_lina_light_strike_array" then
-		for i = 1, #heroTable do
-			local hero = heroTable[i]
+		for i = 1, Heroes.Count() do
+			local hero = Heroes.Get(i)
 			local heroName = NPC.GetUnitName(hero)
 			if heroName == "npc_dota_hero_invoker" and not Entity.IsSameTeam(myHero, hero) then
 				local ability = NPC.GetAbility(hero, "invoker_sun_strike")
@@ -486,8 +484,8 @@ function notification.OnModifierCreate(ent, mod)
 		end
 	end
 	if Modifier.GetName(mod) == "modifier_tusk_snowball_visible" then
-		for i = 1, #heroTable do
-			local hero = heroTable[i]
+		for i = 1, Heroes.Count() do
+			local hero = Heroes.Get(i)
 			local heroName = NPC.GetUnitName(hero)
 			if heroName == "npc_dota_hero_tusk" and not Entity.IsSameTeam(myHero, hero) then
 				local ability = NPC.GetAbility(hero, "tusk_snowball")
@@ -496,8 +494,8 @@ function notification.OnModifierCreate(ent, mod)
 		end
 	end
 	if Modifier.GetName(mod) == "modifier_leshrac_split_earth_thinker" then
-		for i = 1, #heroTable do
-			local hero = heroTable[i]
+		for i = 1, Heroes.Count() do
+			local hero = Heroes.Get(i)
 			local heroName = NPC.GetUnitName(hero)
 			if heroName == "npc_dota_hero_leshrac" and not Entity.IsSameTeam(myHero, hero) then
 				local ability = NPC.GetAbility(hero, "leshrac_split_earth")
