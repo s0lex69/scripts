@@ -136,13 +136,13 @@ local nyx, mirana, bara = false, false, false
 local vendetta
 local x, y
 local timerX, timerY, alertX, alertY, roshStateX, roshStateY
-local language
 local roshAlive = false
 local heroTable = {}
 local eventTable = {}
 local posTable = {}
 local idTable = {}
 local time
+local language
 local roshTick = 0
 local nextTick = 0
 function notification.Init( ... )
@@ -157,7 +157,6 @@ function notification.Init( ... )
 	mirana = false
 	nyx = false
 	bara = false
-	roshAlive = false
 	eventTable = {}
 	if not myHero then return end
 	heroTable = Heroes.GetAll()
@@ -184,10 +183,8 @@ function notification.OnGameStart( ... )
 end
 function notification.OnUpdate( ... )
 	if not myHero or not Menu.IsEnabled(notification.optionEnable) then return end
-	if not language then
-		language = Menu.GetValue(notification.optionLanguage)
-	end
 	time = GameRules.GetGameTime()
+	language = Menu.GetValue(notification.optionLanguage)
 	if Menu.IsEnabled(notification.optionRoshDrawInfo) then
 		if roshAlive then
 			Renderer.SetDrawColor(0,255,0)
@@ -271,6 +268,13 @@ function notification.runesAlert( ... )
 end
 function notification.baraAlert( ... )
 	if chargHero and not NPC.HasModifier(chargHero, "modifier_spirit_breaker_charge_of_darkness_vision") then
+		if language == 0 then
+			Engine.ExecuteCommand("say_team Бара остановил разбег")
+		elseif language == 1 then
+			Engine.ExecuteCommand("say_team Spirit Breaker has canceled his charge")
+		else
+			Engine.ExecuteCommand("say_team Бара зупинив розбіг")
+		end	
 		chargHero = nil
 	end
 	for i = 1, #heroTable do
@@ -284,6 +288,7 @@ function notification.baraAlert( ... )
 			else
 				Engine.ExecuteCommand("say_team Бара розганяється на "..notification.HeroNameTable[heroName])	
 			end
+			chargHero = hero
 		end
 	end
 end
@@ -334,7 +339,7 @@ function notification.OnParticleCreate(particle)
 			end
 			roshAlive = true
 			eventTable["roshSpawn"] = time
-		end
+		end		
 		if particle.name == "roshan_slam" and time >= roshTick then
 			if Menu.IsEnabled(notification.optionRoshAlertEnable) then
 				if language == 0 then
@@ -421,7 +426,8 @@ function notification.OnUnitAnimation(animation)
 	if not Menu.IsEnabled(notification.optionEnable) then return end
 	if animation.sequenceName == "roshan_attack" or animation.sequenceName == "roshan_attack2" then
 		if Menu.IsEnabled(notification.optionChatAlertEnable) and Menu.IsEnabled(notification.optionRoshAlertEnable) and time >= roshTick then
-			if langauge == 0 then
+			local language = Menu.GetValue(notification.optionLanguage)
+			if language == 0 then
 				Engine.ExecuteCommand("say_team Кто-то бьет рошана")
 			elseif language == 1 then
 				Engine.ExecuteCommand("say_team Roshan is under attack")
