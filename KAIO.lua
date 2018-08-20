@@ -294,7 +294,7 @@ AllInOne.optionTuskEnableUrn = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tus
 Menu.AddOptionIcon(AllInOne.optionTuskEnableUrn, "panorama/images/items/urn_of_shadows_png.vtex_c")
 AllInOne.optionTuskEnableVessel = Menu.AddOptionBool({"KAIO", "Hero Specific", "Tusk", "Items"}, "Spirit Vessel", false)
 Menu.AddOptionIcon(AllInOne.optionTuskEnableVessel, "panorama/images/items/spirit_vessel_png.vtex_c")
-AllInOne.optionTuskComboRadius = Menu.AddOptionSlider({"KAIO", "Hero Specific", "Tusk"}, "Combo Radius", 200, 1250, 1000)
+AllInOne.optionTuskComboRadius = Menu.AddOptionSlider({"KAIO", "Hero Specific", "Tusk"}, "Combo Radius", 200, 2500, 1500)
 AllInOne.optionEnablePoopLinken = Menu.AddOptionBool({"KAIO", "Poop Linken"}, "Enable", false)
 Menu.AddMenuIcon({"KAIO", "Poop Linken"}, "panorama/images/items/sphere_png.vtex_c")
 Menu.AddOptionIcon(AllInOne.optionEnablePoopLinken, "panorama/images/items/branches_png.vtex_c")
@@ -2416,7 +2416,7 @@ function AllInOne.TuskCombo( ... )
 		return
 	end
 	if q and Menu.IsEnabled(AllInOne.optionTuskEnableShard) and Ability.IsCastable(q, myMana) and not NPC.IsTurning(myHero) then
-		if NPC.HasModifier(enemy, "modifier_stunned") and Modifier.GetDieTime(NPC.GetModifier(enemy,"modifier_stunned")) > (myPos:__sub(enemyPosition)):Length()/snowballspeed then
+		if NPC.HasModifier(enemy, "modifier_stunned") and Modifier.GetDieTime(NPC.GetModifier(enemy,"modifier_stunned")) > (myPos:__sub(enemyPosition)):Length()/snowball_speed then
 			Ability.CastPosition(q, AllInOne.ShardPrediction(0))
 		elseif not NPC.IsRunning(enemy) then
 			Ability.CastPosition(q, AllInOne.ShardPrediction(0))
@@ -2451,7 +2451,7 @@ function AllInOne.TuskCombo( ... )
 		Ability.CastTarget(orchid, enemy)
 		return
 	end
-	if bloodthorn and Menu.IsEnabled(AllInOne.optionTuskEnableBloodthorn) and Ability.IsCastable(bloodthorn,0) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+	if bloodthorn and Menu.IsEnabled(AllInOne.optionTuskEnableBlood) and Ability.IsCastable(bloodthorn,0) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
 		Ability.CastTarget(bloodthorn, enemy)
 		return
 	end
