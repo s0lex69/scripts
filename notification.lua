@@ -177,17 +177,17 @@ function notification.OnUpdate( ... )
 	time = GameRules.GetGameTime()
 	if time >= checkTick then
 		for i = 1, Heroes.Count() do
-		local k = Heroes.Get(i)
-		if NPC.GetUnitName(k) == "npc_dota_hero_mirana" and not Entity.IsSameTeam(myHero, k) then
-			mirana = true
-		elseif NPC.GetUnitName(k) == "npc_dota_hero_nyx_assassin" and not Entity.IsSameTeam(myHero, k) then
-			nyx = true
-			vendetta = NPC.GetAbility(k, "nyx_assassin_vendetta")
-		elseif NPC.GetUnitName(k) == "npc_dota_hero_spirit_breaker" and not Entity.IsSameTeam(myHero, k) then
-			bara = true	
+			local k = Heroes.Get(i)
+			if NPC.GetUnitName(k) == "npc_dota_hero_mirana" and not Entity.IsSameTeam(myHero, k) then
+				mirana = true
+			elseif NPC.GetUnitName(k) == "npc_dota_hero_nyx_assassin" and not Entity.IsSameTeam(myHero, k) then
+				nyx = true
+				vendetta = NPC.GetAbility(k, "nyx_assassin_vendetta")
+			elseif NPC.GetUnitName(k) == "npc_dota_hero_spirit_breaker" and not Entity.IsSameTeam(myHero, k) then
+				bara = true	
+			end
+			checkTick = time + 5
 		end
-		checkTick = time + 5
-	end
 	end
 	language = Menu.GetValue(notification.optionLanguage)
 	if Menu.IsEnabled(notification.optionRoshDrawInfo) then
