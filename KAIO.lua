@@ -723,7 +723,7 @@ function AllInOne.OnModifierCreate(ent, mod)
 	if Modifier.GetName(mod) == "modifier_arc_warden_magnetic_field_thinker_attack_speed" then
 		thinker = mod
 	end
-	if Modifier.GetName(mod) == "modifier_kill" and Entity.GetOwner(ent) == clone then
+	if Modifier.GetName(mod) == "modifier_kill" and (Entity.GetOwner(ent) == clone or Entity.GetOwner(ent) == myHero) then
 		if NPC.GetUnitName(ent) == "npc_dota_necronomicon_warrior_1" or NPC.GetUnitName(ent) == "npc_dota_necronomicon_warrior_2" or NPC.GetUnitName(ent) == "npc_dota_necronomicon_warrior_3" or NPC.GetUnitName(ent) == "npc_dota_necronomicon_archer_1" or NPC.GetUnitName(ent) == "npc_dota_necronomicon_archer_2" or NPC.GetUnitName(ent) == "npc_dota_necronomicon_archer_3" then
 			table.insert(necroTable, ent)
 		end
@@ -749,14 +749,14 @@ function AllInOne.OnModifierDestroy(ent, mod)
 		end
 		for i, k in pairs(necroTable) do
 			if k == ent then
-				table.remove(necroTable, ent)
+				necroTable[i] = nil
 			end
 		end
 	end
 	if Modifier.GetName(mod) == "modifier_illusion" then
 		for i, k in pairs(mantaTable) do
 			if k == ent then
-				table.remove(mantaTable, ent)
+				mantaTable[i] = nil
 			end
 		end
 	end
@@ -1127,7 +1127,7 @@ function AllInOne.ArcPush( ... )
 			end
 		end
 		if target then
-			AllInOne.ArcCloneCombo(target)
+			AllInOne.ArcCloneCombo(target, true)
 			nextTick2 = 0.1 + time + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 		elseif targetCreep then
 			if not NPC.IsAttacking(clone) then
@@ -1290,10 +1290,12 @@ function AllInOne.DrawTextCenteredX(p1,p2,p3,p4,p5) -- Wrap Utility
 	local wide, tall = Renderer.GetTextSize(p1, p4)
 	return Renderer.DrawText(p1, p2 - wide/2, p3, p4)
 end
-function AllInOne.ArcCloneCombo(target)
+function AllInOne.ArcCloneCombo(target, bool)
 	if not target or NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE)then
 		clone_target = nil
-		pushing = true
+		if bool then
+			pushing = true
+		end
 		return
 	end
 	if (not clone or not Entity.IsEntity(clone) or not Entity.IsAlive(clone)) and Ability.IsCastable(r, myMana) then
@@ -1303,7 +1305,7 @@ function AllInOne.ArcCloneCombo(target)
 	if not clone or not Entity.IsEntity(clone) or not Entity.IsAlive(clone) then
 		return
 	end
-	if not NPC.IsEntityInRange(clone, target, 1100) then
+	if not NPC.IsEntityInRange(clone, target, 2300) then
 		clone_target = nil
 		pushing = true
 		return
@@ -1498,11 +1500,13 @@ function AllInOne.ArcCloneCombo(target)
 			needTime2 = time + 0.35 + Ability.GetCastPoint(clone_e)*3 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 		end
 	end
-	if #mantaTable > 1 then
+	if #mantaTable > 1 and time >= needTime2 then
 		AllInOne.MantaController("attack", target)
+		needTime2 = time + 0.3 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 	end
-	if #necroTable > 1 then
+	if #necroTable > 1 and time >= needTime2 then
 		AllInOne.NecroController("attack", target)
+		needTime2 = time + 0.3 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 	end
 	if time >= needTime2 or needAttack then
 		Player.AttackTarget(myPlayer,clone,target)
@@ -1661,11 +1665,13 @@ function AllInOne.ArcCombo( ... )
 		Ability.CastPosition(e, AllInOne.castPrediction(enemy,1.5))
 		needTime = time + 0.1 + Ability.GetCastPoint(e) + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 	end
-	if #mantaTable > 1 then
+	if #mantaTable > 1 and time >= needTime then
 		AllInOne.MantaController("attack", enemy)
+		needTime = time + 0.3 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 	end
-	if #necroTable > 1 then
+	if #necroTable > 1 and time >= needTime then
 		AllInOne.NecroController("attack", enemy)
+		needTime = time + 0.3 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
 	end
 	if not NPC.IsAttacking(myHero) then
 		Player.AttackTarget(myPlayer, myHero, enemy)
